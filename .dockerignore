@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+.git
+.venv
+**/.venv
+**/__pycache__
+**/*.py[cod]
+**/*.egg-info
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.cursor
+**/dist
+services/bff/static/sso
+*.log
+.env
+.env.*.local
