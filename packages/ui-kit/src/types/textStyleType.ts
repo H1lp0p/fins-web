@@ -1,0 +1,1 @@
+export type TextStyleType = "text-absolute" | "text-giant" | "text-title" | "text-info-accent" | "text-info";

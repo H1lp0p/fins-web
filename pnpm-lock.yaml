@@ -97,6 +97,10 @@ importers:
         version: 6.4.1
 
   packages/ui-kit:
+    dependencies:
+      '@fontsource/kelly-slab':
+        specifier: ^5.2.7
+        version: 5.2.7
     devDependencies:
       '@types/react':
         specifier: ^18.3.18
@@ -363,6 +367,9 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@fontsource/kelly-slab@5.2.7':
+    resolution: {integrity: sha512-5KkJply7vwihPs1rDPAe0ua1aFXqxGFWLWc+JIpdCIaNu2KftP9GYEQCSSGW+pg64BpiU2sWS5MVGphcZB9Wvg==}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -1230,6 +1237,8 @@ snapshots:
 
   '@esbuild/win32-x64@0.25.12':
     optional: true
+
+  '@fontsource/kelly-slab@5.2.7': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:

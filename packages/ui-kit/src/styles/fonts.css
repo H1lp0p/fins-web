@@ -1,0 +1,6 @@
+/* Kelly Slab — статические файлы из @fontsource (SIL Open Font License) */
+@import "@fontsource/kelly-slab/400.css";
+
+:root {
+  --font-family-kelly-slab: "Kelly Slab", serif;
+}
