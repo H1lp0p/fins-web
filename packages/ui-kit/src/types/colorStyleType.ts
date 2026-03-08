@@ -1,0 +1,2 @@
+export type ColorStyleType = "color-background" | "color-success" | "color-error" | "color-info" | "color-on-background" | "color-on-blur" | "color-input-placeholder" | "color-blur";
+export type BackgroundColorStyleType = "bg-background" | "bg-success" | "bg-error" | "bg-info" | "bg-on-background" | "bg-on-blur" | "bg-input-placeholder" | "bg-blur";

@@ -1,0 +1,38 @@
+.input-container {
+    display: flex;
+    flex-direction: row;
+
+    min-width: 0;
+
+
+    padding-top: var(--fins-max-gap);
+    padding-bottom: var(--fins-max-gap);
+    padding-left: var(--fins-max-gap);
+    padding-right: var(--fins-max-gap);
+
+    box-sizing: border-box;
+    
+    gap: var(--fins-min-gap);
+}
+
+.input-container span {
+    user-select: none;
+}
+
+.input-container input {
+    min-width: 0;
+    flex-grow: 1;
+
+    appearance: none;
+
+    border: none;
+    background: none;
+    outline: none;
+    box-shadow: none;
+
+    caret-color: var(--fins-info);
+
+    &::placeholder {
+        color: var(--fins-input-placeholder);
+    }
+}

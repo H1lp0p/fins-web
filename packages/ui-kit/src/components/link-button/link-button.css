@@ -1,0 +1,51 @@
+
+/* variant "info" by default */
+.fins-link-button {
+
+    --background-color-on-active: var(--fins-info);
+    --text-color-on-active: var(--fins-on-background);
+
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+
+    color: var(--fins-info);
+
+    user-select: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+
+    &:active {
+        background-color: var(--background-color-on-active);
+        color: var(--text-color-on-active);
+    }
+}
+
+.fins-link-button[data-variant="info"] {
+    --background-color-on-active: var(--fins-info);
+}
+
+.fins-link-button[data-variant="success"] {
+    --background-color-on-active: var(--fins-success);
+
+    color: var(--fins-success);
+
+    &:active {
+        background-color: var(--background-color-on-active);
+        color: var(--text-color-on-active);
+    }
+}
+
+.fins-link-button[data-variant="error"] {
+    --background-color-on-active: var(--fins-error);
+    --text-color-on-active: var(--fins-info);
+
+    color: var(--fins-error);
+
+    &:active {
+        background-color: var(--background-color-on-active);
+        color: var(--text-color-on-active);
+    }
+}

@@ -1,0 +1,7 @@
+.fins-blured-container {
+  background-color: var(--fins-blur);
+  border-radius: 16px;
+  backdrop-filter: blur(16px);
+
+  box-sizing: border-box;
+}

@@ -1,0 +1,113 @@
+/*
+  Темы через data-theme на <html> (как data-bs-theme в Bootstrap).
+  Все цвета — CSS-переменные; смена темы = смена значений переменных.
+
+  Плавность: одно глобальное правило на transition для наследуемых свойств
+  (color, background-color, border-color, …). Компоненты используют только var(--fins-…),
+  отдельно анимацию не задают.
+*/
+
+/* Длительность/кривая смены темы (можно переопределить на :root) */
+:root {
+  --fins-theme-transition-duration: 0.01s;
+  --fins-theme-transition-easing: ease;
+}
+
+:root,
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --fins-background: #091413;
+  --fins-success: #00D9C0;
+  --fins-error: #FF4365;
+  --fins-info: #D9D9D9;
+  --fins-on-background: #0E1E1C;
+  --fins-on-blur: #022827;
+  --fins-input-placeholder: #254E4A;
+  --fins-blur: #0e1e1cdc;
+}
+
+
+/* @media (prefers-reduced-motion: no-preference) {
+  body,
+  body *,
+  body *::before,
+  body *::after {
+    transition-property: color, background-color, border-color, outline-color,
+      fill, stroke, text-decoration-color, box-shadow, column-rule-color;
+    transition-duration: var(--fins-theme-transition-duration);
+    transition-timing-function: var(--fins-theme-transition-easing);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body,
+  body *,
+  body *::before,
+  body *::after {
+    transition-duration: 0s !important;
+  }
+} */
+
+/* Базовая привязка страницы к слотам */
+body {
+  background-color: var(--fins-background);
+  color: var(--fins-on-background);
+}
+
+body *::selection {
+  background-color: var(--fins-success);
+  color: var(--fins-on-background);
+}
+
+/* Утилиты «цвет из слота» */
+.color-background {
+  color: var(--fins-background);
+}
+.color-success {
+  color: var(--fins-success);
+}
+.color-error {
+  color: var(--fins-error);
+}
+.color-info {
+  color: var(--fins-info);
+}
+.color-on-background {
+  color: var(--fins-on-background);
+}
+.color-on-blur {
+  color: var(--fins-on-blur);
+}
+.color-input-placeholder {
+  color: var(--fins-input-placeholder);
+}
+.color-blur {
+  color: var(--fins-blur);
+}
+
+
+.bg-background {
+  background-color: var(--fins-background);
+}
+.bg-success {
+  background-color: var(--fins-success);
+}
+.bg-error {
+  background-color: var(--fins-error);
+}
+.bg-info {
+  background-color: var(--fins-info);
+}
+.bg-on-background {
+  background-color: var(--fins-on-background);
+}
+.bg-on-blur {
+  background-color: var(--fins-on-blur);
+}
+.bg-input-placeholder {
+  background-color: var(--fins-input-placeholder);
+}
+.bg-blur {
+  background-color: var(--fins-blur);
+}
