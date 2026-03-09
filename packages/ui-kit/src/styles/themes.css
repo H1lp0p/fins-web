@@ -11,6 +11,8 @@
 :root {
   --fins-theme-transition-duration: 0.01s;
   --fins-theme-transition-easing: ease;
+
+  --fins-blur-radius: 16px;
 }
 
 :root,
