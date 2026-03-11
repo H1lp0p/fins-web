@@ -19,6 +19,8 @@ export { Header } from "./components/header/Header";
 
 //Layouts
 export { SingleSpaceLayout } from "./layouts/single-space-layout/SingleSpaceLayout";
+export { RectSpaceLayout } from "./layouts/rect-space-layout/RectSpaceLayout";
+export { TriColSpaceLayout } from "./layouts/tri-col-space-layout/TriColSpaceLayout";
 
 //Theme
 export {

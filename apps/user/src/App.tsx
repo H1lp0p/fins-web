@@ -1,4 +1,4 @@
-import { AmountWithSymbol, BgText, BluredContainer, Header, InlineCheckBox, Input, LinkButton, Logo, OnBlurContainer, SingleSpaceLayout, TabList, type Tab } from "@fins/ui-kit";
+import { AmountWithSymbol, BgText, BluredContainer, Header, InlineCheckBox, Input, LinkButton, Logo, OnBlurContainer, RectSpaceLayout, SingleSpaceLayout, TabList, TriColSpaceLayout, type Tab } from "@fins/ui-kit";
 import { useState } from "react";
 import { DEFAULT_CHARS } from "@fins/ui-kit";
 
@@ -35,10 +35,10 @@ export default function App() {
         }
       />
       
-      <BgText text="Register"/>
+      <BgText text="Page"/>
 
-        <SingleSpaceLayout>
-          {/* <div className="ph-mid pv-max gap-mid" style={{
+        {/* <SingleSpaceLayout>
+          <div className="ph-mid pv-max gap-mid" style={{
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
@@ -64,9 +64,12 @@ export default function App() {
           </div>
           <OnBlurContainer className="ph-mid pv-mid gap-min" style={{width: "100%", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center"}}>
             <LinkButton text="link info" textClassName="text-title" variant="info" onClick={() => {}} />
-          </OnBlurContainer> */}
-        </SingleSpaceLayout>
+          </OnBlurContainer>
+        </SingleSpaceLayout> */}
 
+        {/* <RectSpaceLayout></RectSpaceLayout> */}
+
+        <TriColSpaceLayout></TriColSpaceLayout>
         
     </main>
   );

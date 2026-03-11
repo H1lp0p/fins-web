@@ -1,0 +1,36 @@
+.rect-space-layout {
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+
+    width: 60%;
+    height: 70%;
+
+    display: grid;
+    grid-template-columns: .5fr 1fr;
+    grid-template-rows: .25fr 1fr;
+    gap: var(--fins-max-gap);
+}
+
+.top-left-content {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.top-right-content {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.bottom-left-content {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.bottom-right-content {
+    grid-column: 2;
+    grid-row: 2;
+}
