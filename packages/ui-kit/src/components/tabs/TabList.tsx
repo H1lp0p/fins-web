@@ -19,7 +19,7 @@ export function TabList({ tabs, activeTab, onTabClick, textClassName = "text-tit
     return (
         <div className={`tab-list ${className}`}>
             {tabs.map((tab, index) => (
-                <div key={index}>
+                <div key={index} style={{ display: "flex", alignItems: "center", gap: "var(--fins-min-gap)" }}>
                     <span
                         className={`tab-item ${textClassName}`} 
                         onClick={() => handleTabClick(tab)}
