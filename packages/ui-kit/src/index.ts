@@ -11,9 +11,16 @@ export { OnBlurContainer } from "./components/on-blur-container/OnBlurContainer"
 export { LinkButton, type LinkButtonVariant } from "./components/link-button/LinkButton";
 export { InlineCheckBox, type statusType } from "./components/inline-check-box/InlineCheckBox";
 export { Input } from "./components/input/Input";
-export { BgText } from "./components/components/back-ground-text/BgText";
+export { BgText } from "./components/back-ground-text/BgText";
 export { Logo } from "./components/logo/Logo";
 export { AmountWithSymbol } from "./components/amount-with-symbol/AmountWithSymb";
+export { TabList } from "./components/tabs/TabList";
+export { Header } from "./components/header/Header";
+
+//Layouts
+export { SingleSpaceLayout } from "./layouts/single-space-layout/SingleSpaceLayout";
+export { RectSpaceLayout } from "./layouts/rect-space-layout/RectSpaceLayout";
+export { TriColSpaceLayout } from "./layouts/tri-col-space-layout/TriColSpaceLayout";
 
 //Theme
 export {
@@ -27,6 +34,7 @@ export {
 export { type TextStyleType } from "./types/textStyleType";
 export { type ColorStyleType, type BackgroundColorStyleType } from "./types/colorStyleType";
 export { DEFAULT_CHARS } from "./types/DefaultChars";
+export { type Tab } from "./types/Tab";
 
 // Lib
 export { formatNumber } from "./lib/formatNumber";

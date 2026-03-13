@@ -1,0 +1,15 @@
+.single-space-layout {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: var(--fins-max-gap);
+
+    width: 30%;
+    height: 70%;
+}

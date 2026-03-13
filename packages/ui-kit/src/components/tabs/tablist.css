@@ -1,0 +1,25 @@
+.tab-list {
+    display: flex;
+
+    user-select: none;
+    gap: var(--fins-min-gap);
+}
+
+.tab-item {
+    border: none;
+    cursor: pointer;
+
+    color: var(--fins-info);
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.tab-item[data-active="true"] {
+    color: var(--fins-success);
+
+    &:hover {
+        text-decoration: none;
+    }
+}
