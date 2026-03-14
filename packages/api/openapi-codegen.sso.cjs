@@ -1,11 +1,10 @@
 /** @type {import("@rtk-query/codegen-openapi").ConfigFile} */
 module.exports = {
-  schemaFile: "../../openapi/openApi.sso.yaml",
+  schemaFile: "./openapi-bundle/sso.bundle.yaml",
   apiFile: "./src/generated/sso/emptySsoApi.ts",
-  apiImport: "api",
-  exportName: "ssoBffApi",
-  outputFile: "./src/generated/sso/ssoBffApi.generated.ts",
-  hooks: { queries: true, lazyQueries: false, mutations: true },
+  apiImport: "emptySplitApi",
+  exportName: "generatedSsoApi",
+  outputFile: "./src/generated/sso/generatedSsoApi.ts",
+  hooks: true,
   tag: true,
-  esmExtensions: true,
 };

@@ -1,0 +1,512 @@
+import { emptySplitApi as api } from "./emptyPublicApi";
+export const addTagTypes = [
+  "Users",
+  "Account",
+  "Users Internal",
+  "transaction-operation-controller",
+  "card-account-controller",
+  "credit-rule-controller",
+  "credit-controller",
+] as const;
+const injectedRtkApi = api
+  .enhanceEndpoints({
+    addTagTypes,
+  })
+  .injectEndpoints({
+    endpoints: (build) => ({
+      editUser: build.mutation<EditUserApiResponse, EditUserApiArg>({
+        query: (queryArg) => ({
+          url: `/user-service/users/${queryArg.id}/edit`,
+          method: "PUT",
+          body: queryArg.userEditModelDto,
+        }),
+        invalidatesTags: ["Users"],
+      }),
+      editUser1: build.mutation<EditUser1ApiResponse, EditUser1ApiArg>({
+        query: (queryArg) => ({
+          url: `/user-service/account/edit`,
+          method: "PUT",
+          body: queryArg.userEditModelDto,
+        }),
+        invalidatesTags: ["Account"],
+      }),
+      getAllUsers: build.query<GetAllUsersApiResponse, GetAllUsersApiArg>({
+        query: () => ({ url: `/user-service/users` }),
+        providesTags: ["Users"],
+      }),
+      getUserById: build.query<GetUserByIdApiResponse, GetUserByIdApiArg>({
+        query: (queryArg) => ({ url: `/user-service/users/${queryArg.id}` }),
+        providesTags: ["Users"],
+      }),
+      deleteUserById: build.mutation<
+        DeleteUserByIdApiResponse,
+        DeleteUserByIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/user-service/users/${queryArg.id}`,
+          method: "DELETE",
+        }),
+        invalidatesTags: ["Users"],
+      }),
+      isUserActiveById: build.query<
+        IsUserActiveByIdApiResponse,
+        IsUserActiveByIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/user-service/users/${queryArg.id}/isActive`,
+        }),
+        providesTags: ["Users"],
+      }),
+      getUserById1: build.query<GetUserById1ApiResponse, GetUserById1ApiArg>({
+        query: (queryArg) => ({
+          url: `/user-service/internal/users/${queryArg.id}`,
+          headers: {
+            "X-API-KEY": queryArg["X-API-KEY"],
+          },
+        }),
+        providesTags: ["Users Internal"],
+      }),
+      getUser: build.query<GetUserApiResponse, GetUserApiArg>({
+        query: () => ({ url: `/user-service/account` }),
+        providesTags: ["Account"],
+      }),
+      withdrawMoney: build.mutation<
+        WithdrawMoneyApiResponse,
+        WithdrawMoneyApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/core-api/transactions/withdraw`,
+          method: "POST",
+          body: queryArg.withdrawDto,
+        }),
+        invalidatesTags: ["transaction-operation-controller"],
+      }),
+      enrollMoney: build.mutation<EnrollMoneyApiResponse, EnrollMoneyApiArg>({
+        query: (queryArg) => ({
+          url: `/core-api/transactions/enroll`,
+          method: "POST",
+          body: queryArg.enrollDto,
+        }),
+        invalidatesTags: ["transaction-operation-controller"],
+      }),
+      openAccount: build.mutation<OpenAccountApiResponse, OpenAccountApiArg>({
+        query: (queryArg) => ({
+          url: `/core-api/cardaccount/open/${queryArg.userId}`,
+          method: "POST",
+          body: queryArg.cardAccountCreateModelDto,
+        }),
+        invalidatesTags: ["card-account-controller"],
+      }),
+      closeAccount: build.mutation<CloseAccountApiResponse, CloseAccountApiArg>(
+        {
+          query: (queryArg) => ({
+            url: `/core-api/cardaccount/close/${queryArg.accountId}`,
+            method: "POST",
+          }),
+          invalidatesTags: ["card-account-controller"],
+        },
+      ),
+      getTransactionOperations: build.query<
+        GetTransactionOperationsApiResponse,
+        GetTransactionOperationsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/core-api/transactions/${queryArg.accountId}`,
+          params: {
+            pageIndex: queryArg.pageIndex,
+            pageSize: queryArg.pageSize,
+          },
+        }),
+        providesTags: ["transaction-operation-controller"],
+      }),
+      getUserCardAccount: build.query<
+        GetUserCardAccountApiResponse,
+        GetUserCardAccountApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/core-api/cardaccount/${queryArg.accountId}`,
+        }),
+        providesTags: ["card-account-controller"],
+      }),
+      checkAccountExists: build.query<
+        CheckAccountExistsApiResponse,
+        CheckAccountExistsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/core-api/cardaccount/exists/${queryArg.accountId}`,
+        }),
+        providesTags: ["card-account-controller"],
+      }),
+      getUserCardAccounts: build.query<
+        GetUserCardAccountsApiResponse,
+        GetUserCardAccountsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/core-api/cardaccount/all/${queryArg.userId}`,
+          params: {
+            pageIndex: queryArg.pageIndex,
+            pageSize: queryArg.pageSize,
+          },
+        }),
+        providesTags: ["card-account-controller"],
+      }),
+      editCreditRule: build.mutation<
+        EditCreditRuleApiResponse,
+        EditCreditRuleApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/credit-service/credit_rule/${queryArg.creditRuleId}/edit`,
+          method: "PUT",
+          body: queryArg.creditRuleDto,
+        }),
+        invalidatesTags: ["credit-rule-controller"],
+      }),
+      createCreditRule: build.mutation<
+        CreateCreditRuleApiResponse,
+        CreateCreditRuleApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/credit-service/credit_rule/create`,
+          method: "POST",
+          body: queryArg.creditRuleDto,
+        }),
+        invalidatesTags: ["credit-rule-controller"],
+      }),
+      makeEnrollment: build.mutation<
+        MakeEnrollmentApiResponse,
+        MakeEnrollmentApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/credit-service/credit/${queryArg.cardAccountId}/enrollment`,
+          method: "POST",
+          params: {
+            money: queryArg.money,
+          },
+        }),
+        invalidatesTags: ["credit-controller"],
+      }),
+      createCredit: build.mutation<CreateCreditApiResponse, CreateCreditApiArg>(
+        {
+          query: (queryArg) => ({
+            url: `/credit-service/credit/create`,
+            method: "POST",
+            body: queryArg.creditCreateModelDto,
+          }),
+          invalidatesTags: ["credit-controller"],
+        },
+      ),
+      getCreditRuleById: build.query<
+        GetCreditRuleByIdApiResponse,
+        GetCreditRuleByIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/credit-service/credit_rule/${queryArg.creditRuleId}/get_by_id`,
+        }),
+        providesTags: ["credit-rule-controller"],
+      }),
+      getAllCreditRules: build.query<
+        GetAllCreditRulesApiResponse,
+        GetAllCreditRulesApiArg
+      >({
+        query: () => ({ url: `/credit-service/credit_rule/get_all` }),
+        providesTags: ["credit-rule-controller"],
+      }),
+      getByUserId: build.query<GetByUserIdApiResponse, GetByUserIdApiArg>({
+        query: (queryArg) => ({
+          url: `/credit-service/credit/${queryArg.userId}/get_by_user_id`,
+        }),
+        providesTags: ["credit-controller"],
+      }),
+      getByCardAccountId: build.query<
+        GetByCardAccountIdApiResponse,
+        GetByCardAccountIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/credit-service/credit/${queryArg.cardAccountId}/get_by_card_account`,
+        }),
+        providesTags: ["credit-controller"],
+      }),
+      deleteCreditRule: build.mutation<
+        DeleteCreditRuleApiResponse,
+        DeleteCreditRuleApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/credit-service/credit_rule/${queryArg.creditRuleId}/delete`,
+          method: "DELETE",
+        }),
+        invalidatesTags: ["credit-rule-controller"],
+      }),
+      deleteCredit: build.mutation<DeleteCreditApiResponse, DeleteCreditApiArg>(
+        {
+          query: (queryArg) => ({
+            url: `/credit-service/credit/${queryArg.creditId}/delete`,
+            method: "DELETE",
+          }),
+          invalidatesTags: ["credit-controller"],
+        },
+      ),
+    }),
+    overrideExisting: false,
+  });
+export { injectedRtkApi as generatedPublicApi };
+export type EditUserApiResponse = unknown;
+export type EditUserApiArg = {
+  id: string;
+  userEditModelDto: UserEditModelDto;
+};
+export type EditUser1ApiResponse = unknown;
+export type EditUser1ApiArg = {
+  userEditModelDto: UserEditModelDto;
+};
+export type GetAllUsersApiResponse = /** status 200 OK */ UserDto[];
+export type GetAllUsersApiArg = void;
+export type GetUserByIdApiResponse = /** status 200 OK */ UserDto;
+export type GetUserByIdApiArg = {
+  id: string;
+};
+export type DeleteUserByIdApiResponse = unknown;
+export type DeleteUserByIdApiArg = {
+  id: string;
+};
+export type IsUserActiveByIdApiResponse = /** status 200 OK */ boolean;
+export type IsUserActiveByIdApiArg = {
+  id: string;
+};
+export type GetUserById1ApiResponse = /** status 200 OK */ UserDto;
+export type GetUserById1ApiArg = {
+  id: string;
+  "X-API-KEY": string;
+};
+export type GetUserApiResponse = /** status 200 OK */ UserDto;
+export type GetUserApiArg = void;
+export type WithdrawMoneyApiResponse = unknown;
+export type WithdrawMoneyApiArg = {
+  withdrawDto: WithdrawDto;
+};
+export type EnrollMoneyApiResponse = unknown;
+export type EnrollMoneyApiArg = {
+  enrollDto: EnrollDto;
+};
+export type OpenAccountApiResponse = /** status 200 OK */ CardAccount;
+export type OpenAccountApiArg = {
+  userId: string;
+  cardAccountCreateModelDto: CardAccountCreateModelDto;
+};
+export type CloseAccountApiResponse = /** status 200 OK */ boolean;
+export type CloseAccountApiArg = {
+  accountId: string;
+};
+export type GetTransactionOperationsApiResponse =
+  /** status 200 OK */ PageTransactionOperation;
+export type GetTransactionOperationsApiArg = {
+  accountId: string;
+  pageIndex?: number;
+  pageSize?: number;
+};
+export type GetUserCardAccountApiResponse = /** status 200 OK */ CardAccount;
+export type GetUserCardAccountApiArg = {
+  accountId: string;
+};
+export type CheckAccountExistsApiResponse = /** status 200 OK */ boolean;
+export type CheckAccountExistsApiArg = {
+  accountId: string;
+};
+export type GetUserCardAccountsApiResponse =
+  /** status 200 OK */ PageCardAccount;
+export type GetUserCardAccountsApiArg = {
+  userId: string;
+  pageIndex?: number;
+  pageSize?: number;
+};
+export type EditCreditRuleApiResponse = /** status 200 OK */ CreditRule;
+export type EditCreditRuleApiArg = {
+  creditRuleId: string;
+  creditRuleDto: CreditRuleDto;
+};
+export type CreateCreditRuleApiResponse = /** status 200 OK */ CreditRule;
+export type CreateCreditRuleApiArg = {
+  creditRuleDto: CreditRuleDto;
+};
+export type MakeEnrollmentApiResponse = /** status 200 OK */ Credit;
+export type MakeEnrollmentApiArg = {
+  cardAccountId: string;
+  money: number;
+};
+export type CreateCreditApiResponse = /** status 200 OK */ Credit;
+export type CreateCreditApiArg = {
+  creditCreateModelDto: CreditCreateModelDto;
+};
+export type GetCreditRuleByIdApiResponse = /** status 200 OK */ CreditRule;
+export type GetCreditRuleByIdApiArg = {
+  creditRuleId: string;
+};
+export type GetAllCreditRulesApiResponse = /** status 200 OK */ CreditRule[];
+export type GetAllCreditRulesApiArg = void;
+export type GetByUserIdApiResponse = /** status 200 OK */ Credit[];
+export type GetByUserIdApiArg = {
+  userId: string;
+};
+export type GetByCardAccountIdApiResponse = /** status 200 OK */ Credit;
+export type GetByCardAccountIdApiArg = {
+  cardAccountId: string;
+};
+export type DeleteCreditRuleApiResponse = unknown;
+export type DeleteCreditRuleApiArg = {
+  creditRuleId: string;
+};
+export type DeleteCreditApiResponse = unknown;
+export type DeleteCreditApiArg = {
+  creditId: string;
+};
+export type BffErrorBody = {
+  message?: string;
+  code?: string;
+  fieldErrors?: {
+    [key: string]: string[];
+  };
+};
+export type UserEditModelDto = {
+  name: string;
+  newRoles?: ("CLIENT" | "WORKER")[];
+};
+export type UserDto = {
+  id: string;
+  name: string;
+  email: string;
+  roles?: ("CLIENT" | "WORKER" | "BLOCKED_CLIENT" | "BLOCKED_WORKER")[];
+  active?: boolean;
+};
+export type WithdrawDto = {
+  cardAccountId?: string;
+  sum?: number;
+  destination?: string;
+};
+export type Currency = "DOLLAR" | "EURO" | "RUBLE";
+export type MoneyValueDto = {
+  value?: number;
+  currency?: Currency;
+};
+export type EnrollDto = {
+  cardAccountId?: string;
+  money?: MoneyValueDto;
+  destination?: string;
+};
+export type TransactionOperation = {
+  id?: string;
+  cardAccountId?: string;
+  dateTime?: string;
+  transactionType?: "WITHDRAWAL" | "ENROLLMENT";
+  transactionActoin?: string;
+  transactionStatus?: "COMPLETE" | "IN_PROGRESS" | "DECLINED";
+  money?: MoneyValueDto;
+};
+export type CardAccount = {
+  id?: string;
+  userId?: string;
+  money?: MoneyValueDto;
+  deleted?: boolean;
+  transactionOperations?: TransactionOperation[];
+};
+export type CardAccountCreateModelDto = {
+  name?: string;
+  currency?: Currency;
+};
+export type SortObject = {
+  empty?: boolean;
+  sorted?: boolean;
+  unsorted?: boolean;
+};
+export type PageableObject = {
+  offset?: number;
+  sort?: SortObject;
+  paged?: boolean;
+  unpaged?: boolean;
+  pageNumber?: number;
+  pageSize?: number;
+};
+export type PageTransactionOperation = {
+  totalPages?: number;
+  totalElements?: number;
+  size?: number;
+  content?: TransactionOperation[];
+  number?: number;
+  sort?: SortObject;
+  numberOfElements?: number;
+  first?: boolean;
+  last?: boolean;
+  pageable?: PageableObject;
+  empty?: boolean;
+};
+export type PageCardAccount = {
+  totalPages?: number;
+  totalElements?: number;
+  size?: number;
+  content?: CardAccount[];
+  number?: number;
+  sort?: SortObject;
+  numberOfElements?: number;
+  first?: boolean;
+  last?: boolean;
+  pageable?: PageableObject;
+  empty?: boolean;
+};
+export type CreditRule = {
+  id?: string;
+  percentageStrategy?: "FROM_REMAINING_DEBT" | "FROM_TOTAL_DEBT";
+  collectionPeriodSeconds?: number;
+  openingDate?: string;
+  ruleName?: string;
+  percentage?: number;
+};
+export type CreditRuleDto = {
+  percentageStrategy?: "FROM_REMAINING_DEBT" | "FROM_TOTAL_DEBT";
+  collectionPeriodSeconds?: number;
+  openingDate?: string;
+  ruleName?: string;
+  percentage?: number;
+};
+export type Credit = {
+  id?: string;
+  userId?: string;
+  cardAccount?: string;
+  lastInterestUpdate?: string;
+  currentDebtSum?: number;
+  initialDebt?: number;
+  interestDebtSum?: number;
+  currency?: Currency;
+  creditRule?: CreditRule;
+};
+export type CreditCreateModelDto = {
+  userId?: string;
+  cardAccount?: string;
+  creditRuleId?: string;
+  money?: MoneyValueDto;
+};
+export const {
+  useEditUserMutation,
+  useEditUser1Mutation,
+  useGetAllUsersQuery,
+  useGetUserByIdQuery,
+  useDeleteUserByIdMutation,
+  useIsUserActiveByIdQuery,
+  useGetUserById1Query,
+  useGetUserQuery,
+  useWithdrawMoneyMutation,
+  useEnrollMoneyMutation,
+  useOpenAccountMutation,
+  useCloseAccountMutation,
+  useGetTransactionOperationsQuery,
+  useGetUserCardAccountQuery,
+  useCheckAccountExistsQuery,
+  useGetUserCardAccountsQuery,
+  useEditCreditRuleMutation,
+  useCreateCreditRuleMutation,
+  useMakeEnrollmentMutation,
+  useCreateCreditMutation,
+  useGetCreditRuleByIdQuery,
+  useGetAllCreditRulesQuery,
+  useGetByUserIdQuery,
+  useGetByCardAccountIdQuery,
+  useDeleteCreditRuleMutation,
+  useDeleteCreditMutation,
+} = injectedRtkApi;

@@ -7,7 +7,7 @@ import type {
 import {
   createBffFetchBaseQuery,
   type BffClientOptions,
-} from "../../lib/bff-fetch-base-query.js";
+} from "../../lib/bff-fetch-base-query";
 
 let bffOptions: BffClientOptions = { baseUrl: "/" };
 
@@ -23,7 +23,7 @@ const ssoBaseQuery: BaseQueryFn<
 > = (args, api, extraOptions) =>
   createBffFetchBaseQuery(bffOptions)(args, api, extraOptions);
 
-export const api = createApi({
+export const emptySplitApi = createApi({
   reducerPath: "finsSsoApi",
   baseQuery: ssoBaseQuery,
   endpoints: () => ({}),
