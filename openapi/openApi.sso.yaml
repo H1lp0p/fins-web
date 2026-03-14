@@ -1,0 +1,186 @@
+openapi: 3.0.1
+info:
+  title: Bank API — SSO / auth (браузер ↔ BFF)
+  description: >
+    Только `/user-service/auth/*`. Контракт между SSO SPA и BFF: сессия в httpOnly-куках, JWT на шлюз бекенда
+    добавляет только BFF. Полный контракт шлюза — openApi.backend-gateway.yaml; остальные пути — openApi.public.yaml.
+  version: "1.0"
+servers:
+  - url: http://localhost:8000/api
+    description: Base URL BFF для SSO (не прямой шлюз бекенда).
+paths:
+  /user-service/auth/revoke:
+    post:
+      tags:
+        - Auth
+      operationId: authRevoke
+      security:
+        - BffSessionCookie: []
+      description: >
+        Завершение сессии на BFF по httpOnly-куке; тело запроса не требуется.
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /user-service/auth/register:
+    post:
+      tags:
+        - Auth
+      operationId: authRegister
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SsoRegisterBody'
+        required: true
+      responses:
+        '200':
+          description: >
+            Успешная регистрация: BFF выставляет сессионные httpOnly-куки; тело ответа без JWT (JWT остаётся на уровне BFF ↔ шлюз).
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /user-service/auth/login:
+    post:
+      tags:
+        - Auth
+      operationId: authLogin
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SsoLoginBody'
+        required: true
+      responses:
+        '200':
+          description: >
+            Успешный вход: BFF выставляет сессионные httpOnly-куки; тело ответа без JWT.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /user-service/auth/validate:
+    get:
+      tags:
+        - Auth
+      operationId: authValidateSession
+      security:
+        - BffSessionCookie: []
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  schemas:
+    SsoRegisterBody:
+      required:
+        - email
+        - name
+        - password
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          maxLength: 255
+          minLength: 6
+          type: string
+    SsoLoginBody:
+      required:
+        - email
+        - password
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          maxLength: 255
+          minLength: 6
+          type: string
+    BffErrorBody:
+      type: object
+      description: Обобщённое тело ошибки (BFF/шлюз; фактический JSON может отличаться).
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+  responses:
+    BadRequest:
+      description: Некорректный запрос (синтаксис, параметры пути/запроса).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BffErrorBody'
+    Unauthorized:
+      description: Нет или недействительная аутентификация (сессия, JWT, API-ключ).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BffErrorBody'
+    Forbidden:
+      description: Доступ запрещён (недостаточно прав).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BffErrorBody'
+    UnprocessableEntity:
+      description: Ошибка валидации тела запроса или бизнес-правил.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BffErrorBody'
+    InternalServerError:
+      description: Внутренняя ошибка сервера.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BffErrorBody'
+  securitySchemes:
+    BffSessionCookie:
+      type: apiKey
+      in: cookie
+      name: fins_session
+      description: >
+        Сессия SSO с BFF (httpOnly и т.д.); имя куки задаёт BFF. Плейсхолдер `fins_session` замените на фактическое.

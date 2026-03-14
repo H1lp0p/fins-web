@@ -2,8 +2,13 @@
   "name": "fins-monorepo",
   "private": true,
   "packageManager": "pnpm@9.15.4",
+  "pnpm": {
+    "overrides": {
+      "typescript": "~5.7.3"
+    }
+  },
   "scripts": {
-    "build": "pnpm --filter @fins/ui-kit build && pnpm --filter \"./apps/*\" build",
+    "build": "pnpm --filter @fins/ui-kit build && pnpm --filter @fins/api build && pnpm --filter \"./apps/*\" build",
     "dev:sso": "pnpm --filter @fins/sso dev",
     "dev:user": "pnpm --filter @fins/user dev",
     "dev:admin": "pnpm --filter @fins/admin dev"
