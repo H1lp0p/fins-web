@@ -9,7 +9,7 @@ interface InputProps {
     value?: string;
     onChange?: (value: string) => void;
     isValid?: boolean;
-    charReplacement?: string;
+    type?: string;
     textClassName?: TextStyleType;
     trailingChar?: DEFAULT_CHARS;
 }
@@ -20,7 +20,7 @@ export function Input({
     value = undefined,
     onChange = () => {},
     isValid = true,
-    charReplacement,
+    type = "text",
     textClassName = "text-info",
     trailingChar,
 }: InputProps) {
@@ -28,13 +28,6 @@ export function Input({
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         onChange(e.target.value);
     };
-
-    const valueToDisplay = 
-        charReplacement 
-            ? value && value.length > 0
-                ? charReplacement.repeat(value.length)
-                : undefined
-            : value;
 
     const inputTextColor = 
         isValid === true 
@@ -48,9 +41,9 @@ export function Input({
             <span className="color-info">/</span>
             <input 
                 className={`${inputTextColor} ${textClassName}`}
-                type="text"
+                type={type}
                 placeholder={placeholder}
-                value={valueToDisplay}
+                value={value}
                 onChange={handleChange}
             />
             {trailingChar && (
