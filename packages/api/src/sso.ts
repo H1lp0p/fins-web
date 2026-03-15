@@ -9,3 +9,7 @@ export {
   mapBffErrorFromBody,
   tryParseBffError,
 } from "./entities/bff-error";
+export type { SsoRegistrationFormInput } from "./forms/validate-sso-register";
+export { validateSsoRegistrationForm } from "./forms/validate-sso-register";
+export type { SsoLoginFormInput } from "./forms/validate-sso-login";
+export { validateSsoLoginForm } from "./forms/validate-sso-login";
