@@ -16,17 +16,17 @@ export function InfoMessage({ type, title, text }: Message) {
 
     return (
         <div 
-            className={`info-message ${textColor} ph-max pv-max gap-mid`}
+            className={`info-message ${textColor}`}
             style={{ display: "flex", flexDirection: "column", alignItems: "start"}}
         >
             <div 
                 className="gap-min"
                 style={{ display: "flex", flexDirection: "row", alignItems: "start"}}
             >
-                <span className="color-info">{prefix}</span>
-                <span className="color-info">{title}</span>
+                <span>{prefix}</span>
+                <span>{title}</span>
             </div>
-            <span className="color-info">{text}</span>
+            <span>{text}</span>
         </div>
     )
 }

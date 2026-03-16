@@ -3,9 +3,19 @@ import {
   useAuthLoginMutation,
   validateSsoLoginForm,
 } from "@fins/api/sso";
-import { Input, LinkButton, OnBlurContainer, type Message } from "@fins/ui-kit";
+import {
+  Input,
+  LinkButton,
+  OnBlurContainer,
+  useMessageStack,
+  type Message,
+} from "@fins/ui-kit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useState } from "react";
+import {
+  fieldErrorsToStyledMessages,
+  serverReturnedLine,
+} from "../../lib/ssoValidationMessages";
 
 export const SSO_LOGIN_FORM_ID = "sso-login-form";
 
@@ -16,30 +26,8 @@ interface LoginFormProps {
 
 type FieldKey = "email" | "password";
 
-const FIELD_LABEL: Record<FieldKey, string> = {
-  email: "Email",
-  password: "Пароль",
-};
-
 function allFieldsValid(): Record<FieldKey, boolean> {
   return { email: true, password: true };
-}
-
-function fieldErrorsToValidationMessages(
-  fieldErrors: Record<string, string[]>,
-): Message[] {
-  const list: Message[] = [];
-  for (const [key, messages] of Object.entries(fieldErrors)) {
-    const label = FIELD_LABEL[key as FieldKey] ?? key;
-    for (const text of messages) {
-      list.push({
-        type: "error",
-        title: "ValidationError",
-        text: `${label}: ${text}`,
-      });
-    }
-  }
-  return list;
 }
 
 function asFetchBaseQueryError(
@@ -58,15 +46,20 @@ export function LoginForm({ className, style }: LoginFormProps) {
   const [fieldValid, setFieldValid] = useState<Record<FieldKey, boolean>>(
     allFieldsValid,
   );
-  const [validationMessages, setValidationMessages] = useState<Message[]>([]);
 
+  const { pushMessage } = useMessageStack();
   const [login] = useAuthLoginMutation();
+
+  const pushMessages = (messages: Message[]) => {
+    for (const m of messages) {
+      pushMessage(m);
+    }
+  };
 
   const applyClientValidation = () => {
     const result = validateSsoLoginForm({ email, password });
     if (result.ok) {
       setFieldValid(allFieldsValid());
-      setValidationMessages([]);
       return result.value;
     }
     const keys = Object.keys(result.fieldErrors) as FieldKey[];
@@ -74,7 +67,7 @@ export function LoginForm({ className, style }: LoginFormProps) {
       email: !keys.includes("email"),
       password: !keys.includes("password"),
     });
-    setValidationMessages(fieldErrorsToValidationMessages(result.fieldErrors));
+    pushMessages(fieldErrorsToStyledMessages(result.fieldErrors, "login"));
     return null;
   };
 
@@ -92,7 +85,6 @@ export function LoginForm({ className, style }: LoginFormProps) {
       setEmail("");
       setPassword("");
       setFieldValid(allFieldsValid());
-      setValidationMessages([]);
     } catch (err) {
       const fe = asFetchBaseQueryError(err);
       if (fe !== undefined) {
@@ -103,25 +95,27 @@ export function LoginForm({ className, style }: LoginFormProps) {
           email: !keys.includes("email"),
           password: !keys.includes("password"),
         });
-        const fromServer = fieldErrorsToValidationMessages(feMap);
+        const fromServer = fieldErrorsToStyledMessages(feMap, "login");
         if (fromServer.length > 0) {
-          setValidationMessages(fromServer);
+          pushMessages(fromServer);
         } else {
-          const text =
-            bff?.message ?? bff?.code ?? "Не удалось войти";
-          setValidationMessages([
-            { type: "error", title: "ValidationError", text },
-          ]);
+          pushMessage({
+            type: "error",
+            title: "ValidationError",
+            text:
+              bff?.message ??
+              serverReturnedLine(fe) ??
+              bff?.code ??
+              "Property {Login} doesn't fit requirements",
+          });
         }
       } else {
         setFieldValid(allFieldsValid());
-        setValidationMessages([
-          {
-            type: "error",
-            title: "NetworkError",
-            text: "Сеть или сервер недоступны",
-          },
-        ]);
+        pushMessage({
+          type: "error",
+          title: "NetworkError",
+          text: "Property {Network} doesn't fit requirements",
+        });
       }
     }
   };
@@ -130,7 +124,6 @@ export function LoginForm({ className, style }: LoginFormProps) {
     <div className={className} style={style}>
       <form
         id={SSO_LOGIN_FORM_ID}
-        data-validation-messages-count={validationMessages.length}
         onSubmit={onSubmit}
         style={{
           display: "flex",
