@@ -32,8 +32,19 @@ corepack prepare pnpm@9.15.4 --activate
 | [apps/admin](apps/admin) | `@fins/admin` — клиент администратора; в `src/` слои FSD |
 | [services/bff](services/bff) | FastAPI: `/api`, `GET /health`, раздача **собранного** SSO из `static/sso/` |
 | [deploy/](deploy/) | `Dockerfile.*`, nginx, `docker-compose.yml` |
+| [openapi/](openapi/) | OpenAPI (и позже AsyncAPI) — контракты и кодогенерация |
 
 Корневой [tsconfig.base.json](tsconfig.base.json) расширяют приложения и ui-kit.
+
+### Контракты и кодогенерация
+
+После правок YAML в [openapi/](openapi/) пересобери клиент RTK:
+
+```bash
+pnpm run generate:contracts
+```
+
+Сейчас команда запускает RTK codegen, **Python-клиент BFF → шлюз** и **Pydantic-модели** по объединённому контракту браузер → BFF (`generate:bff:upstream`, `generate:bff:browser-models`). В `services/bff` для Python-шагов нужно `pip install -e ".[dev]"`. Типы WebSocket (история операций): импорт `import { … } from "@fins/api/ws"`, см. [openapi/README.md](openapi/README.md).
 
 ### Feature-Sliced Design (`apps/*`)
 

@@ -1,0 +1,8 @@
+# Конфиг для: openapi-python-client generate --config openapi-python-client.upstream.yaml ...
+project_name_override: fins-upstream-client
+package_name_override: fins_upstream
+# Без ruff в окружении генератор не должен падать
+post_hooks: []
+# В спеке шлюза для многих ответов указан */* — иначе клиент не парсит тела
+content_type_overrides:
+  "*/*": application/json

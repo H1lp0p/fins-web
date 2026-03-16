@@ -2,6 +2,8 @@
 
 FastAPI: JSON API и раздача собранного SSO (`static/sso`).
 
+Контракты OpenAPI/AsyncAPI и **матрица кодогенерации** (клиент RTK, будущие артефакты BFF и WS): [openapi/README.md](../../openapi/README.md). Из корня монорепо: `pnpm run generate:contracts` (сейчас прогоняет только `@fins/api`).
+
 Шаблон переменных окружения: [.env.example](.env.example) (скопируй в `.env` в этом каталоге, когда начнёшь читать настройки из env).
 
 ## Зависимости
@@ -10,8 +12,42 @@ FastAPI: JSON API и раздача собранного SSO (`static/sso`).
 cd services/bff
 python -m venv .venv
 .venv\Scripts\activate   # Windows
-pip install -e .
+pip install -e ".[dev]"
 ```
+
+`[dev]` нужен для **`openapi-python-client`** (пересборка upstream-клиента). Для только запуска BFF достаточно `pip install -e .`.
+
+### Клиент BFF → шлюз (codegen)
+
+Источник: [openapi/openApi.backend-gateway.yaml](../../openapi/openApi.backend-gateway.yaml). Конфиг генератора: [openapi-python-client.upstream.yaml](./openapi-python-client.upstream.yaml) (в т.ч. маппинг `*/*` → `application/json` из‑за ответов в спеке).
+
+Из корня монорепо:
+
+```bash
+pnpm run generate:bff:upstream
+```
+
+Или из `services/bff` (после `pip install -e ".[dev]"`):
+
+```bash
+python scripts/generate_upstream_client.py
+```
+
+Артефакт: [generated/upstream/](generated/upstream/) — `from generated.upstream import Client, AuthenticatedClient`, базовый URL шлюза задаётся при создании клиента (`base_url` из env).
+
+### Pydantic-модели контракта браузер → BFF
+
+Слияние [openApi.public.yaml](../../openapi/openApi.public.yaml) + [openApi.sso.yaml](../../openapi/openApi.sso.yaml) → [openapi/bundles/openApi.bff.browser.yaml](../../openapi/bundles/openApi.bff.browser.yaml) (скрипт [scripts/merge_browser_openapi.py](./scripts/merge_browser_openapi.py)), затем `datamodel-code-generator` → один файл моделей:
+
+Из корня монорепо:
+
+```bash
+pnpm run generate:bff:browser-models
+```
+
+Импорт в BFF: `from generated.bff_browser_models import UserDto, SsoLoginBody, PageTransactionOperation, …`
+
+Контракт WebSocket истории операций: [openapi/asyncApi.transactions.yaml](../../openapi/asyncApi.transactions.yaml) (канал `transactionsStream`, URL `/api/ws/transactions`). На фронте типы: **`@fins/api/ws`**. Для Python BFF отдельный кодген из AsyncAPI пока не подключаем (Modelina `--pyDantic` даёт невалидный код); пересечения с REST — из `generated.bff_browser_models`.
 
 ## Статика SSO
 
@@ -27,4 +63,9 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 - `GET /health` — проверка живости
 - `GET /api/v1/ping` — тест API
+- **SSO (моки):** `POST /api/user-service/auth/register`, `POST /api/user-service/auth/login`, `GET /api/user-service/auth/validate`, `POST /api/user-service/auth/revoke` — cookie `fins_session` (имя из [.env.example](.env.example) / `SESSION_COOKIE_NAME`)
+- **Публичный REST (моки):** пути из [openApi.public.yaml](../../openapi/openApi.public.yaml) под префиксом `/api` — user-service, core-api, credit-service; сессия для большинства маршрутов; internal user — `X-API-KEY` + `BFF_SERVICE_API_KEY` в [.env.example](.env.example)
+- **WebSocket:** `WS /api/ws/transactions` — после входа cookie `subscribe` / `unsubscribe` по контракту [asyncApi.transactions.yaml](../../openapi/asyncApi.transactions.yaml); push новых операций после `withdraw` / `enroll`
 - `GET /` — SPA SSO, если `static/sso` существует
+
+CORS для dev: список origins в `CORS_ORIGINS` (см. `.env.example`); для `credentials: include` нельзя использовать `*`.
