@@ -14,6 +14,10 @@
     "./sso": {
       "types": "./dist/sso.d.ts",
       "import": "./dist/sso.js"
+    },
+    "./ws": {
+      "types": "./dist/ws.d.ts",
+      "import": "./dist/ws.js"
     }
   },
   "files": [
@@ -22,7 +26,8 @@
   "sideEffects": false,
   "scripts": {
     "bundle:openapi": "redocly bundle ../../openapi/openApi.public.yaml -o openapi-bundle/public.bundle.yaml && redocly bundle ../../openapi/openApi.sso.yaml -o openapi-bundle/sso.bundle.yaml",
-    "generate:api": "pnpm run bundle:openapi && rtk-query-codegen-openapi openapi-codegen.public.cjs && rtk-query-codegen-openapi openapi-codegen.sso.cjs",
+    "generate:ws-types": "modelina generate typescript ../../openapi/asyncApi.transactions.yaml -o src/generated/ws --tsModelType interface --tsExportType named --tsRawPropertyNames && node scripts/patch-ws-modelina-output.mjs",
+    "generate:api": "pnpm run bundle:openapi && rtk-query-codegen-openapi openapi-codegen.public.cjs && rtk-query-codegen-openapi openapi-codegen.sso.cjs && pnpm run generate:ws-types",
     "build": "vite build"
   },
   "peerDependencies": {
@@ -32,6 +37,7 @@
     "react-redux": "^9.2.0"
   },
   "devDependencies": {
+    "@asyncapi/modelina-cli": "^5.0.0",
     "@redocly/cli": "^2.24.1",
     "@reduxjs/toolkit": "^2.5.0",
     "@rtk-query/codegen-openapi": "^2.2.0",

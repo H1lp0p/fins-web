@@ -29,6 +29,7 @@ export default defineConfig({
       entry: {
         index: resolve(rootDir, "src/index.ts"),
         sso: resolve(rootDir, "src/sso.ts"),
+        ws: resolve(rootDir, "src/ws.ts"),
       },
       formats: ["es"],
       fileName: (format, entryName) => `${entryName}.js`,
