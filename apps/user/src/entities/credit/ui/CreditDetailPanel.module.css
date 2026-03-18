@@ -1,0 +1,38 @@
+.scroll {
+  box-sizing: border-box;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.section {
+  margin-bottom: 1.25rem;
+}
+
+.sectionTitle {
+  margin: 0 0 0.5rem;
+}
+
+.debtRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.lastRepayRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.accountCardInner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.accountLabel {
+  font-size: 0.9em;
+}

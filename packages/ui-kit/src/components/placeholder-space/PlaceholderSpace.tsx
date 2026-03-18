@@ -1,7 +1,12 @@
 import { BluredContainer } from "../blured-container/BluredContainer";
 import { Logo } from "../logo/Logo";
 
-export function PlaceholderSpace() {
+type PlaceholderSpaceProps = {
+    /** В сетках вроде RectSpaceLayout — меньше логотип, без «шторы» на весь ряд. */
+    compact?: boolean;
+};
+
+export function PlaceholderSpace({ compact = false }: PlaceholderSpaceProps) {
     return (
         <BluredContainer
                 style={{
@@ -11,8 +16,11 @@ export function PlaceholderSpace() {
                     alignItems: "center",
                     width: "100%",
                     height: "100%",
+                    minHeight: 0,
+                    boxSizing: "border-box",
+                    overflow: "hidden",
                 }}>
-                    <Logo textStyle="text-giant"/>
+                    <Logo textStyle={compact ? "text-title" : "text-giant"}/>
                 </BluredContainer>
     );
 }

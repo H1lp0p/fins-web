@@ -7,14 +7,22 @@ interface LinkButtonProps {
     onClick: () => void;
     variant?: LinkButtonVariant;
     textClassName?: TextStyleType;
+    disabled?: boolean;
 }
 
-export function LinkButton({ text, onClick, variant = "info", textClassName = "text-info" }: LinkButtonProps) {
+export function LinkButton({ text, onClick, variant = "info", textClassName = "text-info", disabled = false }: LinkButtonProps) {
+    
+    const handleClick = () => {
+        if (disabled) return;
+        onClick();
+    };
+    
     return (
         <span 
             data-variant={variant} 
             className={`fins-link-button ${textClassName}`} 
-            onClick={onClick}
+            onClick={handleClick}
+            data-disabled={disabled}
         >
             [{text}]
         </span>

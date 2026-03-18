@@ -2,7 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { generatedPublicApi, initPublicBffApi } from "@fins/api";
 
 initPublicBffApi({
-  baseUrl: import.meta.env.VITE_BFF_URL ?? "",
+  baseUrl: import.meta.env.VITE_BFF_URL ?? "/api",
 });
 
 export const store = configureStore({

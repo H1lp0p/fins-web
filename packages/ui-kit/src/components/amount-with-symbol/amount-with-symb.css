@@ -1,5 +1,12 @@
 .amount-with-symbol {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+/* Иначе text-title/text-info тянут letter-spacing на один глиф — визуально «обводка». */
+.amount-with-symbol__symbol {
+    letter-spacing: normal;
 }

@@ -9,6 +9,10 @@ import { mapMoneyFromDto, type Money } from "./money";
 export type CardAccountEntity = {
   id?: string;
   userId?: string;
+  name?: string;
+  main?: boolean;
+  /** false = hidden в UI */
+  visible?: boolean;
   money?: Money;
   deleted?: boolean;
   transactionOperations?: TransactionOperationEntity[];
@@ -60,6 +64,9 @@ export function mapCardAccountFromDto(dto: CardAccount): CardAccountEntity {
   return {
     id: dto.id,
     userId: dto.userId,
+    name: dto.name,
+    main: dto.main,
+    visible: dto.visible,
     money: mapMoneyFromDto(dto.money),
     deleted: dto.deleted,
     transactionOperations: dto.transactionOperations?.map((op) =>

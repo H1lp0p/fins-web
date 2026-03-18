@@ -1,45 +1,59 @@
+/*
+ * Два ряда flex — то же соотношение, что в grid 0.25fr : 1fr (1 : 4):
+ * - верх: flex-grow 1;
+ * - низ: flex-grow 4.
+ * Колонки в каждом ряду: боковые равны, центр чуть шире прежних 1 : 0.5 : 1 → flex 3 : 2 : 3.
+ * Селекторы с префиксом .tri-col-space-layout — не пересекаются с rect-space-layout.
+ */
 .tri-col-space-layout {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: relative;
     z-index: 2;
+    box-sizing: border-box;
 
-    width: 80%;
-    height: 70%;
+    width: 80vw;
+    max-width: 80vw;
+    height: calc(100vh - 5.5rem);
+    max-height: calc(100vh - 5.5rem);
+    margin-inline: auto;
+    padding: var(--fins-max-gap);
 
-    display: grid;
-    grid-template-columns: 1fr .5fr 1fr;
-    grid-template-rows: .25fr 1fr;
-    gap: var(--fins-mid-gap);
+    display: flex;
+    flex-direction: column;
+    gap: var(--fins-min-gap);
+    overflow: hidden;
 }
 
-.top-left-content {
-    grid-column: 1;
-    grid-row: 1;
+.tri-col-space-layout__row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--fins-min-gap);
+    min-width: 0;
+    min-height: 0;
 }
 
-.top-center-content {
-    grid-column: 2;
-    grid-row: 1;
+.tri-col-space-layout__row--top {
+    flex: 1 1 0;
+    min-height: 0;
 }
 
-.top-right-content {
-    grid-column: 3;
-    grid-row: 1;
+.tri-col-space-layout__row--bottom {
+    flex: 4 1 0;
+    min-height: 0;
 }
 
-.bottom-left-content {
-    grid-column: 1;
-    grid-row: 2;
+.tri-col-space-layout__cell {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
 }
 
-.bottom-center-content {
-    grid-column: 2;
-    grid-row: 2;
+.tri-col-space-layout__cell--side {
+    flex: 3 1 0;
 }
 
-.bottom-right-content {
-    grid-column: 3;
-    grid-row: 2;
+.tri-col-space-layout__cell--center {
+    flex: 2 1 0;
 }
