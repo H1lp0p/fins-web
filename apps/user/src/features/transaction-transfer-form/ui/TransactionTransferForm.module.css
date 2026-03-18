@@ -1,0 +1,67 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--fins-min-gap);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+.card {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.amountRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.amountRow :global(.input-container) {
+  flex: 1;
+  min-width: 0;
+}
+
+.chevron {
+  text-align: center;
+  color: var(--fins-color-info, #ccc);
+  font-size: 1rem;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  transform: rotate(90deg);
+  user-select: none;
+}
+
+.rateBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fins-min-gap);
+  align-items: center;
+  text-align: center;
+}
+
+.rateRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.resultLabel {
+  margin: 0 0 var(--fins-min-gap);
+  font-weight: 400;
+}
+
+.resultRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--fins-mid-gap);
+  width: 100%;
+}

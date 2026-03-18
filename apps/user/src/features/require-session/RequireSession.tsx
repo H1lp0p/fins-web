@@ -1,5 +1,6 @@
 import { useGetUserQuery } from "@fins/api";
-import { BgText, useMessageStack } from "@fins/ui-kit";import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { BgText, useMessageStack } from "@fins/ui-kit";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useEffect, useRef, type ReactNode } from "react";
 
 function normalizeSsoOrigin(): string {

@@ -8,6 +8,8 @@ from datetime import UTC, datetime
 from typing import Literal
 from uuid import UUID, uuid4
 
+from app.mock_fx import convert_amount
+
 from generated.bff_browser_models import (
     CardAccount,
     CardAccountCreateModelDto,
@@ -23,6 +25,7 @@ from generated.bff_browser_models import (
     PageableObject,
     SortObject,
     TransactionOperation,
+    TransferMoneyDto,
     UserDto,
     UserEditModelDto,
     WithdrawDto,
@@ -59,6 +62,8 @@ class MockAccount:
     currency_code: Literal["DOLLAR", "EURO", "RUBLE"] = "RUBLE"
     deleted: bool = False
     display_name: str | None = None
+    main: bool = False
+    visible: bool = True
 
 
 class MockStore:
@@ -176,6 +181,8 @@ class MockStore:
             balance=0.0,
             currency_code=cur,
             display_name=body.name,
+            main=False,
+            visible=True,
         )
         with self._lock:
             self._accounts[aid] = acc
@@ -199,7 +206,34 @@ class MockStore:
             if a.user_id != user_id:
                 return False
             a.deleted = True
+            a.main = False
         return True
+
+    def set_main_account(self, account_id: UUID, user_id: UUID) -> CardAccount | None:
+        """None — не найден / чужой / закрыт."""
+        with self._lock:
+            a = self._accounts.get(account_id)
+            if a is None or a.user_id != user_id or a.deleted:
+                return None
+            for acc in self._accounts.values():
+                if acc.user_id == user_id:
+                    acc.main = False
+            a.main = True
+        return self.card_account_dto(account_id, embed_tx=False)
+
+    def set_account_visibility(
+        self,
+        account_id: UUID,
+        user_id: UUID,
+        visible: bool,
+    ) -> CardAccount | None:
+        """None — не найден / чужой / закрыт."""
+        with self._lock:
+            a = self._accounts.get(account_id)
+            if a is None or a.user_id != user_id or a.deleted:
+                return None
+            a.visible = visible
+        return self.card_account_dto(account_id, embed_tx=False)
 
     def card_account_dto(self, account_id: UUID, *, embed_tx: bool) -> CardAccount:
         a = self.get_account(account_id)
@@ -208,9 +242,85 @@ class MockStore:
         return CardAccount(
             id=a.id,
             userId=a.user_id,
+            name=a.display_name,
+            main=a.main,
+            visible=a.visible,
             money=_money(a.balance, a.currency_code),
             deleted=a.deleted,
             transactionOperations=list(txs[-50:]) if txs is not None else None,
+        )
+
+    def _ensure_demo_accounts(self, user_id: UUID) -> None:
+        """Один набор демо-счетов, если у пользователя ещё нет счетов."""
+        if any(a.user_id == user_id for a in self._accounts.values()):
+            return
+        main_id = uuid4()
+        acc_main = MockAccount(
+            id=main_id,
+            user_id=user_id,
+            balance=100_000.0,
+            currency_code="DOLLAR",
+            display_name="Account name",
+            main=True,
+            visible=True,
+        )
+        acc_def = MockAccount(
+            id=uuid4(),
+            user_id=user_id,
+            balance=5_000.0,
+            currency_code="EURO",
+            display_name="Account name",
+            main=False,
+            visible=True,
+        )
+        acc_hid = MockAccount(
+            id=uuid4(),
+            user_id=user_id,
+            balance=1_000.0,
+            currency_code="RUBLE",
+            display_name="Account name",
+            main=False,
+            visible=False,
+        )
+        acc_closed = MockAccount(
+            id=uuid4(),
+            user_id=user_id,
+            balance=0.0,
+            currency_code="DOLLAR",
+            display_name="Account name",
+            main=False,
+            visible=True,
+            deleted=True,
+        )
+        self._accounts[acc_main.id] = acc_main
+        self._accounts[acc_def.id] = acc_def
+        self._accounts[acc_hid.id] = acc_hid
+        self._accounts[acc_closed.id] = acc_closed
+        self._tx.setdefault(main_id, [])
+        self._tx.setdefault(acc_def.id, [])
+        self._tx.setdefault(acc_hid.id, [])
+        self._tx.setdefault(acc_closed.id, [])
+        self._tx[main_id].extend(
+            [
+                TransactionOperation(
+                    id=uuid4(),
+                    cardAccountId=main_id,
+                    dateTime=datetime.now(UTC),
+                    transactionType="ENROLLMENT",
+                    transactionActoin="Simple Enrollment",
+                    transactionStatus="COMPLETE",
+                    money=_money(1000.12, "DOLLAR"),
+                ),
+                TransactionOperation(
+                    id=uuid4(),
+                    cardAccountId=main_id,
+                    dateTime=datetime.now(UTC),
+                    transactionType="WITHDRAWAL",
+                    transactionActoin="Simple withdrawal",
+                    transactionStatus="COMPLETE",
+                    money=_money(1000.12, "DOLLAR"),
+                ),
+            ],
         )
 
     def list_accounts_page(
@@ -220,7 +330,8 @@ class MockStore:
         page_size: int,
     ) -> PageCardAccount:
         with self._lock:
-            rows = [a for a in self._accounts.values() if a.user_id == user_id and not a.deleted]
+            self._ensure_demo_accounts(user_id)
+            rows = [a for a in self._accounts.values() if a.user_id == user_id]
         rows.sort(key=lambda x: str(x.id))
         total = len(rows)
         total_pages = (total + page_size - 1) // page_size if total else 0
@@ -341,6 +452,111 @@ class MockStore:
             self._tx.setdefault(body.cardAccountId, []).append(op)
             return "ok", op
 
+    def transfer_money(
+        self,
+        user_id: UUID,
+        body: TransferMoneyDto,
+    ) -> tuple[
+        Literal["ok", "bad", "forbidden", "funds", "not_found"],
+        list[tuple[UUID, TransactionOperation]],
+    ]:
+        """Перевод: withdraw на from (если есть), enroll / погашение на цель. Сумма в amountCurrency."""
+        broadcast: list[tuple[UUID, TransactionOperation]] = []
+        raw_amt = body.amount
+        if raw_amt is None or raw_amt <= 0:
+            return "bad", []
+
+        amt_cur: Literal["DOLLAR", "EURO", "RUBLE"] = body.amountCurrency.root
+
+        with self._lock:
+            if body.targetKind == "ACCOUNT":
+                if body.targetCardAccountId is None:
+                    return "bad", []
+                tid = body.targetCardAccountId
+                to_acc = self._accounts.get(tid)
+                if to_acc is None or to_acc.deleted:
+                    return "not_found", []
+            else:
+                if body.targetCreditId is None:
+                    return "bad", []
+                cr = self._credits.get(body.targetCreditId)
+                if cr is None or cr.userId != user_id:
+                    return "forbidden", []
+                if cr.cardAccount is None:
+                    return "bad", []
+                linked_id = cr.cardAccount
+                to_acc = self._accounts.get(linked_id)
+                if to_acc is None or to_acc.deleted:
+                    return "not_found", []
+
+            if body.fromCardAccountId is not None:
+                fid = body.fromCardAccountId
+                if body.targetKind == "ACCOUNT" and fid == body.targetCardAccountId:
+                    return "bad", []
+                from_acc = self._accounts.get(fid)
+                if from_acc is None or from_acc.user_id != user_id or from_acc.deleted:
+                    return "forbidden", []
+                debit = convert_amount(raw_amt, amt_cur, from_acc.currency_code)
+                if from_acc.balance < debit:
+                    return "funds", []
+                w_action = "payback" if body.targetKind == "CREDIT" else "Transaction"
+                from_acc.balance -= debit
+                wop = TransactionOperation(
+                    id=uuid4(),
+                    cardAccountId=fid,
+                    dateTime=datetime.now(UTC),
+                    transactionType="WITHDRAWAL",
+                    transactionActoin=w_action,
+                    transactionStatus="COMPLETE",
+                    money=_money(debit, from_acc.currency_code),
+                )
+                self._tx.setdefault(fid, []).append(wop)
+                broadcast.append((fid, wop))
+
+            if body.targetKind == "ACCOUNT":
+                assert body.targetCardAccountId is not None
+                tid = body.targetCardAccountId
+                acc = self._accounts[tid]
+                recv = convert_amount(raw_amt, amt_cur, acc.currency_code)
+                acc.balance += recv
+                eop = TransactionOperation(
+                    id=uuid4(),
+                    cardAccountId=tid,
+                    dateTime=datetime.now(UTC),
+                    transactionType="ENROLLMENT",
+                    transactionActoin="Transaction",
+                    transactionStatus="COMPLETE",
+                    money=_money(recv, acc.currency_code),
+                )
+                self._tx.setdefault(tid, []).append(eop)
+                broadcast.append((tid, eop))
+            else:
+                assert body.targetCreditId is not None
+                cr = self._credits[body.targetCreditId]
+                pay_ccy: Literal["DOLLAR", "EURO", "RUBLE"] = (
+                    cr.currency.root if cr.currency is not None else "RUBLE"
+                )
+                pay_amt = convert_amount(raw_amt, amt_cur, pay_ccy)
+                cd = cr.currentDebtSum or 0.0
+                cr.currentDebtSum = max(0.0, cd - pay_amt)
+                assert cr.cardAccount is not None
+                linked_id = cr.cardAccount
+                la = self._accounts[linked_id]
+                recv = convert_amount(raw_amt, amt_cur, la.currency_code)
+                eop = TransactionOperation(
+                    id=uuid4(),
+                    cardAccountId=linked_id,
+                    dateTime=datetime.now(UTC),
+                    transactionType="ENROLLMENT",
+                    transactionActoin="Transaction",
+                    transactionStatus="COMPLETE",
+                    money=_money(recv, la.currency_code),
+                )
+                self._tx.setdefault(linked_id, []).append(eop)
+                broadcast.append((linked_id, eop))
+
+        return "ok", broadcast
+
     # --- credits ---
     def create_credit_rule(self, dto: CreditRuleDTO) -> CreditRule:
         rid = uuid4()
@@ -460,3 +676,61 @@ def user_to_dto(u: MockUser) -> UserDto:
 
 
 store = MockStore()
+
+
+def _seed_bff_mocks() -> None:
+    """Стартовый пользователь для ручных проверок и набор CreditRule (если store пустой)."""
+    email_key = "test@email.com"
+    with store._lock:
+        if email_key not in store._users_by_email:
+            salt = secrets.token_bytes(16)
+            pwd_hash = _hash_password("asdfasdf123", salt)
+            store._users_by_email[email_key] = MockUser(
+                id=uuid4(),
+                name="Test user",
+                email=email_key,
+                salt=salt,
+                pwd_hash=pwd_hash,
+            )
+        if not store._credit_rules:
+            now = datetime.now(UTC)
+            demo_rules: list[CreditRule] = [
+                CreditRule(
+                    id=uuid4(),
+                    ruleName="credit rule 1",
+                    percentage=53.0,
+                    percentageStrategy="FROM_TOTAL_DEBT",
+                    collectionPeriodSeconds=12 * 86_400,
+                    openingDate=now,
+                ),
+                CreditRule(
+                    id=uuid4(),
+                    ruleName="Starter 12.5%",
+                    percentage=12.5,
+                    percentageStrategy="FROM_REMAINING_DEBT",
+                    collectionPeriodSeconds=7 * 86_400,
+                    openingDate=now,
+                ),
+                CreditRule(
+                    id=uuid4(),
+                    ruleName="Express weekly",
+                    percentage=8.0,
+                    percentageStrategy="FROM_REMAINING_DEBT",
+                    collectionPeriodSeconds=86_400,
+                    openingDate=now,
+                ),
+                CreditRule(
+                    id=uuid4(),
+                    ruleName="Long-term low",
+                    percentage=3.25,
+                    percentageStrategy="FROM_TOTAL_DEBT",
+                    collectionPeriodSeconds=30 * 86_400,
+                    openingDate=now,
+                ),
+            ]
+            for r in demo_rules:
+                if r.id is not None:
+                    store._credit_rules[r.id] = r
+
+
+_seed_bff_mocks()

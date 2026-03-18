@@ -15,7 +15,7 @@ export function AmountWithSymbol({ amount, symbol, textClassName = "text-info", 
     return (
         <div className={`amount-with-symbol ${textClassName} ${className}`} style={style}>
             <span className="color-info">{formatNumber(amount)}</span>
-            <span className="color-success">{symbol}</span>
+            <span className="color-success amount-with-symbol__symbol">{symbol}</span>
         </div>
     );
 }

@@ -1,0 +1,24 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 5.5rem;
+  border-radius: var(--fins-mid-gap, 1rem);
+  background: color-mix(in srgb, var(--fins-color-background, #0a1212) 88%, var(--fins-color-success, #00ffd5) 12%);
+  box-sizing: border-box;
+}
+
+.mono {
+  font-family: var(--fins-font-mono, ui-monospace, monospace);
+}
+
+.name {
+  margin: 0;
+  font-weight: 400;
+}
+
+.currencyLine {
+  margin: 0;
+}

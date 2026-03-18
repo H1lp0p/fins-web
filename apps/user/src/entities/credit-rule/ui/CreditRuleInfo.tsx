@@ -4,6 +4,7 @@ import {
   AmountWithSymbol,
   BluredContainer,
   DEFAULT_CHARS,
+  OnBlurContainer,
 } from "@fins/ui-kit";
 import { collectionPeriodFromSeconds } from "../../../shared/lib/collection-period-display";
 import styles from "./CreditRuleInfo.module.css";
@@ -12,25 +13,38 @@ export type CreditRuleInfoProps = {
   rule: CreditRuleEntity;
   className?: string;
   style?: CSSProperties;
+  /** Как у CardAccountInfo / CreditShortInfo: угловые скобки у названия. */
+  selected?: boolean;
 };
 
 /**
  * Карточка правила кредита (макет Figma `credit-rule-info`).
  * Классы `text-*`, `color-*`, `ph-*`, `pv-*`, `gap-*` — из ui-kit (тема).
  */
-export function CreditRuleInfo({ rule, className, style }: CreditRuleInfoProps) {
+export function CreditRuleInfo({
+  rule,
+  className,
+  style,
+  selected,
+}: CreditRuleInfoProps) {
   const title = rule.ruleName?.trim() || "—";
   const period = collectionPeriodFromSeconds(rule.collectionPeriodSeconds);
   const pct =
     rule.percentage != null && !Number.isNaN(rule.percentage) ? rule.percentage : null;
 
   return (
-    <BluredContainer
+    <OnBlurContainer
       className={`${styles.root} ${styles.flexCol} ph-mid pv-mid gap-mid ${className ?? ""}`.trim()}
       data-entity="credit-rule-info"
       style={style}
     >
-      <h3 className={`${styles.titleReset} text-title color-info`}>{title}</h3>
+      <h3
+        className={`${styles.titleReset} text-info-accent color-info`}
+      >
+        {selected ? <span className="text-success">{"<"}</span> : null}
+        {title}
+        {selected ? <span className="text-success">{">"}</span> : null}
+      </h3>
 
       <div
         className={`${styles.flexCol} gap-min text-info-accent color-info`}
@@ -69,6 +83,6 @@ export function CreditRuleInfo({ rule, className, style }: CreditRuleInfoProps) 
           )}
         </div>
       </div>
-    </BluredContainer>
+    </OnBlurContainer>
   );
 }

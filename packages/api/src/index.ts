@@ -35,6 +35,9 @@ export {
   useIsUserActiveByIdQuery,
   useMakeEnrollmentMutation,
   useOpenAccountMutation,
+  useSetAccountVisibilityMutation,
+  useSetMainAccountMutation,
+  useTransferMoneyMutation,
   useWithdrawMoneyMutation,
   useCheckAccountExistsQuery,
 } from "./public-bff-api";
