@@ -2,13 +2,7 @@ import { useGetUserQuery } from "@fins/api";
 import { BgText, useMessageStack } from "@fins/ui-kit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useEffect, useRef, type ReactNode } from "react";
-
-function normalizeSsoOrigin(): string {
-  return (import.meta.env.VITE_SSO_URL ?? "http://127.0.0.1:5173").replace(
-    /\/+$/,
-    "",
-  );
-}
+import { getSsoOrigin } from "../../shared/lib/sso-origin";
 
 type RequireSessionProps = {
   children: ReactNode;
@@ -36,7 +30,7 @@ export function RequireSession({ children }: RequireSessionProps) {
     if (!account.isError || !account.error) return;
     const e = account.error as FetchBaseQueryError;
     if (e.status === 401) {
-      const sso = normalizeSsoOrigin();
+      const sso = getSsoOrigin();
       const next = encodeURIComponent(window.location.href);
       window.location.replace(`${sso}/?returnUrl=${next}`);
       return;

@@ -1,4 +1,4 @@
-import type { User } from "@fins/api";
+import type { TransferDestinationUser } from "@fins/api";
 import { currencyCodeFromTransactionIndex } from "../../../shared/lib/transaction-currencies";
 import type { TransactionDestinationTabId } from "../../transaction-destination-search";
 
@@ -9,7 +9,7 @@ export function buildTransactionDestinationToken(
     selectedCreditId: string | null;
     selectedUserId: string | null;
     rightCurrencyIndex: number;
-    users: User[];
+    users: TransferDestinationUser[];
   },
 ): string {
   switch (tabId) {
@@ -21,7 +21,9 @@ export function buildTransactionDestinationToken(
       return opts.selectedCreditId ? `credit:${opts.selectedCreditId}` : "";
     case "users": {
       const u = opts.users.find((x) => x.id === opts.selectedUserId);
-      return u ? `user:${u.email}` : "";
+      if (!u) return "";
+      const slug = u.email ?? u.id;
+      return `user:${slug}`;
     }
     case "other-service":
       return `other:${currencyCodeFromTransactionIndex(opts.rightCurrencyIndex)}`;

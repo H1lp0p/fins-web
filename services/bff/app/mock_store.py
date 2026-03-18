@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import random
 import secrets
 import threading
 from dataclasses import dataclass, field
@@ -26,6 +27,7 @@ from generated.bff_browser_models import (
     SortObject,
     TransactionOperation,
     TransferMoneyDto,
+    UserDirectoryEntryDto,
     UserDto,
     UserEditModelDto,
     WithdrawDto,
@@ -41,6 +43,45 @@ def _money(value: float, code: Literal["DOLLAR", "EURO", "RUBLE"] = "RUBLE") -> 
 
 
 _sort = SortObject(empty=True, sorted=False, unsorted=True)
+
+_DEMO_ACCOUNT_NAME_POOL: list[str] = [
+    "Polar Checking",
+    "Maple Reserve",
+    "Neon Rainjar",
+    "Harbor Line",
+    "Quiet Ledger",
+    "Moss & Coin",
+    "Bluehour Vault",
+    "Sidewalk Buffer",
+    "Cedar Float",
+    "Pixel Payroll",
+    "Aurora Slush",
+    "Tidebox Petty",
+    "Winter Garnet",
+    "Saffron Float",
+    "Echo Transit",
+    "Loopback Cash",
+    "Velvet Runway",
+    "Bricklayer Float",
+]
+
+
+def _demo_rng(user_id: UUID) -> random.Random:
+    return random.Random((user_id.int % (2**31 - 1)) or 1)
+
+
+def _demo_account_names(rng: random.Random, n: int) -> list[str]:
+    pool = list(_DEMO_ACCOUNT_NAME_POOL)
+    rng.shuffle(pool)
+    if n <= len(pool):
+        return pool[:n]
+    out = pool[:]
+    while len(out) < n:
+        out.append(f"{rng.choice(_DEMO_ACCOUNT_NAME_POOL)} · extra")
+    return out
+
+
+_CCY: tuple[Literal["DOLLAR", "EURO", "RUBLE"], ...] = ("DOLLAR", "EURO", "RUBLE")
 
 
 @dataclass
@@ -250,56 +291,91 @@ class MockStore:
             transactionOperations=list(txs[-50:]) if txs is not None else None,
         )
 
+    def _seed_demo_credits_for_user(self, user_id: UUID) -> None:
+        """Демо-кредиты на до четырёх счетах (один раз на пользователя)."""
+        if any(c.userId == user_id for c in self._credits.values()):
+            return
+        rules = sorted(
+            (r for r in self._credit_rules.values() if r.id is not None),
+            key=lambda x: str(x.id),
+        )
+        if not rules:
+            return
+        accs_nd = sorted(
+            (a for a in self._accounts.values() if a.user_id == user_id and not a.deleted),
+            key=lambda a: str(a.id),
+        )
+        main = next((a for a in accs_nd if a.main), None)
+        chain: list[MockAccount] = []
+        if main:
+            chain.append(main)
+        for a in accs_nd:
+            if len(chain) >= 4:
+                break
+            if a not in chain:
+                chain.append(a)
+        debt_seeds = [18_234.56, 2_480.0, 97_500.0, 3_200.0]
+        now = datetime.now(UTC)
+        for i, acc in enumerate(chain):
+            if i >= len(rules):
+                break
+            debt = debt_seeds[i] if i < len(debt_seeds) else 1_000.0
+            ccy: Literal["DOLLAR", "EURO", "RUBLE"] = acc.currency_code
+            cid = uuid4()
+            rule_copy = rules[i].model_copy(deep=True)
+            self._credits[cid] = Credit(
+                id=cid,
+                userId=user_id,
+                cardAccount=acc.id,
+                lastInterestUpdate=now,
+                currentDebtSum=debt,
+                initialDebt=debt,
+                interestDebtSum=0.0,
+                currency=Currency(root=ccy),
+                creditRule=rule_copy,
+            )
+
     def _ensure_demo_accounts(self, user_id: UUID) -> None:
-        """Один набор демо-счетов, если у пользователя ещё нет счетов."""
+        """Расширенный набор демо-счетов (один main, валюты — псевдослучайно по user_id)."""
         if any(a.user_id == user_id for a in self._accounts.values()):
             return
+        rng = _demo_rng(user_id)
+        names = _demo_account_names(rng, 8)
+        ccys: list[Literal["DOLLAR", "EURO", "RUBLE"]] = [rng.choice(_CCY) for _ in range(8)]
+        ni = 0
+
+        def _name() -> str:
+            nonlocal ni
+            n = names[ni]
+            ni += 1
+            return n
+
+        specs: list[tuple[float, bool, bool]] = [
+            (100_000.0, True, False),
+            (5_000.0, True, False),
+            (1_000.0, False, False),
+            (0.0, True, True),
+            (4_200.0, True, False),
+            (850.0, True, False),
+            (25_000.0, True, False),
+            (640.0, True, False),
+        ]
         main_id = uuid4()
-        acc_main = MockAccount(
-            id=main_id,
-            user_id=user_id,
-            balance=100_000.0,
-            currency_code="DOLLAR",
-            display_name="Account name",
-            main=True,
-            visible=True,
-        )
-        acc_def = MockAccount(
-            id=uuid4(),
-            user_id=user_id,
-            balance=5_000.0,
-            currency_code="EURO",
-            display_name="Account name",
-            main=False,
-            visible=True,
-        )
-        acc_hid = MockAccount(
-            id=uuid4(),
-            user_id=user_id,
-            balance=1_000.0,
-            currency_code="RUBLE",
-            display_name="Account name",
-            main=False,
-            visible=False,
-        )
-        acc_closed = MockAccount(
-            id=uuid4(),
-            user_id=user_id,
-            balance=0.0,
-            currency_code="DOLLAR",
-            display_name="Account name",
-            main=False,
-            visible=True,
-            deleted=True,
-        )
-        self._accounts[acc_main.id] = acc_main
-        self._accounts[acc_def.id] = acc_def
-        self._accounts[acc_hid.id] = acc_hid
-        self._accounts[acc_closed.id] = acc_closed
-        self._tx.setdefault(main_id, [])
-        self._tx.setdefault(acc_def.id, [])
-        self._tx.setdefault(acc_hid.id, [])
-        self._tx.setdefault(acc_closed.id, [])
+        main_ccy = ccys[0]
+        for i, ((bal, visible, deleted), ccy) in enumerate(zip(specs, ccys, strict=True)):
+            aid = main_id if i == 0 else uuid4()
+            acc = MockAccount(
+                id=aid,
+                user_id=user_id,
+                balance=bal,
+                currency_code=ccy,
+                display_name=_name(),
+                main=(i == 0),
+                visible=visible,
+                deleted=deleted,
+            )
+            self._accounts[acc.id] = acc
+            self._tx.setdefault(acc.id, [])
         self._tx[main_id].extend(
             [
                 TransactionOperation(
@@ -309,7 +385,7 @@ class MockStore:
                     transactionType="ENROLLMENT",
                     transactionActoin="Simple Enrollment",
                     transactionStatus="COMPLETE",
-                    money=_money(1000.12, "DOLLAR"),
+                    money=_money(1000.12, main_ccy),
                 ),
                 TransactionOperation(
                     id=uuid4(),
@@ -318,10 +394,11 @@ class MockStore:
                     transactionType="WITHDRAWAL",
                     transactionActoin="Simple withdrawal",
                     transactionStatus="COMPLETE",
-                    money=_money(1000.12, "DOLLAR"),
+                    money=_money(1000.12, main_ccy),
                 ),
             ],
         )
+        self._seed_demo_credits_for_user(user_id)
 
     def list_accounts_page(
         self,
@@ -644,6 +721,8 @@ class MockStore:
 
     def credits_by_user(self, user_id: UUID) -> list[Credit]:
         with self._lock:
+            self._ensure_demo_accounts(user_id)
+            self._seed_demo_credits_for_user(user_id)
             return [c for c in self._credits.values() if c.userId == user_id]
 
     def credit_by_card(self, card_account_id: UUID) -> Credit | None:
@@ -659,6 +738,31 @@ class MockStore:
                 return False
             del self._credits[credit_id]
         return True
+
+    def list_users_directory_entries(self) -> list[UserDirectoryEntryDto]:
+        """Краткий справочник для клиентов: основной счёт и его валюта (ленивый сид счетов)."""
+        result: list[UserDirectoryEntryDto] = []
+        with self._lock:
+            for u in list(self._users_by_email.values()):
+                self._ensure_demo_accounts(u.id)
+                main = next(
+                    (
+                        a
+                        for a in self._accounts.values()
+                        if a.user_id == u.id and a.main and not a.deleted
+                    ),
+                    None,
+                )
+                if main is None:
+                    continue
+                result.append(
+                    UserDirectoryEntryDto(
+                        userId=u.id,
+                        username=u.name,
+                        mainAccountCurrency=Currency(root=main.currency_code),
+                    ),
+                )
+        return result
 
 
 def user_to_dto(u: MockUser) -> UserDto:
@@ -678,26 +782,52 @@ def user_to_dto(u: MockUser) -> UserDto:
 store = MockStore()
 
 
-def _seed_bff_mocks() -> None:
-    """Стартовый пользователь для ручных проверок и набор CreditRule (если store пустой)."""
-    email_key = "test@email.com"
+def _seed_mock_user(
+    email: str,
+    password: str,
+    name: str,
+    *,
+    roles: list[str] | None = None,
+    active: bool = True,
+) -> None:
+    """Идемпотентно добавляет пользователя в in-memory store (только если email ещё нет)."""
+    email_key = email.lower().strip()
     with store._lock:
-        if email_key not in store._users_by_email:
-            salt = secrets.token_bytes(16)
-            pwd_hash = _hash_password("asdfasdf123", salt)
-            store._users_by_email[email_key] = MockUser(
-                id=uuid4(),
-                name="Test user",
-                email=email_key,
-                salt=salt,
-                pwd_hash=pwd_hash,
-            )
+        if email_key in store._users_by_email:
+            return
+        salt = secrets.token_bytes(16)
+        pwd_hash = _hash_password(password, salt)
+        store._users_by_email[email_key] = MockUser(
+            id=uuid4(),
+            name=name,
+            email=email_key,
+            salt=salt,
+            pwd_hash=pwd_hash,
+            roles=list(roles) if roles is not None else ["CLIENT"],
+            active=active,
+        )
+
+
+def _seed_bff_mocks() -> None:
+    """Стартовые пользователи для ручных проверок и набор CreditRule (если store пустой)."""
+    _seed_mock_user("test@email.com", "asdfasdf123", "Test user")
+    _seed_mock_user("alice@demo.local", "demo123", "Alice Demo")
+    _seed_mock_user("bob@demo.local", "demo123", "Bob Demo")
+    _seed_mock_user("worker@demo.local", "demo123", "Demo worker", roles=["WORKER"])
+    _seed_mock_user(
+        "blocked@demo.local",
+        "demo123",
+        "Blocked client",
+        roles=["BLOCKED_CLIENT"],
+        active=False,
+    )
+    with store._lock:
         if not store._credit_rules:
             now = datetime.now(UTC)
             demo_rules: list[CreditRule] = [
                 CreditRule(
                     id=uuid4(),
-                    ruleName="credit rule 1",
+                    ruleName="Amber Overdraft Classic",
                     percentage=53.0,
                     percentageStrategy="FROM_TOTAL_DEBT",
                     collectionPeriodSeconds=12 * 86_400,
@@ -705,7 +835,7 @@ def _seed_bff_mocks() -> None:
                 ),
                 CreditRule(
                     id=uuid4(),
-                    ruleName="Starter 12.5%",
+                    ruleName="Starter Line 12.5%",
                     percentage=12.5,
                     percentageStrategy="FROM_REMAINING_DEBT",
                     collectionPeriodSeconds=7 * 86_400,
@@ -713,7 +843,7 @@ def _seed_bff_mocks() -> None:
                 ),
                 CreditRule(
                     id=uuid4(),
-                    ruleName="Express weekly",
+                    ruleName="Express Weekly Pulse",
                     percentage=8.0,
                     percentageStrategy="FROM_REMAINING_DEBT",
                     collectionPeriodSeconds=86_400,
@@ -721,10 +851,26 @@ def _seed_bff_mocks() -> None:
                 ),
                 CreditRule(
                     id=uuid4(),
-                    ruleName="Long-term low",
+                    ruleName="Long Horizon 3.25%",
                     percentage=3.25,
                     percentageStrategy="FROM_TOTAL_DEBT",
                     collectionPeriodSeconds=30 * 86_400,
+                    openingDate=now,
+                ),
+                CreditRule(
+                    id=uuid4(),
+                    ruleName="Bloom Flexible Overdraft",
+                    percentage=15.75,
+                    percentageStrategy="FROM_REMAINING_DEBT",
+                    collectionPeriodSeconds=14 * 86_400,
+                    openingDate=now,
+                ),
+                CreditRule(
+                    id=uuid4(),
+                    ruleName="Night Ferry Installment",
+                    percentage=6.4,
+                    percentageStrategy="FROM_TOTAL_DEBT",
+                    collectionPeriodSeconds=3 * 86_400,
                     openingDate=now,
                 ),
             ]

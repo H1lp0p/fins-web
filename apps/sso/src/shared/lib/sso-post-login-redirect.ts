@@ -38,7 +38,7 @@ export function getValidatedReturnUrlFromSearch(): string | undefined {
     if (!allowed.some((o) => u.origin === o)) return undefined;
   } else {
     const h = u.hostname.toLowerCase();
-    if (h !== "localhost" && h !== "127.0.0.1") return undefined;
+    if (h !== "localhost" && h !== "127.0.0.1" && h !== "[::1]") return undefined;
   }
   return raw;
 }

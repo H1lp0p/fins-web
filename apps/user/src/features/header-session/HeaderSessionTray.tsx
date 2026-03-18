@@ -1,13 +1,7 @@
 import { useGetUserQuery } from "@fins/api";
 import { LinkButton } from "@fins/ui-kit";
 import { useLocation } from "react-router-dom";
-
-function normalizeSsoOrigin(): string {
-  return (import.meta.env.VITE_SSO_URL ?? "http://127.0.0.1:5173").replace(
-    /\/+$/,
-    "",
-  );
-}
+import { getSsoOrigin } from "../../shared/lib/sso-origin";
 
 const BFF_BASE = import.meta.env.VITE_BFF_URL ?? "/api";
 
@@ -20,7 +14,7 @@ async function revokeSessionAndGoSso(): Promise<void> {
   } catch {
     /* ignore */
   }
-  window.location.href = normalizeSsoOrigin();
+  window.location.href = getSsoOrigin();
 }
 
 export function HeaderSessionTray() {

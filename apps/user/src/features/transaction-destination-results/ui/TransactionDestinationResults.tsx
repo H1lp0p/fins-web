@@ -1,5 +1,8 @@
-import type { CardAccountEntity, CreditEntity, User } from "@fins/api";
-import { DEFAULT_CHARS } from "@fins/ui-kit";
+import type {
+  CardAccountEntity,
+  CreditEntity,
+  TransferDestinationUser,
+} from "@fins/api";
 import { CardAccountInfo } from "../../../entities/card-account";
 import { CreditShortInfo } from "../../../entities/credit";
 import { UserCard } from "../../../entities/user";
@@ -9,6 +12,7 @@ import {
   filterCreditsByQuery,
   filterUsersByQuery,
 } from "../../../shared/lib/filter-entities-by-query";
+import { currencyCodeToAmountSymbol } from "../../../shared/lib/currency-symbol";
 import styles from "./TransactionDestinationResults.module.css";
 
 export type TransactionDestinationResultsProps = {
@@ -16,7 +20,7 @@ export type TransactionDestinationResultsProps = {
   appliedQuery: string;
   accounts: CardAccountEntity[];
   credits: CreditEntity[];
-  users: User[];
+  users: TransferDestinationUser[];
   selectedAccountId: string | null;
   selectedCreditId: string | null;
   selectedUserId: string | null;
@@ -109,8 +113,10 @@ export function TransactionDestinationResults({
               onClick={() => onSelectUser(u.id)}
             >
               <UserCard
-                name={u.name || u.email}
-                currencySymbol={DEFAULT_CHARS.DOLLAR}
+                name={u.name || u.email || u.id}
+                currencySymbol={currencyCodeToAmountSymbol(
+                  u.mainAccountCurrency,
+                )}
                 selected={selectedUserId === u.id}
               />
             </button>

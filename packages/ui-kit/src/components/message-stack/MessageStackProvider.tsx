@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -36,6 +37,8 @@ const defaultDockStyle: CSSProperties = {
   overflow: "hidden",
   maxHeight: "40vh",
 };
+
+const HIDE_AFTER_MS = 5000;
 
 export type MessageStackProviderProps = {
   children: ReactNode;
@@ -81,10 +84,36 @@ export function MessageStackProvider({
   style,
 }: MessageStackProviderProps) {
   const [entries, setEntries] = useState<MessageEntry[]>([]);
+  const [dockVisible, setDockVisible] = useState(true);
   const idRef = useRef(0);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scheduleHide = useCallback(() => {
+    if (hideTimeoutRef.current !== null) {
+      clearTimeout(hideTimeoutRef.current);
+    }
+    hideTimeoutRef.current = setTimeout(() => {
+      setDockVisible(false);
+      hideTimeoutRef.current = null;
+    }, HIDE_AFTER_MS);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (hideTimeoutRef.current !== null) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+    },
+    [],
+  );
 
   const pushMessage = useCallback(
     (message: Message) => {
+      setDockVisible(true);
+      if (hideTimeoutRef.current !== null) {
+        clearTimeout(hideTimeoutRef.current);
+        hideTimeoutRef.current = null;
+      }
       const id = `${++idRef.current}`;
       setEntries((prev) => {
         const next = [...prev, { id, message }];
@@ -93,14 +122,19 @@ export function MessageStackProvider({
         }
         return next;
       });
+      scheduleHide();
     },
-    [maxMessages],
+    [maxMessages, scheduleHide],
   );
 
   const clearMessages = useCallback(() => {
+    if (hideTimeoutRef.current !== null) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
     setEntries([]);
-    console.log("clearMessages");
-  }, [setEntries]);
+    setDockVisible(true);
+  }, []);
 
   const value = useMemo(
     () => ({ pushMessage, clearMessages }),
@@ -108,13 +142,21 @@ export function MessageStackProvider({
   );
 
   const dock =
-    typeof document !== "undefined" ? (
+    typeof document !== "undefined" && entries.length > 0 ? (
       createPortal(
-        <MessageStackDock
-          entries={entries}
-          className={`ph-max pv-mid gap-mid ${className}`}
-          style={style}
-        />,
+        <div
+          className={
+            dockVisible
+              ? "fins-message-stack-anim fins-message-stack-anim--visible"
+              : "fins-message-stack-anim fins-message-stack-anim--hidden"
+          }
+        >
+          <MessageStackDock
+            entries={entries}
+            className={`ph-max pv-mid gap-mid ${className ?? ""}`}
+            style={style}
+          />
+        </div>,
         document.body,
       )
     ) : null;
@@ -122,7 +164,7 @@ export function MessageStackProvider({
   return (
     <MessageStackContext.Provider value={value}>
       {children}
-      { entries.length > 0 && dock}
+      {dock}
     </MessageStackContext.Provider>
   );
 }

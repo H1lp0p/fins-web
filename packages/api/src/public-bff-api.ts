@@ -94,6 +94,7 @@ export const {
   useEditUserMutation,
   useEditUser1Mutation,
   useGetAllUsersQuery,
+  useGetUsersDirectoryQuery,
   useGetUserByIdQuery,
   useDeleteUserByIdMutation,
   useIsUserActiveByIdQuery,

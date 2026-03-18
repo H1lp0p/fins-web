@@ -18,6 +18,7 @@ from generated.bff_browser_models import (
     EnrollDto,
     TransferMoneyDto,
     UserEditModelDto,
+    UserDirectoryEntryDto,
     WithdrawDto,
 )
 
@@ -83,6 +84,18 @@ async def get_all_users(
     if not _is_worker(user):
         return _forbidden()
     return [user_to_dto(u) for u in store.list_users()]
+
+
+@router.get(
+    "/user-service/users/directory",
+    response_model=list[UserDirectoryEntryDto],
+)
+async def get_users_directory(
+    user: Annotated[MockUser | None, Depends(get_current_user_optional)],
+):
+    if user is None:
+        return _unauth()
+    return store.list_users_directory_entries()
 
 
 @router.get("/user-service/users/{id}")

@@ -30,7 +30,7 @@ export function TransactionTransferForm({
   return (
     <div className={`${styles.root} ph-mid pv-mid`}>
       <OnBlurContainer className={`${styles.card} ph-mid pv-mid`}>
-        <div className={styles.amountRow}>
+        
           <Input
             title="Amount"
             placeholder="0.00"
@@ -41,7 +41,6 @@ export function TransactionTransferForm({
             textClassName="text-info"
             trailingChar={fromTrailingChar}
           />
-        </div>
       </OnBlurContainer>
 
       <div className={styles.chevron} aria-hidden>
@@ -68,7 +67,14 @@ export function TransactionTransferForm({
         &gt;&gt;&gt;
       </div>
 
-      <OnBlurContainer className={`${styles.card} ph-mid pv-mid`}>
+      <OnBlurContainer className={`${styles.card} ph-mid pv-mid`}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+      >
         <p className={`${styles.resultLabel} text-title color-info`}>Result</p>
         <div className={styles.resultRow}>
           <AmountWithSymbol
