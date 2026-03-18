@@ -3,7 +3,7 @@ import type {
   CreditEntity,
   CreditRuleEntity,
 } from "@fins/api";
-import { CreditsGrid } from "../../../features/credit-list/CreditsGrid";
+import { CreditsGrid } from "@fins/entities";
 import { CreditRulesAccountsPicker } from "../../../features/credit-rules-accounts-picker/CreditRulesAccountsPicker";
 
 type CreditsBottomRightWidgetProps =

@@ -2,11 +2,10 @@ import type { CSSProperties } from "react";
 import type { CreditRuleEntity } from "@fins/api";
 import {
   AmountWithSymbol,
-  BluredContainer,
   DEFAULT_CHARS,
   OnBlurContainer,
 } from "@fins/ui-kit";
-import { collectionPeriodFromSeconds } from "../../../shared/lib/collection-period-display";
+import { collectionPeriodFromSeconds } from "../../../lib/collection-period-display";
 import styles from "./CreditRuleInfo.module.css";
 
 export type CreditRuleInfoProps = {

@@ -1,6 +1,6 @@
 import type { CardAccountEntity } from "@fins/api";
 import { LinkButton } from "@fins/ui-kit";
-import { CardAccountInfo } from "../../../entities/card-account";
+import { CardAccountInfo } from "@fins/entities";
 import { OtherServiceCurrencyPanel } from "../../other-service-currency";
 import styles from "./TransactionFromTopSlot.module.css";
 
