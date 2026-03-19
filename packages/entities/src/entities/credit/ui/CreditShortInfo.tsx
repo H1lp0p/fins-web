@@ -2,11 +2,10 @@ import type { CSSProperties } from "react";
 import type { CreditEntity } from "@fins/api";
 import {
   AmountWithSymbol,
-  BluredContainer,
   DEFAULT_CHARS,
   OnBlurContainer,
 } from "@fins/ui-kit";
-import { currencyCodeToAmountSymbol } from "../../../shared/lib/currency-symbol";
+import { currencyCodeToAmountSymbol } from "../../../lib/currency-symbol";
 import styles from "./CreditShortInfo.module.css";
 
 const BAR_INNER_LEN = 10;

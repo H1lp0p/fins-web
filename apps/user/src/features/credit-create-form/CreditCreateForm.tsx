@@ -5,9 +5,7 @@ import {
 } from "@fins/api";
 import { Input, LinkButton, OnBlurContainer } from "@fins/ui-kit";
 import { useCallback, useState } from "react";
-import { CardAccountInfo } from "../../entities/card-account";
-import { CreditRuleInfo } from "../../entities/credit-rule";
-import { currencyCodeToAmountSymbol } from "../../shared/lib/currency-symbol";
+import { CardAccountInfo, CreditRuleInfo, currencyCodeToAmountSymbol } from "@fins/entities";
 
 type CreditCreateFormProps = {
   userId: string;

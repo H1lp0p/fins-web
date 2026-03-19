@@ -2,8 +2,7 @@ import type { CardAccountEntity, CreditRuleEntity } from "@fins/api";
 import type { Tab } from "@fins/ui-kit";
 import { TabList } from "@fins/ui-kit";
 import { useState } from "react";
-import { CardAccountInfo } from "../../entities/card-account";
-import { CreditRuleInfo } from "../../entities/credit-rule";
+import { CardAccountInfo, CreditRuleInfo } from "@fins/entities";
 import styles from "./CreditRulesAccountsPicker.module.css";
 
 const PICKER_TABS: Tab[] = [

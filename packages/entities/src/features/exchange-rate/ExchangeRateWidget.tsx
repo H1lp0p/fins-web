@@ -6,7 +6,7 @@ import {
 } from "@fins/ui-kit";
 import type { CurrencyCode } from "@fins/api";
 import { useCallback, useMemo, useState } from "react";
-import { tripleForBase } from "../../shared/lib/mock-exchange-rates";
+import { tripleForBase } from "../../lib/mock-exchange-rates";
 import styles from "./ExchangeRateWidget.module.css";
 
 const LABEL: Record<CurrencyCode, string> = {

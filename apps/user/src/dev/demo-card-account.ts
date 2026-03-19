@@ -1,5 +1,5 @@
 import type { CardAccountEntity } from "@fins/api";
-import type { CardAccountDisplayStatus } from "../entities/card-account";
+import type { CardAccountDisplayStatus } from "@fins/entities";
 
 const baseAccount: CardAccountEntity = {
   id: "22222222-2222-2222-2222-222222222222",

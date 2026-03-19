@@ -1,5 +1,5 @@
 import type { CardAccountEntity, CreditEntity, CreditRuleEntity } from "@fins/api";
-import { CreditDetailPanel } from "../../../entities/credit";
+import { CreditDetailPanel } from "@fins/entities";
 import { CreditCreateForm } from "../../../features/credit-create-form/CreditCreateForm";
 
 type CreditsBottomLeftWidgetProps =

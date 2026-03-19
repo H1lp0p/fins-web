@@ -1,8 +1,8 @@
 import type { CSSProperties } from "react";
 import type { TransactionOperationEntity } from "@fins/api";
-import { BluredContainer, formatNumber, OnBlurContainer } from "@fins/ui-kit";
-import { currencyCodeToAmountSymbol } from "../../../shared/lib/currency-symbol";
-import { formatDateDdMmYyyy } from "../../../shared/lib/format-date-time";
+import { formatNumber, OnBlurContainer } from "@fins/ui-kit";
+import { currencyCodeToAmountSymbol } from "../../../lib/currency-symbol";
+import { formatDateDdMmYyyy } from "../../../lib/format-date-time";
 import styles from "./TransactionHistoryItem.module.css";
 
 export type TransactionHistoryItemProps = {

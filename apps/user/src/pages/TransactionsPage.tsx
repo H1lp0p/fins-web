@@ -11,7 +11,7 @@ import {
 import { TriColSpaceLayout, useMessageStack } from "@fins/ui-kit";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { AccountGrid } from "../features/account-grid/AccountGrid";
+import { AccountGrid, currencyCodeToAmountSymbol, mockRateFromTo } from "@fins/entities";
 import { RequireSession } from "../features/require-session/RequireSession";
 import { TransactionDestinationResults } from "../features/transaction-destination-results";
 import {
@@ -25,11 +25,9 @@ import {
   TransactionTransferTopBar,
   buildTransactionDestinationToken,
 } from "../features/transaction-transfer-form";
-import { mockRateFromTo } from "../shared/lib/mock-exchange-rates";
 import { parseAmountInput } from "../shared/lib/parse-amount-input";
 import { parseTransactionsSearchParams } from "../shared/lib/transactions-endpoint";
 import { sortAccountsForIndex } from "../shared/lib/sort-accounts-for-index";
-import { currencyCodeToAmountSymbol } from "../shared/lib/currency-symbol";
 import {
   currencyCodeFromTransactionIndex,
   symbolIndexInTransactionCurrencies,

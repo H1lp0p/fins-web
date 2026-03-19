@@ -7,11 +7,9 @@ import { LinkButton, OnBlurContainer, RectSpaceLayout } from "@fins/ui-kit";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AccountActionsBar } from "../features/account-actions/AccountActionsBar";
 import { AccountCreateForm } from "../features/account-create-form/AccountCreateForm";
-import { AccountGrid } from "../features/account-grid/AccountGrid";
+import { AccountGrid, CardAccountInfo, ExchangeRateWidget } from "@fins/entities";
 import { AccountTransactionsPanel } from "../features/account-transactions/AccountTransactionsPanel";
-import { ExchangeRateWidget } from "../features/exchange-rate/ExchangeRateWidget";
 import { RequireSession } from "../features/require-session/RequireSession";
-import { CardAccountInfo } from "../entities/card-account";
 import { sortAccountsForIndex } from "../shared/lib/sort-accounts-for-index";
 
 type BottomLeftMode = "accounts" | "create";
