@@ -5,13 +5,16 @@ import random
 import secrets
 import threading
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+import uuid as uuid_stdlib
 from typing import Literal
 from uuid import UUID, uuid4
 
 from app.mock_fx import convert_amount
 
 from generated.bff_browser_models import (
+    BankTreasuryBalanceItem,
+    BankTreasuryBalancesDto,
     CardAccount,
     CardAccountCreateModelDto,
     Credit,
@@ -83,6 +86,15 @@ def _demo_account_names(rng: random.Random, n: int) -> list[str]:
 
 _CCY: tuple[Literal["DOLLAR", "EURO", "RUBLE"], ...] = ("DOLLAR", "EURO", "RUBLE")
 
+# Стабильные id для счетов казначейства банка (детерминированные uuid5).
+_BANK_TREASURY_USER_ID = uuid_stdlib.uuid5(
+    uuid_stdlib.NAMESPACE_DNS,
+    "fins.bank.treasury.user.v1",
+)
+BANK_ACC_USD = uuid_stdlib.uuid5(uuid_stdlib.NAMESPACE_DNS, "fins.bank.treasury.usd.v1")
+BANK_ACC_EUR = uuid_stdlib.uuid5(uuid_stdlib.NAMESPACE_DNS, "fins.bank.treasury.eur.v1")
+BANK_ACC_RUB = uuid_stdlib.uuid5(uuid_stdlib.NAMESPACE_DNS, "fins.bank.treasury.rub.v1")
+
 
 @dataclass
 class MockUser:
@@ -91,7 +103,7 @@ class MockUser:
     email: str
     salt: bytes
     pwd_hash: bytes
-    roles: list[str] = field(default_factory=lambda: ["CLIENT"])
+    roles: list[str] = field(default_factory=list)
     active: bool = True
 
 
@@ -152,6 +164,15 @@ class MockStore:
         with self._lock:
             return list(self._users_by_email.values())
 
+    def list_users_excluding_bank_treasury(self) -> list[MockUser]:
+        """Полный список без системного пользователя мастер-счетов банка (админский GET /users)."""
+        with self._lock:
+            return [
+                u
+                for u in self._users_by_email.values()
+                if u.id != _BANK_TREASURY_USER_ID
+            ]
+
     def delete_user(self, user_id: UUID) -> bool:
         with self._lock:
             to_del = [e for e, u in self._users_by_email.items() if u.id == user_id]
@@ -177,6 +198,8 @@ class MockStore:
             u.name = body.name
             if body.newRoles is not None:
                 u.roles = list(body.newRoles)
+            if body.active is not None:
+                u.active = body.active
         return self.get_user_by_id(user_id)
 
     def update_self_account(self, user_id: UUID, body: UserEditModelDto) -> MockUser | None:
@@ -450,6 +473,207 @@ class MockStore:
         total_pages = (total + page_size - 1) // page_size if total else 0
         start = page_index * page_size
         chunk = ops[start : start + page_size]
+        return PageTransactionOperation(
+            totalPages=total_pages,
+            totalElements=total,
+            size=page_size,
+            content=chunk,
+            number=page_index,
+            sort=_sort,
+            numberOfElements=len(chunk),
+            first=page_index == 0 or total == 0,
+            last=total == 0 or start + len(chunk) >= total,
+            pageable=PageableObject(
+                offset=start,
+                sort=_sort,
+                paged=True,
+                unpaged=False,
+                pageNumber=page_index,
+                pageSize=page_size,
+            ),
+            empty=len(chunk) == 0,
+        )
+
+    def _ensure_bank_treasury(self) -> None:
+        """Три главных счёта банка + демо-операции (для админки)."""
+        with self._lock:
+            if BANK_ACC_USD in self._accounts:
+                return
+            salt = secrets.token_bytes(16)
+            pwd = secrets.token_urlsafe(32)
+            u = MockUser(
+                id=_BANK_TREASURY_USER_ID,
+                name="Bank treasury",
+                email="bank.treasury@system.local",
+                salt=salt,
+                pwd_hash=_hash_password(pwd, salt),
+                roles=["CLIENT"],
+                active=True,
+            )
+            self._users_by_email[u.email] = u
+            specs: list[tuple[UUID, Literal["DOLLAR", "EURO", "RUBLE"], float]] = [
+                (BANK_ACC_USD, "DOLLAR", 1_000_000_000_000.0),
+                (BANK_ACC_EUR, "EURO", 12_142_000_120_986.01),
+                (BANK_ACC_RUB, "RUBLE", 1804.52),
+            ]
+            for i, (aid, ccy, bal) in enumerate(specs):
+                self._accounts[aid] = MockAccount(
+                    id=aid,
+                    user_id=_BANK_TREASURY_USER_ID,
+                    balance=bal,
+                    currency_code=ccy,
+                    display_name="Bank main",
+                    main=(i == 0),
+                    visible=True,
+                )
+                self._tx[aid] = []
+
+            def _treasury_tx(
+                acc_id: UUID,
+                at: datetime,
+                tx_type: Literal["ENROLLMENT", "WITHDRAWAL"],
+                amount: float,
+                ccy: Literal["DOLLAR", "EURO", "RUBLE"],
+            ) -> TransactionOperation:
+                action = (
+                    "credit payback" if tx_type == "ENROLLMENT" else "credit issued"
+                )
+                return TransactionOperation(
+                    id=uuid4(),
+                    cardAccountId=acc_id,
+                    dateTime=at,
+                    transactionType=tx_type,
+                    transactionActoin=action,
+                    transactionStatus="COMPLETE",
+                    money=_money(amount, ccy),
+                )
+
+            # Демо-история по мастер-счетам: чередование зачислений и выдач кредита.
+            usd_amounts_enroll = [
+                12_500.0,
+                3_200.50,
+                88_000.0,
+                450.25,
+                1_250_000.0,
+                9_999.99,
+                42_100.0,
+                7_777.77,
+            ]
+            usd_amounts_withdraw = [
+                5_000.0,
+                1_100.0,
+                25_000.0,
+                300.0,
+                500_000.0,
+                2_400.50,
+                15_000.0,
+                6_600.0,
+            ]
+            eur_amounts_enroll = [
+                8_200.0,
+                1_111.11,
+                55_000.0,
+                99.5,
+                620_000.0,
+                4_400.0,
+            ]
+            eur_amounts_withdraw = [
+                3_000.0,
+                750.25,
+                18_000.0,
+                120.0,
+                200_000.0,
+                3_300.0,
+            ]
+            rub_amounts_enroll = [
+                50_000.0,
+                12_345.67,
+                900_000.0,
+                500.0,
+                2_000_000.0,
+            ]
+            rub_amounts_withdraw = [
+                20_000.0,
+                5_000.0,
+                400_000.0,
+                100.0,
+                1_000_000.0,
+            ]
+
+            base_usd = datetime(2025, 1, 1, 8, 0, 0, tzinfo=UTC)
+            for i, (e_amt, w_amt) in enumerate(
+                zip(usd_amounts_enroll, usd_amounts_withdraw, strict=True),
+            ):
+                t0 = base_usd + timedelta(minutes=i * 18)
+                self._tx[BANK_ACC_USD].append(
+                    _treasury_tx(BANK_ACC_USD, t0, "ENROLLMENT", e_amt, "DOLLAR"),
+                )
+                t1 = t0 + timedelta(minutes=7)
+                self._tx[BANK_ACC_USD].append(
+                    _treasury_tx(BANK_ACC_USD, t1, "WITHDRAWAL", w_amt, "DOLLAR"),
+                )
+
+            base_eur = datetime(2025, 1, 2, 9, 0, 0, tzinfo=UTC)
+            for i, (e_amt, w_amt) in enumerate(
+                zip(eur_amounts_enroll, eur_amounts_withdraw, strict=True),
+            ):
+                t0 = base_eur + timedelta(minutes=i * 20)
+                self._tx[BANK_ACC_EUR].append(
+                    _treasury_tx(BANK_ACC_EUR, t0, "ENROLLMENT", e_amt, "EURO"),
+                )
+                t1 = t0 + timedelta(minutes=5)
+                self._tx[BANK_ACC_EUR].append(
+                    _treasury_tx(BANK_ACC_EUR, t1, "WITHDRAWAL", w_amt, "EURO"),
+                )
+
+            base_rub = datetime(2025, 1, 3, 10, 0, 0, tzinfo=UTC)
+            for i, (e_amt, w_amt) in enumerate(
+                zip(rub_amounts_enroll, rub_amounts_withdraw, strict=True),
+            ):
+                t0 = base_rub + timedelta(minutes=i * 25)
+                self._tx[BANK_ACC_RUB].append(
+                    _treasury_tx(BANK_ACC_RUB, t0, "ENROLLMENT", e_amt, "RUBLE"),
+                )
+                t1 = t0 + timedelta(minutes=8)
+                self._tx[BANK_ACC_RUB].append(
+                    _treasury_tx(BANK_ACC_RUB, t1, "WITHDRAWAL", w_amt, "RUBLE"),
+                )
+
+    def bank_treasury_balances(self) -> BankTreasuryBalancesDto:
+        self._ensure_bank_treasury()
+        items: list[BankTreasuryBalanceItem] = []
+        for aid in (BANK_ACC_USD, BANK_ACC_EUR, BANK_ACC_RUB):
+            a = self.get_account(aid)
+            assert a is not None
+            items.append(
+                BankTreasuryBalanceItem(
+                    cardAccountId=aid,
+                    balance=_money(a.balance, a.currency_code),
+                ),
+            )
+        return BankTreasuryBalancesDto(accounts=items)
+
+    def page_bank_treasury_transactions(
+        self,
+        page_index: int,
+        page_size: int,
+    ) -> PageTransactionOperation:
+        self._ensure_bank_treasury()
+        with self._lock:
+            merged: list[TransactionOperation] = []
+            for aid in (BANK_ACC_USD, BANK_ACC_EUR, BANK_ACC_RUB):
+                merged.extend(list(self._tx.get(aid, ())))
+        merged.sort(
+            key=lambda op: (
+                op.dateTime,
+                str(op.cardAccountId),
+                str(op.id) if op.id else "",
+            ),
+        )
+        total = len(merged)
+        total_pages = (total + page_size - 1) // page_size if total else 0
+        start = page_index * page_size
+        chunk = merged[start : start + page_size]
         return PageTransactionOperation(
             totalPages=total_pages,
             totalElements=total,
@@ -768,8 +992,6 @@ class MockStore:
 def user_to_dto(u: MockUser) -> UserDto:
     allowed: set[str] = {"CLIENT", "WORKER", "BLOCKED_CLIENT", "BLOCKED_WORKER"}
     rl = [r for r in u.roles if r in allowed]
-    if not rl:
-        rl = ["CLIENT"]
     return UserDto(
         id=u.id,
         name=u.name,
@@ -803,17 +1025,18 @@ def _seed_mock_user(
             email=email_key,
             salt=salt,
             pwd_hash=pwd_hash,
-            roles=list(roles) if roles is not None else ["CLIENT"],
+            roles=list(roles) if roles is not None else [],
             active=active,
         )
 
 
 def _seed_bff_mocks() -> None:
     """Стартовые пользователи для ручных проверок и набор CreditRule (если store пустой)."""
-    _seed_mock_user("test@email.com", "asdfasdf123", "Test user")
-    _seed_mock_user("alice@demo.local", "demo123", "Alice Demo")
-    _seed_mock_user("bob@demo.local", "demo123", "Bob Demo")
-    _seed_mock_user("worker@demo.local", "demo123", "Demo worker", roles=["WORKER"])
+    _both = ["CLIENT", "WORKER"]
+    _seed_mock_user("test@email.com", "asdfasdf123", "Test user", roles=_both)
+    _seed_mock_user("alice@demo.local", "demo123", "Alice Demo", roles=_both)
+    _seed_mock_user("bob@demo.local", "demo123", "Bob Demo", roles=[])
+    _seed_mock_user("worker@demo.local", "demo123", "Demo worker", roles=_both)
     _seed_mock_user(
         "blocked@demo.local",
         "demo123",
@@ -877,6 +1100,8 @@ def _seed_bff_mocks() -> None:
             for r in demo_rules:
                 if r.id is not None:
                     store._credit_rules[r.id] = r
+
+    store._ensure_bank_treasury()
 
 
 _seed_bff_mocks()

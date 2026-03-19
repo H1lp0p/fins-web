@@ -1,0 +1,7 @@
+.user-row-card {
+    &:hover {
+        .user-row-card-name {
+            text-decoration: underline;
+        }
+    }
+}

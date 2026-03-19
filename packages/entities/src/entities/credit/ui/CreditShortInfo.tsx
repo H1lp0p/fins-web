@@ -47,6 +47,12 @@ function formatPercentCommaOneDecimal(ratio: number): string {
   return (ratio * 100).toFixed(1).replace(".", ",");
 }
 
+function styleRequestsFullWidth(s: CSSProperties | undefined): boolean {
+  if (s?.width == null) return false;
+  if (typeof s.width === "number") return false;
+  return String(s.width).trim() === "100%";
+}
+
 /**
  * Краткая карточка кредита (макет Figma `credit-short-info`).
  */
@@ -63,11 +69,23 @@ export function CreditShortInfo({
   const filled = ratio == null ? 0 : filledBarSegments(ratio);
   const empty = BAR_INNER_LEN - filled;
 
+  const rootStyle: CSSProperties = {
+    boxSizing: "border-box",
+    ...(styleRequestsFullWidth(style)
+      ? {
+          alignSelf: "stretch",
+          minWidth: 0,
+          maxWidth: "100%",
+        }
+      : {}),
+    ...style,
+  };
+
   return (
     <OnBlurContainer
       className={`${styles.root} ${styles.mono} ${styles.flexCol} ph-mid pv-mid gap-mid ${className ?? ""}`.trim()}
       data-entity="credit-short-info"
-      style={style}
+      style={rootStyle}
     >
       <h3
         className={`${styles.titleReset} ${styles.title} text-title color-info`}

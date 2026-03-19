@@ -7,13 +7,14 @@ interface LinkButtonProps {
     onClick: () => void;
     variant?: LinkButtonVariant;
     textClassName?: TextStyleType;
+    loading?: boolean;
     disabled?: boolean;
 }
 
-export function LinkButton({ text, onClick, variant = "info", textClassName = "text-info", disabled = false }: LinkButtonProps) {
+export function LinkButton({ text, onClick, variant = "info", textClassName = "text-info", disabled = false, loading = false }: LinkButtonProps) {
     
     const handleClick = () => {
-        if (disabled) return;
+        if (disabled || loading) return;
         onClick();
     };
     
@@ -24,7 +25,13 @@ export function LinkButton({ text, onClick, variant = "info", textClassName = "t
             onClick={handleClick}
             data-disabled={disabled}
         >
-            [{text}]
+            
+            {loading ? 
+            <span className="text-info color-input-placeholder">…</span> : 
+            <span className="text-info">
+                [{text}]
+            </span>
+            }
         </span>
     );
 }
