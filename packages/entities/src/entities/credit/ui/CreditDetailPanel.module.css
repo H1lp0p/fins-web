@@ -5,34 +5,27 @@
 }
 
 .section {
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--fins-min-gap);
 }
 
 .sectionTitle {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--fins-min-gap);
 }
 
 .debtRow {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.75rem;
-  margin-bottom: 0.35rem;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
 .lastRepayRow {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 0.75rem;
 }
 
 .accountCardInner {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-}
-
-.accountLabel {
-  font-size: 0.9em;
 }

@@ -17,15 +17,30 @@ importers:
 
   apps/admin:
     dependencies:
+      '@fins/api':
+        specifier: workspace:^
+        version: link:../../packages/api
+      '@fins/entities':
+        specifier: workspace:*
+        version: link:../../packages/entities
       '@fins/ui-kit':
         specifier: workspace:*
         version: link:../../packages/ui-kit
+      '@reduxjs/toolkit':
+        specifier: ^2.5.0
+        version: 2.11.2(react-redux@9.2.0(@types/react@18.3.28)(react@18.3.1)(redux@5.0.1))(react@18.3.1)
       react:
         specifier: ^18.3.1
         version: 18.3.1
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
+      react-redux:
+        specifier: ^9.2.0
+        version: 9.2.0(@types/react@18.3.28)(react@18.3.1)(redux@5.0.1)
+      react-router-dom:
+        specifier: ^7.13.1
+        version: 7.13.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@types/react':
         specifier: ^18.3.18

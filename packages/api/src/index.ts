@@ -28,6 +28,8 @@ export {
   useGetByUserIdQuery,
   useGetCreditRuleByIdQuery,
   useGetTransactionOperationsQuery,
+  useGetBankTreasuryBalancesQuery,
+  useGetBankTreasuryTransactionsQuery,
   useGetUserById1Query,
   useGetUserByIdQuery,
   useGetUserCardAccountQuery,

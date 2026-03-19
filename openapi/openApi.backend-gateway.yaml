@@ -205,8 +205,9 @@ paths:
         - Users
       operationId: getUsersDirectory
       description: >
-        Краткий список пользователей для клиентского приложения (роль CLIENT и прочие без WORKER):
-        id, отображаемое имя и валюта основного счёта. Полный список UserDto — только у WORKER (`GET /user-service/users`).
+        Краткий список пользователей для клиентского приложения:
+        id, отображаемое имя и валюта основного счёта. Полный список UserDto — только у пользователей с ролью WORKER (`GET /user-service/users`).
+        У пользователя может не быть ни одной роли; при этом CLIENT и WORKER могут быть назначены одновременно.
       responses:
         '200':
           description: OK
@@ -933,8 +934,12 @@ components:
         name:
           type: string
         newRoles:
+          description: >
+            Новый набор ролей. Пустой массив снимает все роли (пользователь может остаться без ролей).
+            Несколько ролей одновременно допустимы (например CLIENT и WORKER).
           uniqueItems: true
           type: array
+          minItems: 0
           items:
             type: string
             enum:
@@ -999,8 +1004,12 @@ components:
         email:
           type: string
         roles:
+          description: >
+            Роли пользователя. Может быть пустым: у пользователя может не быть ни одной роли.
+            Значения CLIENT и WORKER не взаимоисключающие — допустимы оба одновременно.
           uniqueItems: true
           type: array
+          minItems: 0
           items:
             type: string
             enum:
