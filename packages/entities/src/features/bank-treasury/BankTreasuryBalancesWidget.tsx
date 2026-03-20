@@ -4,7 +4,12 @@ import {
   useGetBankTreasuryBalancesQuery,
   useGetUserQuery,
 } from "@fins/api";
-import { AmountWithSymbol, useMessageStack } from "@fins/ui-kit";
+import {
+  AmountWithSymbol,
+  CenteredPlaceholder,
+  LoadingFrameIndicator,
+  useMessageStack,
+} from "@fins/ui-kit";
 import { useEffect, useRef } from "react";
 import { currencyCodeToAmountSymbol } from "../../lib/currency-symbol";
 
@@ -64,14 +69,36 @@ export function BankTreasuryBalancesWidget() {
 
   if (isLoading) {
     return (
-      <div className="ph-mid pv-mid">
-        <span className="text-info color-input-placeholder">…</span>
+      <div
+        className="ph-mid pv-mid"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "4rem",
+          width: "100%",
+          boxSizing: "border-box",
+        }}
+      >
+        <LoadingFrameIndicator />
       </div>
     );
   }
 
-  if (isError || !data?.accounts?.length) {
-    return emptySlot;
+  if (isError) {
+    return (
+      <div style={{ minHeight: "4rem", width: "100%" }}>
+        <CenteredPlaceholder text="treasuryBalancesQuery.status === 'rejected'" />
+      </div>
+    );
+  }
+
+  if (!data?.accounts?.length) {
+    return (
+      <div style={{ minHeight: "4rem", width: "100%" }}>
+        <CenteredPlaceholder text="accounts.length === 0" />
+      </div>
+    );
   }
 
   const rows = data.accounts

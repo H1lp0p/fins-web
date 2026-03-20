@@ -1,5 +1,7 @@
 import "./link-button.css";
 import type { TextStyleType } from "../../types/textStyleType";
+import { LoadingFrameIndicator } from "../loading-frame-indicator/LoadingFrameIndicator";
+
 export type LinkButtonVariant = "info" | "success" | "error";
 
 interface LinkButtonProps {
@@ -26,12 +28,17 @@ export function LinkButton({ text, onClick, variant = "info", textClassName = "t
             data-disabled={disabled}
         >
             
-            {loading ? 
-            <span className="text-info color-input-placeholder">…</span> : 
+            {loading ? (
+            <span className="text-info">
+                [
+                <LoadingFrameIndicator className="text-info color-input-placeholder" />
+                ]
+            </span>
+            ) : (
             <span className="text-info">
                 [{text}]
             </span>
-            }
+            )}
         </span>
     );
 }

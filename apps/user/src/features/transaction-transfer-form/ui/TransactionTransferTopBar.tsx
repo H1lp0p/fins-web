@@ -1,4 +1,4 @@
-import { LinkButton } from "@fins/ui-kit";
+import { LinkButton, LoadingFrameIndicator } from "@fins/ui-kit";
 
 export type TransactionTransferTopBarProps = {
   disabled: boolean;
@@ -24,13 +24,22 @@ export function TransactionTransferTopBar({
       }}
     >
       <span className="color-input-placeholder">&gt;&gt;&gt;</span>
-      <LinkButton
-        text={loading ? "…" : "Transfer"}
-        variant="success"
-        textClassName="text-info-accent"
-        disabled={disabled || loading}
-        onClick={onTransfer}
-      />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+        }}
+      >
+        <LinkButton
+          text="Transfer"
+          variant="success"
+          textClassName="text-info-accent"
+          disabled={disabled || loading}
+          onClick={onTransfer}
+        />
+        {loading ? <LoadingFrameIndicator /> : null}
+      </div>
       <span className="color-input-placeholder">&gt;&gt;&gt;</span>
     </div>
   );

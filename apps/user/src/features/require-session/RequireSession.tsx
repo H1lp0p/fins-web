@@ -1,18 +1,18 @@
 import { useGetUserQuery } from "@fins/api";
-import { BgText, useMessageStack } from "@fins/ui-kit";
+import { BgText, LoadingFrameIndicator, useMessageStack } from "@fins/ui-kit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
+import { accountSessionErrorMessage } from "../../lib/userStackMessages";
 import { getSsoOrigin } from "../../shared/lib/sso-origin";
-
-type RequireSessionProps = {
-  children: ReactNode;
-};
 
 /**
  * Проверка сессии через `GET /user-service/account`.
- * 401 → редирект на SSO с `returnUrl` (для будущего использования на стороне SSO).
+ * 401 → редирект на SSO с `returnUrl`.
+ * 403 → `/403`.
  */
-export function RequireSession({ children }: RequireSessionProps) {
+export function RequireSession() {
+  const navigate = useNavigate();
   const { pushMessage } = useMessageStack();
   const warnedRef = useRef(false);
 
@@ -35,18 +35,14 @@ export function RequireSession({ children }: RequireSessionProps) {
       window.location.replace(`${sso}/?returnUrl=${next}`);
       return;
     }
+    if (e.status === 403) {
+      navigate("/403", { replace: true });
+      return;
+    }
     if (warnedRef.current) return;
     warnedRef.current = true;
-    const text =
-      e.status === "FETCH_ERROR"
-        ? "Cannot reach the bank API. Is BFF running and the Vite /api proxy configured?"
-        : `Could not load your account (${String(e.status)}).`;
-    pushMessage({
-      type: "error",
-      title: "Account",
-      text,
-    });
-  }, [account.isError, account.error, pushMessage]);
+    pushMessage(accountSessionErrorMessage(e));
+  }, [account.isError, account.error, navigate, pushMessage]);
 
   const pending =
     !account.isSuccess &&
@@ -55,26 +51,38 @@ export function RequireSession({ children }: RequireSessionProps) {
 
   if (pending) {
     return (
-      <main className="bg-background">
-        <BgText text="…" />
+      <main
+        className="bg-background"
+        style={{
+          position: "relative",
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <BgText text="Account" />
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <LoadingFrameIndicator />
+        </div>
       </main>
     );
   }
 
   if (account.isError) {
     const e = account.error as FetchBaseQueryError;
-    if (e.status === 401) {
+    if (e.status === 401 || e.status === 403) {
       return null;
     }
     return (
-      <main className="bg-background">
+      <main
+        className="bg-background"
+        style={{ position: "relative", minHeight: "100vh" }}
+      >
         <BgText text="Error" />
-        <div className="ph-max pv-max">
-          <p style={{ margin: 0 }}>Something went wrong. Use the message stack or reload.</p>
-        </div>
       </main>
     );
   }
 
-  return <>{children}</>;
+  return <Outlet />;
 }

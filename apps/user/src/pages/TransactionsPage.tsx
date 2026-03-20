@@ -12,7 +12,6 @@ import { TriColSpaceLayout, useMessageStack } from "@fins/ui-kit";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { AccountGrid, currencyCodeToAmountSymbol, mockRateFromTo } from "@fins/entities";
-import { RequireSession } from "../features/require-session/RequireSession";
 import { TransactionDestinationResults } from "../features/transaction-destination-results";
 import {
   TransactionDestinationSearch,
@@ -33,7 +32,7 @@ import {
   symbolIndexInTransactionCurrencies,
 } from "../shared/lib/transaction-currencies";
 
-function TransactionsContent() {
+export function TransactionsPage() {
   const location = useLocation();
   const { pushMessage } = useMessageStack();
   const { data: user } = useGetUserQuery();
@@ -60,7 +59,11 @@ function TransactionsContent() {
   const [withdrawMoney, { isLoading: withdrawLoading }] =
     useWithdrawMoneyMutation();
 
-  const { data: directoryRaw = [] } = useGetUsersDirectoryQuery(undefined, {
+  const {
+    data: directoryRaw = [],
+    isLoading: directoryLoading,
+    isFetching: directoryFetching,
+  } = useGetUsersDirectoryQuery(undefined, {
     skip: !userId,
   });
   const users: TransferDestinationUser[] = useMemo(
@@ -470,17 +473,10 @@ function TransactionsContent() {
             onSelectAccount={setSelectedAccountId}
             onSelectCredit={setSelectedCreditId}
             onSelectUser={setSelectedUserId}
+            usersDirectoryLoading={directoryLoading || directoryFetching}
           />
         }
       />
     </div>
-  );
-}
-
-export function TransactionsPage() {
-  return (
-    <RequireSession>
-      <TransactionsContent />
-    </RequireSession>
   );
 }

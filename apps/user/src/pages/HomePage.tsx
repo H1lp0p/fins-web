@@ -14,11 +14,9 @@ import {
   ExchangeRateWidget,
   sortAccountsForIndex,
 } from "@fins/entities";
-import { RequireSession } from "../features/require-session/RequireSession";
-
 type BottomLeftMode = "accounts" | "create";
 
-function IndexContent() {
+export function HomePage() {
   const { data: user } = useGetUserQuery();
   const userId = user?.id ?? "";
   const { data: page } = useGetUserCardAccountsQuery(
@@ -150,13 +148,5 @@ function IndexContent() {
         }
       />
     </div>
-  );
-}
-
-export function HomePage() {
-  return (
-    <RequireSession>
-      <IndexContent />
-    </RequireSession>
   );
 }

@@ -1,11 +1,27 @@
 import type { CardAccountEntity, CreditRuleEntity } from "@fins/api";
 import {
+  extractBffError,
   useCreateCreditMutation,
   validateCreditCreateForm,
 } from "@fins/api";
-import { Input, LinkButton, OnBlurContainer } from "@fins/ui-kit";
+import {
+  Input,
+  LinkButton,
+  LoadingFrameIndicator,
+  OnBlurContainer,
+  useMessageStack,
+} from "@fins/ui-kit";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useCallback, useState } from "react";
-import { CardAccountInfo, CreditRuleInfo, currencyCodeToAmountSymbol } from "@fins/entities";
+import {
+  CardAccountInfo,
+  CreditRuleInfo,
+  currencyCodeToAmountSymbol,
+} from "@fins/entities";
+import {
+  creditCreateFieldErrorsToMessages,
+  serverReturnedLine,
+} from "../../lib/userStackMessages";
 
 type CreditCreateFormProps = {
   userId: string;
@@ -16,6 +32,32 @@ type CreditCreateFormProps = {
   onCreated: () => void;
 };
 
+type FieldKey =
+  | "userId"
+  | "cardAccount"
+  | "creditRuleId"
+  | "money.value"
+  | "money.currency";
+
+function allFieldsValid(): Record<FieldKey, boolean> {
+  return {
+    userId: true,
+    cardAccount: true,
+    creditRuleId: true,
+    "money.value": true,
+    "money.currency": true,
+  };
+}
+
+function asFetchBaseQueryError(
+  err: unknown,
+): FetchBaseQueryError | undefined {
+  if (typeof err !== "object" || err === null || !("status" in err)) {
+    return undefined;
+  }
+  return err as FetchBaseQueryError;
+}
+
 export function CreditCreateForm({
   userId,
   rule,
@@ -25,14 +67,17 @@ export function CreditCreateForm({
   onCreated,
 }: CreditCreateFormProps) {
   const [createCredit, { isLoading }] = useCreateCreditMutation();
-  const [errorText, setErrorText] = useState<string | null>(null);
+  const [fieldValid, setFieldValid] = useState<Record<FieldKey, boolean>>(
+    allFieldsValid,
+  );
+
+  const { pushMessage } = useMessageStack();
 
   const currency = account?.money?.currency;
   const trailing =
     currency != null ? currencyCodeToAmountSymbol(currency) : undefined;
 
   const submit = useCallback(async () => {
-    setErrorText(null);
     const validated = validateCreditCreateForm({
       userId,
       cardAccount: account?.id,
@@ -41,16 +86,61 @@ export function CreditCreateForm({
       moneyCurrency: currency,
     });
     if (!validated.ok) {
-      const fromFields = Object.values(validated.fieldErrors).flat()[0];
-      const fromForm = validated.formErrors?.[0];
-      setErrorText(fromFields ?? fromForm ?? "Проверьте поля формы");
+      const keys = Object.keys(validated.fieldErrors) as FieldKey[];
+      setFieldValid({
+        userId: !keys.includes("userId"),
+        cardAccount: !keys.includes("cardAccount"),
+        creditRuleId: !keys.includes("creditRuleId"),
+        "money.value": !keys.includes("money.value"),
+        "money.currency": !keys.includes("money.currency"),
+      });
+      for (const m of creditCreateFieldErrorsToMessages(
+        validated.fieldErrors,
+      )) {
+        pushMessage(m);
+      }
       return;
     }
+    setFieldValid(allFieldsValid());
     try {
       await createCredit({ creditCreateModelDto: validated.value }).unwrap();
       onCreated();
-    } catch {
-      setErrorText("Не удалось создать кредит");
+    } catch (err) {
+      const fe = asFetchBaseQueryError(err);
+      if (fe !== undefined) {
+        const bff = extractBffError(fe);
+        const feMap = bff?.fieldErrors ?? {};
+        const keys = Object.keys(feMap) as FieldKey[];
+        setFieldValid({
+          userId: !keys.includes("userId"),
+          cardAccount: !keys.includes("cardAccount"),
+          creditRuleId: !keys.includes("creditRuleId"),
+          "money.value": !keys.includes("money.value"),
+          "money.currency": !keys.includes("money.currency"),
+        });
+        const fromServer = creditCreateFieldErrorsToMessages(feMap);
+        if (fromServer.length > 0) {
+          for (const m of fromServer) pushMessage(m);
+        } else {
+          pushMessage({
+            type: "error",
+            title: "RequestError",
+            text:
+              bff?.message ??
+              serverReturnedLine(fe) ??
+              (bff?.code
+                ? `Property {${bff.code}} doesn't fit requirements`
+                : "Property {Credit} doesn't fit requirements"),
+          });
+        }
+      } else {
+        setFieldValid(allFieldsValid());
+        pushMessage({
+          type: "error",
+          title: "NetworkError",
+          text: "Property {Network} doesn't fit requirements",
+        });
+      }
     }
   }, [
     account?.id,
@@ -58,9 +148,12 @@ export function CreditCreateForm({
     createCredit,
     currency,
     onCreated,
+    pushMessage,
     rule?.id,
     userId,
   ]);
+
+  const amountValid = fieldValid["money.value"] && fieldValid["money.currency"];
 
   return (
     <div
@@ -74,11 +167,23 @@ export function CreditCreateForm({
         justifyContent: "space-between",
       }}
     >
-      <div className="gap-min" style={{ display: "flex", flexDirection: "column"}}>
-        
-        {rule ? <CreditRuleInfo rule={rule} selected={true} style={{ width: "100%" }}/> : null}
+      <div
+        className="gap-min"
+        style={{ display: "flex", flexDirection: "column" }}
+      >
+        {rule ? (
+          <CreditRuleInfo
+            rule={rule}
+            selected={true}
+            style={{ width: "100%" }}
+          />
+        ) : null}
         {account ? (
-          <CardAccountInfo account={account} selected={true} style={{ width: "100%" }} />
+          <CardAccountInfo
+            account={account}
+            selected={true}
+            style={{ width: "100%" }}
+          />
         ) : (
           <p className="text-info color-input-placeholder">
             Выберите счёт справа
@@ -88,19 +193,20 @@ export function CreditCreateForm({
         <Input
           title="Amount"
           value={amount}
-          onChange={onAmountChange}
+          onChange={(v) => {
+            onAmountChange(v);
+            setFieldValid((prev) => ({
+              ...prev,
+              "money.value": true,
+              "money.currency": true,
+            }));
+          }}
           trailingChar={trailing}
-          isValid={errorText == null}
+          isValid={amountValid}
         />
-
-        {errorText ? (
-          <p className="text-info color-error" style={{ margin: 0 }}>
-            {errorText}
-          </p>
-        ) : null}
       </div>
 
-      <OnBlurContainer 
+      <OnBlurContainer
         className="pv-mid ph-max"
         style={{
           display: "flex",
@@ -113,9 +219,9 @@ export function CreditCreateForm({
           onClick={() => void submit()}
         />
         {isLoading ? (
-          <span className="text-info color-input-placeholder ph-mid">
-            …
-          </span>
+          <div className="ph-mid" style={{ display: "flex", justifyContent: "center" }}>
+            <LoadingFrameIndicator />
+          </div>
         ) : null}
       </OnBlurContainer>
     </div>

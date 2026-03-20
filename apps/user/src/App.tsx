@@ -1,10 +1,19 @@
 import type { Tab } from "@fins/ui-kit";
-import { BgText, Header } from "@fins/ui-kit";
-import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { BgText, Header, HttpStatusScreen } from "@fins/ui-kit";
+import {
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+import { NavigationBridge } from "./app/NavigationBridge";
 import { HeaderSessionTray } from "./features/header-session/HeaderSessionTray";
+import { RequireSession } from "./features/require-session/RequireSession";
 import { CreditPage } from "./pages/CreditPage";
 import { HomePage } from "./pages/HomePage";
 import { TransactionsPage } from "./pages/TransactionsPage";
+import { getSsoOrigin } from "./shared/lib/sso-origin";
 
 const NAV_ITEMS = [
   { id: "index", label: "Index", path: "/" },
@@ -27,13 +36,12 @@ function pathnameToTabId(pathname: string): Tab["id"] {
   return match?.id ?? "index";
 }
 
-export default function App() {
+function MainShell() {
   const location = useLocation();
   const navigate = useNavigate();
 
   const activeId = pathnameToTabId(location.pathname);
-  const activeNav =
-    NAV_ITEMS.find((t) => t.id === activeId) ?? NAV_ITEMS[0];
+  const activeNav = NAV_ITEMS.find((t) => t.id === activeId) ?? NAV_ITEMS[0];
   const activeTab: Tab = {
     id: activeNav.id,
     label: activeNav.label,
@@ -52,27 +60,85 @@ export default function App() {
         onTabClick={onTabClick}
         trailingContent={<HeaderSessionTray />}
       />
-      <Routes>
-        <Route path="/" element={
-          <>
-            <BgText text="Home" />
-            <HomePage />
-          </>
-          } />
-        <Route path="/transactions" element={
-          <>
-            <BgText text="Transactions" />
-            <TransactionsPage />
-          </>
-          } />
-        <Route path="/credit" element={
-          <>
-            <BgText text="Credit" />
-            <CreditPage />
-          </>
-          } />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Outlet />
     </main>
+  );
+}
+
+function UserForbiddenPage() {
+  return (
+    <HttpStatusScreen
+      code="403"
+      actionText="goto auth"
+      onAction={() => {
+        window.location.assign(`${getSsoOrigin()}/`);
+      }}
+    />
+  );
+}
+
+function UserServerErrorPage() {
+  const navigate = useNavigate();
+  return (
+    <HttpStatusScreen
+      code="500"
+      actionText="goto /index"
+      onAction={() => navigate("/", { replace: true })}
+    />
+  );
+}
+
+function UserNotFoundPage() {
+  const navigate = useNavigate();
+  return (
+    <HttpStatusScreen
+      code="404"
+      actionText="goto /index"
+      onAction={() => navigate("/", { replace: true })}
+    />
+  );
+}
+
+export default function App() {
+  return (
+    <>
+      <NavigationBridge />
+      <Routes>
+        <Route path="/403" element={<UserForbiddenPage />} />
+        <Route path="/500" element={<UserServerErrorPage />} />
+        <Route path="/" element={<MainShell />}>
+          <Route element={<RequireSession />}>
+            <Route
+              index
+              element={
+                <>
+                  <BgText text="Home" />
+                  <HomePage />
+                </>
+              }
+            />
+            <Route
+              path="transactions"
+              element={
+                <>
+                  <BgText text="Transactions" />
+                  <TransactionsPage />
+                </>
+              }
+            />
+            <Route
+              path="credit"
+              element={
+                <>
+                  <BgText text="Credit" />
+                  <CreditPage />
+                </>
+              }
+            />
+          </Route>
+        </Route>
+        <Route path="*" element={<UserNotFoundPage />} />
+      </Routes>
+    </>
   );
 }

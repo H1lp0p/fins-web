@@ -1,6 +1,6 @@
 import type { CardAccountEntity, CreditEntity } from "@fins/api";
 import type { Tab } from "@fins/ui-kit";
-import { TabList } from "@fins/ui-kit";
+import { CenteredPlaceholder, TabList } from "@fins/ui-kit";
 import { CardAccountInfo, CreditShortInfo } from "@fins/entities";
 
 const ENTITY_TABS: Tab[] = [
@@ -73,38 +73,44 @@ export function UserEntityPickerPanel({
         }}
       >
         {entityTab === "accounts" ? (
-          <div
-            className="gap-min ph-mid"
-            style={{
-              display: "grid",
-              width: "100%",
-              boxSizing: "border-box",
-              height: "100%",
-              gridTemplateColumns: "1fr 1fr",
-              alignContent: "start",
-            }}
-          >
-            {accounts.map((acc) => (
-              <div
-                key={acc.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => onSelectAccount(acc.id ?? null)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    onSelectAccount(acc.id ?? null);
-                  }
-                }}
-                style={{ cursor: "pointer" }}
-              >
-                <CardAccountInfo
-                  account={acc}
-                  selected={acc.id === selectedAccountId}
-                />
-              </div>
-            ))}
-          </div>
+          accounts.length === 0 ? (
+            <CenteredPlaceholder text="accounts.length === 0" />
+          ) : (
+            <div
+              className="gap-min ph-mid"
+              style={{
+                display: "grid",
+                width: "100%",
+                boxSizing: "border-box",
+                height: "100%",
+                gridTemplateColumns: "1fr 1fr",
+                alignContent: "start",
+              }}
+            >
+              {accounts.map((acc) => (
+                <div
+                  key={acc.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onSelectAccount(acc.id ?? null)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelectAccount(acc.id ?? null);
+                    }
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  <CardAccountInfo
+                    account={acc}
+                    selected={acc.id === selectedAccountId}
+                  />
+                </div>
+              ))}
+            </div>
+          )
+        ) : credits.length === 0 ? (
+          <CenteredPlaceholder text="credits.length === 0" />
         ) : (
           credits.map((cr) => (
             <div

@@ -3,9 +3,32 @@ import {
   useGetBankTreasuryTransactionsQuery,
   useGetUserQuery,
 } from "@fins/api";
-import { LinkButton, OnBlurContainer, useMessageStack } from "@fins/ui-kit";
+import {
+  CenteredPlaceholder,
+  LinkButton,
+  LoadingFrameIndicator,
+  OnBlurContainer,
+  useMessageStack,
+} from "@fins/ui-kit";
 import { useEffect, useRef } from "react";
 import { TransactionHistoryItem } from "../../entities/transaction";
+
+const listShellStyle = {
+  flex: 1,
+  overflow: "auto" as const,
+  display: "flex",
+  flexDirection: "column" as const,
+  minHeight: 0,
+};
+
+const centeredFlex = {
+  flex: 1,
+  minHeight: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "100%",
+};
 
 export function BankTreasuryTransactionsPanel() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -112,23 +135,15 @@ export function BankTreasuryTransactionsPanel() {
           />
         </OnBlurContainer>
       </div>
-      <div
-        className="ph-mid gap-mid rounded"
-        ref={scrollRef}
-        style={{
-          flex: 1,
-          overflow: "auto",
-          display: "flex",
-          flexDirection: "column",
-          minHeight: 0,
-        }}
-      >
+      <div className="ph-mid gap-mid rounded" ref={scrollRef} style={listShellStyle}>
         {isLoading ? (
-          <span className="text-info color-input-placeholder">…</span>
+          <div style={centeredFlex}>
+            <LoadingFrameIndicator />
+          </div>
         ) : isError ? (
-          <span className="text-info color-input-placeholder">—</span>
+          <CenteredPlaceholder text="treasuryTransactionsQuery.status === 'rejected'" />
         ) : newestFirst.length === 0 ? (
-          <span className="text-info color-input-placeholder">Нет операций</span>
+          <CenteredPlaceholder text="operations.length === 0" />
         ) : (
           newestFirst.map((op, idx) => (
             <TransactionHistoryItem

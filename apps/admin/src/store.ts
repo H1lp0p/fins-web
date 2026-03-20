@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { generatedPublicApi, initPublicBffApi } from "@fins/api";
+import { apiErrorListener } from "./app/apiErrorListener";
 
 initPublicBffApi({
   baseUrl: import.meta.env.VITE_BFF_URL ?? "/api",
@@ -10,7 +11,10 @@ export const store = configureStore({
     [generatedPublicApi.reducerPath]: generatedPublicApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(generatedPublicApi.middleware),
+    getDefaultMiddleware().concat(
+      generatedPublicApi.middleware,
+      apiErrorListener.middleware,
+    ),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
