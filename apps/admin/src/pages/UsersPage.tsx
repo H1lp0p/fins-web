@@ -23,7 +23,6 @@ import { isValidUserId, rolesPayload } from "../shared/lib/user-id";
 import {
   editUserFailedMessage,
   forbiddenMessage,
-  invalidUserIdMessage,
   messageFromFetchError,
   userNotFoundMessage,
 } from "../lib/adminStackMessages";
@@ -39,12 +38,11 @@ export function UsersPage() {
   /** Подтверждённый запрос — список фильтруется только после клика [Search]. */
   const [appliedSearch, setAppliedSearch] = useState("");
   const userIdParam = searchParams.get("userId")?.trim() ?? "";
-  const invalidId = userIdParam !== "" && !isValidUserId(userIdParam);
-  const userId = !invalidId && userIdParam ? userIdParam : "";
+  const userId =
+    userIdParam && isValidUserId(userIdParam) ? userIdParam : "";
 
   const listErrRef = useRef(false);
   const detailErrRef = useRef(false);
-  const invalidIdRef = useRef(false);
 
   const { data: allUsersRaw = [], isError: listError, error: listErrObj } =
     useGetAllUsersQuery();
@@ -99,15 +97,12 @@ export function UsersPage() {
   const [activePending, setActivePending] = useState(false);
 
   useEffect(() => {
-    if (!invalidId) {
-      invalidIdRef.current = false;
-      return;
-    }
-    if (!invalidIdRef.current) {
-      invalidIdRef.current = true;
-      pushMessage(invalidUserIdMessage());
-    }
-  }, [invalidId, pushMessage]);
+    const raw = searchParams.get("userId")?.trim() ?? "";
+    if (raw === "" || isValidUserId(raw)) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("userId");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     if (userId) {
@@ -268,7 +263,7 @@ export function UsersPage() {
         ? "checked"
         : "denied";
 
-  const showDetailShell = Boolean(userId && !invalidId);
+  const showDetailShell = Boolean(userId);
   const hasDetailData = Boolean(detailUser && detailOk);
   const bgLabel = showDetailShell && hasDetailData ? "User Info" : "Users";
 
