@@ -1,0 +1,20 @@
+# syntax=docker/dockerfile:1
+
+FROM node:22-bookworm-slim AS frontend
+WORKDIR /repo
+RUN corepack enable
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.base.json ./
+COPY packages ./packages
+COPY apps ./apps
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @fins/ui-kit build && pnpm --filter @fins/sso build
+
+FROM python:3.12-slim-bookworm
+WORKDIR /app
+ENV PYTHONUNBUFFERED=1
+COPY services/bff/pyproject.toml services/bff/README.md ./
+COPY services/bff/app ./app
+RUN pip install --no-cache-dir .
+COPY --from=frontend /repo/apps/sso/dist/ ./static/sso/
+EXPOSE 8000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
