@@ -4,7 +4,13 @@ import {
   useCreateCreditMutation,
   validateCreditCreateForm,
 } from "@fins/api";
-import { Input, LinkButton, OnBlurContainer, useMessageStack } from "@fins/ui-kit";
+import {
+  Input,
+  LinkButton,
+  LoadingFrameIndicator,
+  OnBlurContainer,
+  useMessageStack,
+} from "@fins/ui-kit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useCallback, useState } from "react";
 import {
@@ -213,7 +219,9 @@ export function CreditCreateForm({
           onClick={() => void submit()}
         />
         {isLoading ? (
-          <span className="text-info color-input-placeholder ph-mid">…</span>
+          <div className="ph-mid" style={{ display: "flex", justifyContent: "center" }}>
+            <LoadingFrameIndicator />
+          </div>
         ) : null}
       </OnBlurContainer>
     </div>

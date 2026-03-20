@@ -1,5 +1,5 @@
 import { useGetUserQuery } from "@fins/api";
-import { BgText, useMessageStack } from "@fins/ui-kit";
+import { BgText, LoadingFrameIndicator, useMessageStack } from "@fins/ui-kit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useEffect, useRef } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
@@ -51,8 +51,20 @@ export function RequireSession() {
 
   if (pending) {
     return (
-      <main className="bg-background">
-        <BgText text="…" />
+      <main
+        className="bg-background"
+        style={{
+          position: "relative",
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <BgText text="Account" />
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <LoadingFrameIndicator />
+        </div>
       </main>
     );
   }

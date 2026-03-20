@@ -8,6 +8,7 @@ import {
   DEFAULT_CHARS,
   Input,
   LinkButton,
+  LoadingFrameIndicator,
   OnBlurContainer,
   useMessageStack,
 } from "@fins/ui-kit";
@@ -212,7 +213,9 @@ export function AccountCreateForm({
           onClick={() => void submit()}
         />
         {isLoading ? (
-          <span className="text-info color-input-placeholder ph-mid">…</span>
+          <div className="ph-mid" style={{ display: "flex", justifyContent: "center" }}>
+            <LoadingFrameIndicator />
+          </div>
         ) : null}
       </OnBlurContainer>
     </div>

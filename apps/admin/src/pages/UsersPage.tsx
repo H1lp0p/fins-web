@@ -50,8 +50,13 @@ export function UsersPage() {
   const listErrRef = useRef(false);
   const detailErrRef = useRef(false);
 
-  const { data: allUsersRaw = [], isError: listError, error: listErrObj } =
-    useGetAllUsersQuery();
+  const {
+    data: allUsersRaw = [],
+    isError: listError,
+    error: listErrObj,
+    isLoading: listLoading,
+    isFetching: listFetching,
+  } = useGetAllUsersQuery();
   const allUsers = allUsersRaw as User[];
   const {
     data: detailUser,
@@ -345,7 +350,11 @@ export function UsersPage() {
   );
 
   const rightBottom = !showDetailShell ? (
-    <UsersDirectoryPanel users={filteredUsers} onPickUser={pickUser} />
+    <UsersDirectoryPanel
+      users={filteredUsers}
+      onPickUser={pickUser}
+      isLoading={listLoading || listFetching}
+    />
   ) : !hasDetailData ? (
     undefined
   ) : (
