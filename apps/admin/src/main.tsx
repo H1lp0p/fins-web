@@ -5,6 +5,7 @@ import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import "@fins/ui-kit/style.css";
 import "@fins/entities/style.css";
+import { AppErrorBoundary } from "./app/AppErrorBoundary";
 import App from "./App";
 import "./index.css";
 import { store } from "./store";
@@ -14,7 +15,9 @@ createRoot(document.getElementById("root")!).render(
     <Provider store={store}>
       <BrowserRouter>
         <MessageStackProvider maxMessages={5}>
-          <App />
+          <AppErrorBoundary>
+            <App />
+          </AppErrorBoundary>
         </MessageStackProvider>
       </BrowserRouter>
     </Provider>

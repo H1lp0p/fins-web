@@ -4,10 +4,7 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { CreditRuleInfo } from "@fins/entities";
 import { useMessageStack } from "@fins/ui-kit";
 import { useEffect, useRef } from "react";
-import {
-  forbiddenMessage,
-  messageFromFetchError,
-} from "../../../lib/adminStackMessages";
+import { messageFromFetchError } from "../../../lib/adminStackMessages";
 import styles from "./CreditRulesGridPanel.module.css";
 
 export function CreditRulesGridPanel() {
@@ -23,9 +20,7 @@ export function CreditRulesGridPanel() {
     if (errRef.current) return;
     errRef.current = true;
     const fe = error as FetchBaseQueryError | undefined;
-    if (fe?.status === 403) {
-      pushMessage(forbiddenMessage());
-    } else if (fe) {
+    if (fe && fe.status !== 403) {
       pushMessage(messageFromFetchError(fe));
     }
   }, [isError, error, pushMessage]);

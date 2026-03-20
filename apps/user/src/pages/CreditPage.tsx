@@ -9,7 +9,6 @@ import {
 } from "@fins/api";
 import { RectSpaceLayout } from "@fins/ui-kit";
 import { useCallback, useMemo, useState } from "react";
-import { RequireSession } from "../features/require-session/RequireSession";
 import { sortAccountsForIndex } from "@fins/entities";
 import { CreditsBottomLeftWidget } from "../widgets/credits-bottom-left";
 import { CreditsBottomRightWidget } from "../widgets/credits-bottom-right";
@@ -18,7 +17,7 @@ import { CreditsTopRightWidget } from "../widgets/credits-top-right";
 
 type PageMode = "list" | "create";
 
-function CreditPageContent() {
+export function CreditPage() {
   const { data: user } = useGetUserQuery();
   const userId = user?.id ?? "";
 
@@ -157,13 +156,5 @@ function CreditPageContent() {
         bottomRightContent={bottomRightContent}
       />
     </div>
-  );
-}
-
-export function CreditPage() {
-  return (
-    <RequireSession>
-      <CreditPageContent />
-    </RequireSession>
   );
 }

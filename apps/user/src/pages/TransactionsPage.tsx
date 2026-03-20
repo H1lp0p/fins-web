@@ -12,7 +12,6 @@ import { TriColSpaceLayout, useMessageStack } from "@fins/ui-kit";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { AccountGrid, currencyCodeToAmountSymbol, mockRateFromTo } from "@fins/entities";
-import { RequireSession } from "../features/require-session/RequireSession";
 import { TransactionDestinationResults } from "../features/transaction-destination-results";
 import {
   TransactionDestinationSearch,
@@ -33,7 +32,7 @@ import {
   symbolIndexInTransactionCurrencies,
 } from "../shared/lib/transaction-currencies";
 
-function TransactionsContent() {
+export function TransactionsPage() {
   const location = useLocation();
   const { pushMessage } = useMessageStack();
   const { data: user } = useGetUserQuery();
@@ -474,13 +473,5 @@ function TransactionsContent() {
         }
       />
     </div>
-  );
-}
-
-export function TransactionsPage() {
-  return (
-    <RequireSession>
-      <TransactionsContent />
-    </RequireSession>
   );
 }

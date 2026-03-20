@@ -13,12 +13,9 @@ export function serverReturnedLine(fe: {
 
 export function messageFromFetchError(fe: FetchBaseQueryError): Message {
   const bff = extractBffError(fe);
-  if (bff?.message) {
-    return {
-      type: "error",
-      title: "RequestError",
-      text: bff.message,
-    };
+  const line = serverReturnedLine(fe);
+  if (line) {
+    return { type: "error", title: "RequestError", text: line };
   }
   if (bff?.code) {
     return {
@@ -27,9 +24,12 @@ export function messageFromFetchError(fe: FetchBaseQueryError): Message {
       text: `Property {${bff.code}} doesn't fit requirements`,
     };
   }
-  const line = serverReturnedLine(fe);
-  if (line) {
-    return { type: "error", title: "RequestError", text: line };
+  if (bff?.message) {
+    return {
+      type: "error",
+      title: "RequestError",
+      text: bff.message,
+    };
   }
   return {
     type: "error",
