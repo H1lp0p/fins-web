@@ -36,6 +36,8 @@ class TransactionOperation:
             date_time (datetime.datetime | Unset):
             transaction_type (TransactionOperationTransactionType | Unset):
             transaction_status (TransactionOperationTransactionStatus | Unset):
+            action (str | Unset):
+            currency (str | Unset):
             money (float | Unset):
      """
 
@@ -44,6 +46,8 @@ class TransactionOperation:
     date_time: datetime.datetime | Unset = UNSET
     transaction_type: TransactionOperationTransactionType | Unset = UNSET
     transaction_status: TransactionOperationTransactionStatus | Unset = UNSET
+    action: str | Unset = UNSET
+    currency: str | Unset = UNSET
     money: float | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -75,6 +79,10 @@ class TransactionOperation:
             transaction_status = self.transaction_status.value
 
 
+        action = self.action
+
+        currency = self.currency
+
         money = self.money
 
 
@@ -92,6 +100,10 @@ class TransactionOperation:
             field_dict["transactionType"] = transaction_type
         if transaction_status is not UNSET:
             field_dict["transactionStatus"] = transaction_status
+        if action is not UNSET:
+            field_dict["action"] = action
+        if currency is not UNSET:
+            field_dict["currency"] = currency
         if money is not UNSET:
             field_dict["money"] = money
 
@@ -153,6 +165,10 @@ class TransactionOperation:
 
 
 
+        action = d.pop("action", UNSET)
+
+        currency = d.pop("currency", UNSET)
+
         money = d.pop("money", UNSET)
 
         transaction_operation = cls(
@@ -161,6 +177,8 @@ class TransactionOperation:
             date_time=date_time,
             transaction_type=transaction_type,
             transaction_status=transaction_status,
+            action=action,
+            currency=currency,
             money=money,
         )
 

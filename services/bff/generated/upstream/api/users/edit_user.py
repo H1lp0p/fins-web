@@ -8,7 +8,6 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.bff_error_body import BffErrorBody
 from ...models.user_edit_model_dto import UserEditModelDto
 from typing import cast
 from uuid import UUID
@@ -43,45 +42,9 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | BffErrorBody | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | None:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
-        return response_200
-
-    if response.status_code == 400:
-        response_400 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_400
-
-    if response.status_code == 401:
-        response_401 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_401
-
-    if response.status_code == 403:
-        response_403 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_403
-
-    if response.status_code == 422:
-        response_422 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_422
-
-    if response.status_code == 500:
-        response_500 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_500
+        return None
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -89,7 +52,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | BffErrorBody]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -104,7 +67,7 @@ def sync_detailed(
     client: AuthenticatedClient | Client,
     body: UserEditModelDto,
 
-) -> Response[Any | BffErrorBody]:
+) -> Response[Any]:
     """ 
     Args:
         id (UUID):
@@ -115,7 +78,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | BffErrorBody]
+        Response[Any]
      """
 
 
@@ -131,33 +94,6 @@ body=body,
 
     return _build_response(client=client, response=response)
 
-def sync(
-    id: UUID,
-    *,
-    client: AuthenticatedClient | Client,
-    body: UserEditModelDto,
-
-) -> Any | BffErrorBody | None:
-    """ 
-    Args:
-        id (UUID):
-        body (UserEditModelDto):
-
-    Raises:
-        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
-        httpx.TimeoutException: If the request takes longer than Client.timeout.
-
-    Returns:
-        Any | BffErrorBody
-     """
-
-
-    return sync_detailed(
-        id=id,
-client=client,
-body=body,
-
-    ).parsed
 
 async def asyncio_detailed(
     id: UUID,
@@ -165,7 +101,7 @@ async def asyncio_detailed(
     client: AuthenticatedClient | Client,
     body: UserEditModelDto,
 
-) -> Response[Any | BffErrorBody]:
+) -> Response[Any]:
     """ 
     Args:
         id (UUID):
@@ -176,7 +112,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | BffErrorBody]
+        Response[Any]
      """
 
 
@@ -192,30 +128,3 @@ body=body,
 
     return _build_response(client=client, response=response)
 
-async def asyncio(
-    id: UUID,
-    *,
-    client: AuthenticatedClient | Client,
-    body: UserEditModelDto,
-
-) -> Any | BffErrorBody | None:
-    """ 
-    Args:
-        id (UUID):
-        body (UserEditModelDto):
-
-    Raises:
-        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
-        httpx.TimeoutException: If the request takes longer than Client.timeout.
-
-    Returns:
-        Any | BffErrorBody
-     """
-
-
-    return (await asyncio_detailed(
-        id=id,
-client=client,
-body=body,
-
-    )).parsed

@@ -15,38 +15,40 @@ from uuid import UUID
 import datetime
 
 if TYPE_CHECKING:
-  from ..models.credit_rule import CreditRule
+  from ..models.credit_rule_answer_dto import CreditRuleAnswerDTO
 
 
 
 
 
-T = TypeVar("T", bound="Credit")
+T = TypeVar("T", bound="CreditAnswerDTO")
 
 
 
 @_attrs_define
-class Credit:
+class CreditAnswerDTO:
     """ 
         Attributes:
             id (UUID | Unset):
+            last_interest_update (datetime.datetime | Unset):
             user_id (UUID | Unset):
             card_account (UUID | Unset):
-            last_interest_update (datetime.datetime | Unset):
+            currency (str | Unset):
             current_debt_sum (float | Unset):
             initial_debt (float | Unset):
             interest_debt_sum (float | Unset):
-            credit_rule (CreditRule | Unset):
+            credit_rule (CreditRuleAnswerDTO | Unset):
      """
 
     id: UUID | Unset = UNSET
+    last_interest_update: datetime.datetime | Unset = UNSET
     user_id: UUID | Unset = UNSET
     card_account: UUID | Unset = UNSET
-    last_interest_update: datetime.datetime | Unset = UNSET
+    currency: str | Unset = UNSET
     current_debt_sum: float | Unset = UNSET
     initial_debt: float | Unset = UNSET
     interest_debt_sum: float | Unset = UNSET
-    credit_rule: CreditRule | Unset = UNSET
+    credit_rule: CreditRuleAnswerDTO | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -54,10 +56,14 @@ class Credit:
 
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.credit_rule import CreditRule
+        from ..models.credit_rule_answer_dto import CreditRuleAnswerDTO
         id: str | Unset = UNSET
         if not isinstance(self.id, Unset):
             id = str(self.id)
+
+        last_interest_update: str | Unset = UNSET
+        if not isinstance(self.last_interest_update, Unset):
+            last_interest_update = self.last_interest_update.isoformat()
 
         user_id: str | Unset = UNSET
         if not isinstance(self.user_id, Unset):
@@ -67,9 +73,7 @@ class Credit:
         if not isinstance(self.card_account, Unset):
             card_account = str(self.card_account)
 
-        last_interest_update: str | Unset = UNSET
-        if not isinstance(self.last_interest_update, Unset):
-            last_interest_update = self.last_interest_update.isoformat()
+        currency = self.currency
 
         current_debt_sum = self.current_debt_sum
 
@@ -88,12 +92,14 @@ class Credit:
         })
         if id is not UNSET:
             field_dict["id"] = id
+        if last_interest_update is not UNSET:
+            field_dict["lastInterestUpdate"] = last_interest_update
         if user_id is not UNSET:
             field_dict["userId"] = user_id
         if card_account is not UNSET:
             field_dict["cardAccount"] = card_account
-        if last_interest_update is not UNSET:
-            field_dict["lastInterestUpdate"] = last_interest_update
+        if currency is not UNSET:
+            field_dict["currency"] = currency
         if current_debt_sum is not UNSET:
             field_dict["currentDebtSum"] = current_debt_sum
         if initial_debt is not UNSET:
@@ -109,7 +115,7 @@ class Credit:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.credit_rule import CreditRule
+        from ..models.credit_rule_answer_dto import CreditRuleAnswerDTO
         d = dict(src_dict)
         _id = d.pop("id", UNSET)
         id: UUID | Unset
@@ -117,6 +123,16 @@ class Credit:
             id = UNSET
         else:
             id = UUID(_id)
+
+
+
+
+        _last_interest_update = d.pop("lastInterestUpdate", UNSET)
+        last_interest_update: datetime.datetime | Unset
+        if isinstance(_last_interest_update,  Unset):
+            last_interest_update = UNSET
+        else:
+            last_interest_update = isoparse(_last_interest_update)
 
 
 
@@ -141,15 +157,7 @@ class Credit:
 
 
 
-        _last_interest_update = d.pop("lastInterestUpdate", UNSET)
-        last_interest_update: datetime.datetime | Unset
-        if isinstance(_last_interest_update,  Unset):
-            last_interest_update = UNSET
-        else:
-            last_interest_update = isoparse(_last_interest_update)
-
-
-
+        currency = d.pop("currency", UNSET)
 
         current_debt_sum = d.pop("currentDebtSum", UNSET)
 
@@ -158,20 +166,21 @@ class Credit:
         interest_debt_sum = d.pop("interestDebtSum", UNSET)
 
         _credit_rule = d.pop("creditRule", UNSET)
-        credit_rule: CreditRule | Unset
+        credit_rule: CreditRuleAnswerDTO | Unset
         if isinstance(_credit_rule,  Unset):
             credit_rule = UNSET
         else:
-            credit_rule = CreditRule.from_dict(_credit_rule)
+            credit_rule = CreditRuleAnswerDTO.from_dict(_credit_rule)
 
 
 
 
-        credit = cls(
+        credit_answer_dto = cls(
             id=id,
+            last_interest_update=last_interest_update,
             user_id=user_id,
             card_account=card_account,
-            last_interest_update=last_interest_update,
+            currency=currency,
             current_debt_sum=current_debt_sum,
             initial_debt=initial_debt,
             interest_debt_sum=interest_debt_sum,
@@ -179,8 +188,8 @@ class Credit:
         )
 
 
-        credit.additional_properties = d
-        return credit
+        credit_answer_dto.additional_properties = d
+        return credit_answer_dto
 
     @property
     def additional_keys(self) -> list[str]:
