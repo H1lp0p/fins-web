@@ -38,11 +38,12 @@ export {
   useIsUserActiveByIdQuery,
   useMakeEnrollmentMutation,
   useOpenAccountMutation,
-  useSetAccountVisibilityMutation,
   useSetMainAccountMutation,
   useTransferMoneyMutation,
   useWithdrawMoneyMutation,
   useCheckAccountExistsQuery,
+  useGetPreferencesQuery,
+  useUpdatePreferencesMutation,
 } from "./public-bff-api";
 export type { CurrencyCode, Money } from "./entities/money";
 export { mapMoneyFromDto } from "./entities/money";

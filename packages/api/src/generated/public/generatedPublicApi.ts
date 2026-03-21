@@ -156,17 +156,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["card-account-controller"],
       }),
-      setAccountVisibility: build.mutation<
-        SetAccountVisibilityApiResponse,
-        SetAccountVisibilityApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/core-api/cardaccount/${queryArg.accountId}/set-visibility`,
-          method: "POST",
-          body: queryArg.accountSetVisibilityDto,
-        }),
-        invalidatesTags: ["card-account-controller"],
-      }),
       getTransactionOperations: build.query<
         GetTransactionOperationsApiResponse,
         GetTransactionOperationsApiArg
@@ -395,11 +384,6 @@ export type SetMainAccountApiResponse = /** status 200 OK */ CardAccount;
 export type SetMainAccountApiArg = {
   accountId: string;
 };
-export type SetAccountVisibilityApiResponse = /** status 200 OK */ CardAccount;
-export type SetAccountVisibilityApiArg = {
-  accountId: string;
-  accountSetVisibilityDto: AccountSetVisibilityDto;
-};
 export type GetTransactionOperationsApiResponse =
   /** status 200 OK */ PageTransactionOperation;
 export type GetTransactionOperationsApiArg = {
@@ -586,9 +570,6 @@ export type CardAccountCreateModelDto = {
   name?: string;
   currency?: Currency;
 };
-export type AccountSetVisibilityDto = {
-  visible: boolean;
-};
 export type PageCardAccount = {
   totalPages?: number;
   totalElements?: number;
@@ -635,7 +616,7 @@ export type CreditCreateModelDto = {
   money?: MoneyValueDto;
 };
 export type UserPreferencesDto = {
-  theme?: string;
+  theme?: "light" | "dark";
   hiddenAccounts?: string[];
 };
 export const {
@@ -656,7 +637,6 @@ export const {
   useOpenAccountMutation,
   useCloseAccountMutation,
   useSetMainAccountMutation,
-  useSetAccountVisibilityMutation,
   useGetTransactionOperationsQuery,
   useGetUserCardAccountQuery,
   useCheckAccountExistsQuery,

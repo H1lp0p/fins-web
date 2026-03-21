@@ -11,7 +11,6 @@ from app.errors import bff_error_response
 from app.mock_store import MockUser, store, user_to_dto
 from app.ws_hub import ws_hub
 from generated.bff_browser_models import (
-    AccountSetVisibilityDto,
     CardAccountCreateModelDto,
     CreditCreateModelDto,
     CreditRuleDTO,
@@ -19,6 +18,7 @@ from generated.bff_browser_models import (
     TransferMoneyDto,
     UserEditModelDto,
     UserDirectoryEntryDto,
+    UserPreferencesDto,
     WithdrawDto,
 )
 
@@ -297,18 +297,23 @@ async def set_main_account(
     return dto
 
 
-@router.post("/core-api/cardaccount/{accountId}/set-visibility")
-async def set_account_visibility(
-    accountId: UUID,
-    body: AccountSetVisibilityDto,
+@router.get("/preferences-service/preferences")
+async def get_preferences(
     user: Annotated[MockUser | None, Depends(get_current_user_optional)],
 ):
     if user is None:
         return _unauth()
-    dto = store.set_account_visibility(accountId, user.id, body.visible)
-    if dto is None:
-        return bff_error_response(404, message="Счёт не найден или недоступен")
-    return dto
+    return store.get_user_preferences(user.id)
+
+
+@router.put("/preferences-service/preferences")
+async def update_preferences(
+    body: UserPreferencesDto,
+    user: Annotated[MockUser | None, Depends(get_current_user_optional)],
+):
+    if user is None:
+        return _unauth()
+    return store.update_user_preferences(user.id, body)
 
 
 @router.get("/core-api/transactions/{accountId}")
