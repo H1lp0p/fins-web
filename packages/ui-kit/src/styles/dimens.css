@@ -1,0 +1,82 @@
+:root {
+    --fins-corner-radius: 16px;
+    --fins-min-gap: 8px;
+    --fins-mid-gap: 16px;
+    --fins-max-gap: 24px;
+}
+
+.rounded {
+    border-radius: var(--fins-corner-radius);
+}
+
+.ph-min {
+    padding-left: var(--fins-min-gap);
+    padding-right: var(--fins-min-gap);
+}
+
+.ph-mid {
+    padding-left: var(--fins-mid-gap);
+    padding-right: var(--fins-mid-gap);
+}
+
+.ph-max {
+    padding-left: var(--fins-max-gap);
+    padding-right: var(--fins-max-gap);
+}
+
+.pv-min {
+    padding-top: var(--fins-min-gap);
+    padding-bottom: var(--fins-min-gap);
+}
+
+.pv-mid {
+    padding-top: var(--fins-mid-gap);
+    padding-bottom: var(--fins-mid-gap);
+}
+
+.pv-max {
+    padding-top: var(--fins-max-gap);
+    padding-bottom: var(--fins-max-gap);
+}
+
+.mh-min {
+    margin-left: var(--fins-min-gap);
+    margin-right: var(--fins-min-gap);
+}
+
+.mh-mid {
+    margin-left: var(--fins-mid-gap);
+    margin-right: var(--fins-mid-gap);
+}
+
+.mh-max {
+    margin-left: var(--fins-max-gap);
+    margin-right: var(--fins-max-gap);
+}
+
+.mv-min {
+    margin-top: var(--fins-min-gap);
+    margin-bottom: var(--fins-min-gap);
+}
+
+.mv-mid {
+    margin-top: var(--fins-mid-gap);
+    margin-bottom: var(--fins-mid-gap);
+}
+
+.mv-max {
+    margin-top: var(--fins-max-gap);
+    margin-bottom: var(--fins-max-gap);
+}
+
+.gap-min {
+    gap: var(--fins-min-gap);
+}
+
+.gap-mid {
+    gap: var(--fins-mid-gap);
+}
+
+.gap-max {
+    gap: var(--fins-max-gap);
+}

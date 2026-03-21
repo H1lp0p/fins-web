@@ -16,9 +16,9 @@ CSS-переменная: **`--font-family-kelly-slab`**.
 
 ## Темы (`data-theme`)
 
-Файл **`src/styles/themes.css`**: 8 слотов **`--fins-c1` … `--fins-c8`** для `light` / `dark`, глобальные `transition` для цветовых свойств, утилиты `.fins-color-n` / `.fins-bg-n`.
+Файл **`src/styles/themes.css`**: цвета для `dark`
 
-На `<html>` задай `data-theme="light"` или `data-theme="dark"`. Из JS:
+На `<html>` задай `data-theme="dark"`. Из JS:
 
 ```ts
 import { setFinsTheme } from "@fins/ui-kit";
