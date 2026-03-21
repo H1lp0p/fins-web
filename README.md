@@ -93,9 +93,23 @@ pnpm --filter @fins/ui-kit build
 
 Артефакты: `packages/ui-kit/dist/` (`*.js` + `*.d.ts`).
 
+### Шрифт Kelly Slab
+
+Шрифт подключается **статически** через пакет [`@fontsource/kelly-slab`](https://www.npmjs.com/package/@fontsource/kelly-slab) (woff встроен в CSS при сборке kit). В глобальных стилях доступна переменная **`--font-family-kelly-slab`**.
+
+В каждом приложении в `main.tsx` уже есть:
+
+```ts
+import "@fins/ui-kit/style.css";
+```
+
+Его нужно оставить **до** остальных стилей, чтобы `@font-face` и переменные применялись. В `index.css` приложений для текста по умолчанию задано `font-family: var(--font-family-kelly-slab), serif`.
+
+**Темы:** на `<html>` атрибут `data-theme="light" | "dark"`, палитра **`--fins-c1`…`--fins-c8`** и плавная смена цветов — в [packages/ui-kit/src/styles/themes.css](packages/ui-kit/src/styles/themes.css); переключение из JS: `setFinsTheme` из `@fins/ui-kit` (см. [packages/ui-kit/README.md](packages/ui-kit/README.md)).
+
 ### Использование в приложениях
 
-В `apps/*` уже есть зависимость `"@fins/ui-kit": "workspace:*"`. Импорт:
+В `apps/*` уже есть зависимость `"@fins/ui-kit": "workspace:*"`. Импорт компонентов:
 
 ```tsx
 import { Button } from "@fins/ui-kit";

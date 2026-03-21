@@ -1,0 +1,6 @@
+.fins-inline-check-box-container {
+  display: inline-block;
+  min-width: 5ch;
+
+  user-select: none;
+}

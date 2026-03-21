@@ -10,10 +10,16 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    }
+    },
+    "./style.css": "./dist/style.css"
   },
-  "files": ["dist"],
-  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "**/*.css",
+    "./dist/**/*.css"
+  ],
   "scripts": {
     "build": "vite build"
   },
@@ -30,5 +36,8 @@
     "typescript": "~5.7.2",
     "vite": "^6.0.11",
     "vite-plugin-dts": "^4.5.0"
+  },
+  "dependencies": {
+    "@fontsource/kelly-slab": "^5.2.7"
   }
 }
