@@ -30,27 +30,27 @@ class PageTransactionOperation:
         Attributes:
             total_pages (int | Unset):
             total_elements (int | Unset):
+            first (bool | Unset):
+            last (bool | Unset):
+            number_of_elements (int | Unset):
+            pageable (PageableObject | Unset):
             size (int | Unset):
             content (list[TransactionOperation] | Unset):
             number (int | Unset):
             sort (SortObject | Unset):
-            number_of_elements (int | Unset):
-            first (bool | Unset):
-            last (bool | Unset):
-            pageable (PageableObject | Unset):
             empty (bool | Unset):
      """
 
     total_pages: int | Unset = UNSET
     total_elements: int | Unset = UNSET
+    first: bool | Unset = UNSET
+    last: bool | Unset = UNSET
+    number_of_elements: int | Unset = UNSET
+    pageable: PageableObject | Unset = UNSET
     size: int | Unset = UNSET
     content: list[TransactionOperation] | Unset = UNSET
     number: int | Unset = UNSET
     sort: SortObject | Unset = UNSET
-    number_of_elements: int | Unset = UNSET
-    first: bool | Unset = UNSET
-    last: bool | Unset = UNSET
-    pageable: PageableObject | Unset = UNSET
     empty: bool | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -65,6 +65,16 @@ class PageTransactionOperation:
         total_pages = self.total_pages
 
         total_elements = self.total_elements
+
+        first = self.first
+
+        last = self.last
+
+        number_of_elements = self.number_of_elements
+
+        pageable: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.pageable, Unset):
+            pageable = self.pageable.to_dict()
 
         size = self.size
 
@@ -83,16 +93,6 @@ class PageTransactionOperation:
         if not isinstance(self.sort, Unset):
             sort = self.sort.to_dict()
 
-        number_of_elements = self.number_of_elements
-
-        first = self.first
-
-        last = self.last
-
-        pageable: dict[str, Any] | Unset = UNSET
-        if not isinstance(self.pageable, Unset):
-            pageable = self.pageable.to_dict()
-
         empty = self.empty
 
 
@@ -104,6 +104,14 @@ class PageTransactionOperation:
             field_dict["totalPages"] = total_pages
         if total_elements is not UNSET:
             field_dict["totalElements"] = total_elements
+        if first is not UNSET:
+            field_dict["first"] = first
+        if last is not UNSET:
+            field_dict["last"] = last
+        if number_of_elements is not UNSET:
+            field_dict["numberOfElements"] = number_of_elements
+        if pageable is not UNSET:
+            field_dict["pageable"] = pageable
         if size is not UNSET:
             field_dict["size"] = size
         if content is not UNSET:
@@ -112,14 +120,6 @@ class PageTransactionOperation:
             field_dict["number"] = number
         if sort is not UNSET:
             field_dict["sort"] = sort
-        if number_of_elements is not UNSET:
-            field_dict["numberOfElements"] = number_of_elements
-        if first is not UNSET:
-            field_dict["first"] = first
-        if last is not UNSET:
-            field_dict["last"] = last
-        if pageable is not UNSET:
-            field_dict["pageable"] = pageable
         if empty is not UNSET:
             field_dict["empty"] = empty
 
@@ -136,6 +136,22 @@ class PageTransactionOperation:
         total_pages = d.pop("totalPages", UNSET)
 
         total_elements = d.pop("totalElements", UNSET)
+
+        first = d.pop("first", UNSET)
+
+        last = d.pop("last", UNSET)
+
+        number_of_elements = d.pop("numberOfElements", UNSET)
+
+        _pageable = d.pop("pageable", UNSET)
+        pageable: PageableObject | Unset
+        if isinstance(_pageable,  Unset):
+            pageable = UNSET
+        else:
+            pageable = PageableObject.from_dict(_pageable)
+
+
+
 
         size = d.pop("size", UNSET)
 
@@ -163,35 +179,19 @@ class PageTransactionOperation:
 
 
 
-        number_of_elements = d.pop("numberOfElements", UNSET)
-
-        first = d.pop("first", UNSET)
-
-        last = d.pop("last", UNSET)
-
-        _pageable = d.pop("pageable", UNSET)
-        pageable: PageableObject | Unset
-        if isinstance(_pageable,  Unset):
-            pageable = UNSET
-        else:
-            pageable = PageableObject.from_dict(_pageable)
-
-
-
-
         empty = d.pop("empty", UNSET)
 
         page_transaction_operation = cls(
             total_pages=total_pages,
             total_elements=total_elements,
+            first=first,
+            last=last,
+            number_of_elements=number_of_elements,
+            pageable=pageable,
             size=size,
             content=content,
             number=number,
             sort=sort,
-            number_of_elements=number_of_elements,
-            first=first,
-            last=last,
-            pageable=pageable,
             empty=empty,
         )
 

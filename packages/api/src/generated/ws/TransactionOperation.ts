@@ -1,14 +1,15 @@
-import {AnonymousSchema_16} from './AnonymousSchema_16';
-import {AnonymousSchema_18} from './AnonymousSchema_18';
-import type {MoneyValueDto} from './MoneyValueDto';
+import type {CardAccount} from './CardAccount';
+import {AnonymousSchema_22} from './AnonymousSchema_22';
+import {AnonymousSchema_23} from './AnonymousSchema_23';
 interface TransactionOperation {
   'id'?: string;
-  'cardAccountId'?: string;
+  'account'?: CardAccount;
   'dateTime'?: string;
-  'transactionType'?: AnonymousSchema_16;
-  'transactionActoin'?: string;
-  'transactionStatus'?: AnonymousSchema_18;
-  'money'?: MoneyValueDto;
+  'transactionType'?: AnonymousSchema_22;
+  'transactionStatus'?: AnonymousSchema_23;
+  'action'?: string;
+  'currency'?: string;
+  'money'?: number;
   'additionalProperties'?: Map<string, any>;
 }
 export type { TransactionOperation };

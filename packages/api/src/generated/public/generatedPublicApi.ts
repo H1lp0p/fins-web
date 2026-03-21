@@ -8,6 +8,7 @@ export const addTagTypes = [
   "card-account-controller",
   "credit-rule-controller",
   "credit-controller",
+  "preferences-controller",
 ] as const;
 const injectedRtkApi = api
   .enhanceEndpoints({
@@ -305,6 +306,24 @@ const injectedRtkApi = api
           invalidatesTags: ["credit-controller"],
         },
       ),
+      getPreferences: build.query<
+        GetPreferencesApiResponse,
+        GetPreferencesApiArg
+      >({
+        query: () => ({ url: `/preferences-service/preferences` }),
+        providesTags: ["preferences-controller"],
+      }),
+      updatePreferences: build.mutation<
+        UpdatePreferencesApiResponse,
+        UpdatePreferencesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/preferences-service/preferences`,
+          method: "PUT",
+          body: queryArg.userPreferencesDto,
+        }),
+        invalidatesTags: ["preferences-controller"],
+      }),
     }),
     overrideExisting: false,
   });
@@ -442,6 +461,13 @@ export type DeleteCreditRuleApiArg = {
 export type DeleteCreditApiResponse = unknown;
 export type DeleteCreditApiArg = {
   creditId: string;
+};
+export type GetPreferencesApiResponse = /** status 200 OK */ UserPreferencesDto;
+export type GetPreferencesApiArg = void;
+export type UpdatePreferencesApiResponse =
+  /** status 200 OK */ UserPreferencesDto;
+export type UpdatePreferencesApiArg = {
+  userPreferencesDto: UserPreferencesDto;
 };
 export type BffErrorBody = {
   message?: string;
@@ -608,6 +634,10 @@ export type CreditCreateModelDto = {
   creditRuleId?: string;
   money?: MoneyValueDto;
 };
+export type UserPreferencesDto = {
+  theme?: string;
+  hiddenAccounts?: string[];
+};
 export const {
   useEditUserMutation,
   useEditUser1Mutation,
@@ -641,4 +671,6 @@ export const {
   useGetByCardAccountIdQuery,
   useDeleteCreditRuleMutation,
   useDeleteCreditMutation,
+  useGetPreferencesQuery,
+  useUpdatePreferencesMutation,
 } = injectedRtkApi;

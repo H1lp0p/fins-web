@@ -8,7 +8,6 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-from ..models.credit_rule_dto_percentage_strategy import CreditRuleDTOPercentageStrategy
 from ..types import UNSET, Unset
 from dateutil.parser import isoparse
 from typing import cast
@@ -27,14 +26,12 @@ T = TypeVar("T", bound="CreditRuleDTO")
 class CreditRuleDTO:
     """ 
         Attributes:
-            percentage_strategy (CreditRuleDTOPercentageStrategy | Unset):
             collection_period_seconds (int | Unset):
             opening_date (datetime.datetime | Unset):
             rule_name (str | Unset):
             percentage (float | Unset):
      """
 
-    percentage_strategy: CreditRuleDTOPercentageStrategy | Unset = UNSET
     collection_period_seconds: int | Unset = UNSET
     opening_date: datetime.datetime | Unset = UNSET
     rule_name: str | Unset = UNSET
@@ -46,11 +43,6 @@ class CreditRuleDTO:
 
 
     def to_dict(self) -> dict[str, Any]:
-        percentage_strategy: str | Unset = UNSET
-        if not isinstance(self.percentage_strategy, Unset):
-            percentage_strategy = self.percentage_strategy.value
-
-
         collection_period_seconds = self.collection_period_seconds
 
         opening_date: str | Unset = UNSET
@@ -66,8 +58,6 @@ class CreditRuleDTO:
         field_dict.update(self.additional_properties)
         field_dict.update({
         })
-        if percentage_strategy is not UNSET:
-            field_dict["percentageStrategy"] = percentage_strategy
         if collection_period_seconds is not UNSET:
             field_dict["collectionPeriodSeconds"] = collection_period_seconds
         if opening_date is not UNSET:
@@ -84,16 +74,6 @@ class CreditRuleDTO:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        _percentage_strategy = d.pop("percentageStrategy", UNSET)
-        percentage_strategy: CreditRuleDTOPercentageStrategy | Unset
-        if isinstance(_percentage_strategy,  Unset):
-            percentage_strategy = UNSET
-        else:
-            percentage_strategy = CreditRuleDTOPercentageStrategy(_percentage_strategy)
-
-
-
-
         collection_period_seconds = d.pop("collectionPeriodSeconds", UNSET)
 
         _opening_date = d.pop("openingDate", UNSET)
@@ -111,7 +91,6 @@ class CreditRuleDTO:
         percentage = d.pop("percentage", UNSET)
 
         credit_rule_dto = cls(
-            percentage_strategy=percentage_strategy,
             collection_period_seconds=collection_period_seconds,
             opening_date=opening_date,
             rule_name=rule_name,

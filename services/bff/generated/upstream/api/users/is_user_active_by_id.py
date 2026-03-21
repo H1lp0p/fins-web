@@ -8,8 +8,6 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.bff_error_body import BffErrorBody
-from typing import cast
 from uuid import UUID
 
 
@@ -34,45 +32,10 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> BffErrorBody | bool | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> bool | None:
     if response.status_code == 200:
         response_200 = cast(bool, response.json())
         return response_200
-
-    if response.status_code == 400:
-        response_400 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_400
-
-    if response.status_code == 401:
-        response_401 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_401
-
-    if response.status_code == 403:
-        response_403 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_403
-
-    if response.status_code == 422:
-        response_422 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_422
-
-    if response.status_code == 500:
-        response_500 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_500
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -80,7 +43,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[BffErrorBody | bool]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[bool]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -94,7 +57,7 @@ def sync_detailed(
     *,
     client: AuthenticatedClient | Client,
 
-) -> Response[BffErrorBody | bool]:
+) -> Response[bool]:
     """ 
     Args:
         id (UUID):
@@ -104,7 +67,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[BffErrorBody | bool]
+        Response[bool]
      """
 
 
@@ -124,7 +87,7 @@ def sync(
     *,
     client: AuthenticatedClient | Client,
 
-) -> BffErrorBody | bool | None:
+) -> bool | None:
     """ 
     Args:
         id (UUID):
@@ -134,7 +97,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        BffErrorBody | bool
+        bool
      """
 
 
@@ -149,7 +112,7 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient | Client,
 
-) -> Response[BffErrorBody | bool]:
+) -> Response[bool]:
     """ 
     Args:
         id (UUID):
@@ -159,7 +122,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[BffErrorBody | bool]
+        Response[bool]
      """
 
 
@@ -179,7 +142,7 @@ async def asyncio(
     *,
     client: AuthenticatedClient | Client,
 
-) -> BffErrorBody | bool | None:
+) -> bool | None:
     """ 
     Args:
         id (UUID):
@@ -189,7 +152,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        BffErrorBody | bool
+        bool
      """
 
 

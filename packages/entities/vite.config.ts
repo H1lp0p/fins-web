@@ -27,6 +27,7 @@ export default defineConfig({
         "react-dom",
         "react/jsx-runtime",
         "@fins/api",
+        "@fins/api/ws",
         "@fins/ui-kit",
       ],
     },

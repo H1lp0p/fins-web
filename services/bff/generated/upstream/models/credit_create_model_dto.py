@@ -26,12 +26,14 @@ class CreditCreateModelDto:
         Attributes:
             user_id (UUID | Unset):
             card_account (UUID | Unset):
+            currency (str | Unset):
             total_debt (float | Unset):
             credit_rule_id (UUID | Unset):
      """
 
     user_id: UUID | Unset = UNSET
     card_account: UUID | Unset = UNSET
+    currency: str | Unset = UNSET
     total_debt: float | Unset = UNSET
     credit_rule_id: UUID | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -49,6 +51,8 @@ class CreditCreateModelDto:
         if not isinstance(self.card_account, Unset):
             card_account = str(self.card_account)
 
+        currency = self.currency
+
         total_debt = self.total_debt
 
         credit_rule_id: str | Unset = UNSET
@@ -64,6 +68,8 @@ class CreditCreateModelDto:
             field_dict["userId"] = user_id
         if card_account is not UNSET:
             field_dict["cardAccount"] = card_account
+        if currency is not UNSET:
+            field_dict["currency"] = currency
         if total_debt is not UNSET:
             field_dict["totalDebt"] = total_debt
         if credit_rule_id is not UNSET:
@@ -96,6 +102,8 @@ class CreditCreateModelDto:
 
 
 
+        currency = d.pop("currency", UNSET)
+
         total_debt = d.pop("totalDebt", UNSET)
 
         _credit_rule_id = d.pop("creditRuleId", UNSET)
@@ -111,6 +119,7 @@ class CreditCreateModelDto:
         credit_create_model_dto = cls(
             user_id=user_id,
             card_account=card_account,
+            currency=currency,
             total_debt=total_debt,
             credit_rule_id=credit_rule_id,
         )

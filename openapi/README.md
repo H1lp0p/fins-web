@@ -2,17 +2,28 @@
 
 | Файл | Назначение |
 |------|------------|
-| [openApi.backend-gateway.yaml](./openApi.backend-gateway.yaml) | Полный слепок шлюза бекенда — **источник правды** при обновлении с бэка. После правок вручную пересобирайте разбиение (или добавьте скрипт split). |
+| [openApi.backend-gateway.yaml](./openApi.backend-gateway.yaml) | Полный контракт **шлюза бекенда** (BFF → шлюз): **собирается** из JSON в [from-backend/](from-backend/) скриптом [scripts/merge_backend_gateway.py](./scripts/merge_backend_gateway.py). После обновления дампов бекенда перезапустите скрипт, затем при необходимости обновите сплиты `public` / `sso`. |
+| [from-backend/](from-backend/) | Экспорты OpenAPI с бекенда (не править как «источник правды» вручную — заменять файлами от команды бекенда). |
 | [openApi.public.yaml](./openApi.public.yaml) | Все пути **кроме** `/user-service/auth/*` — user/admin, общий BFF, кодген без auth-маршрутов. Включает `internal` (сервис-сервис); для браузерного клиента при необходимости исключайте пути отдельным фильтром codegen. |
 | [openApi.sso.yaml](./openApi.sso.yaml) | Только `/user-service/auth/*` — приложение SSO и BFF-слой авторизации. |
 | [bundles/openApi.bff.browser.yaml](./bundles/openApi.bff.browser.yaml) | **Сборка** `public` + `sso` (скрипт [merge_browser_openapi.py](../services/bff/scripts/merge_browser_openapi.py), без дублей `components`). Не править вручную — перегенерировать перед `datamodel-codegen`. |
-| [asyncApi.transactions.yaml](./asyncApi.transactions.yaml) | **AsyncAPI 2.6** — WebSocket `/api/ws/transactions`: подписка на операции по `accountId`, снимок `PageTransactionOperation`, события `transaction`, ошибки `error`. Схемы согласованы с OpenAPI (в т.ч. `transactionActoin`). |
+| [asyncApi.transactions.yaml](./asyncApi.transactions.yaml) | **AsyncAPI 2.6** — WebSocket **браузер ↔ BFF** `/api/ws/transactions`: `subscribe` / `unsubscribe`; BFF отдаёт `snapshot` (после внутреннего REST к шлюзу), затем `transaction` / `error`. Схемы операций согласованы с `TransactionOperation` шлюза (core-api). |
 
-**Совместное покрытие:** `public` ∪ `sso` **не обязано** совпадать с `backend-gateway`: `sso` — урезанный контракт под короткий поток SSO (без `/auth/refresh` и OAuth). Полный набор путей шлюза — только в `openApi.backend-gateway.yaml`.
+**Пересборка `openApi.backend-gateway.yaml`:**
 
-**Потребители:** `packages/api` (RTK codegen), будущий BFF, любые другие генераторы — указывайте путь к нужному YAML из корня монорепо, например `openapi/openApi.public.yaml`.
+```bash
+python openapi/scripts/merge_backend_gateway.py
+```
 
-**Корень репозитория:** прежний `openApi.yaml` удалён; полный контракт лежит в `openapi/openApi.backend-gateway.yaml`.
+(нужен PyYAML: `pip install pyyaml`)
+
+**Серверы шлюза в собранном YAML:** прод `http://api.thallassianangel.su/api`, локально `http://localhost:8000/api`; имя сервиса — первый сегмент пути (`/user-service/...`, `/core-api/...`, и т.д.), как в исходных спеках сервисов.
+
+**Совместное покрытие:** `public` ∪ `sso` **не обязано** совпадать с `backend-gateway`: `sso` — урезанный контракт под короткий поток SSO (без `/auth/refresh` и OAuth). Полный набор путей шлюза — в `openApi.backend-gateway.yaml` после merge.
+
+**Потребители:** `packages/api` (RTK codegen), BFF, любые другие генераторы — указывайте путь к нужному YAML из корня монорепо, например `openapi/openApi.public.yaml`.
+
+**Корень репозитория:** прежний `openApi.yaml` удалён; полный контракт шлюза — `openapi/openApi.backend-gateway.yaml` (из `from-backend/` + скрипт).
 
 **Два уровня контракта (секьюрити):**
 
