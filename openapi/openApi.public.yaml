@@ -970,6 +970,55 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /preferences-service/preferences:
+    get:
+      tags:
+        - preferences-controller
+      operationId: getPreferences
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferencesDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - preferences-controller
+      operationId: updatePreferences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPreferencesDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferencesDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
   schemas:
     Currency:
@@ -987,6 +1036,18 @@ components:
           type: number
         currency:
           $ref: '#/components/schemas/Currency'
+
+    UserPreferencesDto:
+      type: object
+      properties:
+        theme:
+          type: string
+        hiddenAccounts:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+
     # User Service Schemas
     UserEditModelDto:
       required:
