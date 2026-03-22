@@ -1,0 +1,6 @@
+.fins-loading-frame-indicator {
+  display: inline-block;
+  min-width: 3ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}

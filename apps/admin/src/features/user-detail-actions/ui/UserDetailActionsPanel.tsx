@@ -3,6 +3,7 @@ import type { statusType } from "@fins/ui-kit";
 import {
   InlineCheckBox,
   LinkButton,
+  LoadingFrameIndicator,
   OnBlurContainer,
 } from "@fins/ui-kit";
 
@@ -47,7 +48,18 @@ export function UserDetailActionsPanel({
       }}
     >
       {isLoading ? (
-        <span className="text-info color-input-placeholder">…</span>
+        <div
+          style={{
+            flex: 1,
+            minHeight: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+          }}
+        >
+          <LoadingFrameIndicator />
+        </div>
       ) : user ? (
         <>
           <div
@@ -125,7 +137,7 @@ export function UserDetailActionsPanel({
             width: "100%",
           }}
         >
-          <span className="text-info color-input-placeholder">—</span>
+          <span className="text-info color-info">user === undefined</span>
           <OnBlurContainer className="ph-mid pv-min">
             <LinkButton
               text="Back"

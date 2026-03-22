@@ -9,9 +9,21 @@ export { OnBlurContainer } from "./components/on-blur-container/OnBlurContainer"
 
 //Components
 export { LinkButton, type LinkButtonVariant } from "./components/link-button/LinkButton";
+export {
+  LoadingFrameIndicator,
+  type LoadingFrameIndicatorProps,
+} from "./components/loading-frame-indicator/LoadingFrameIndicator";
+export {
+  CenteredPlaceholder,
+  type CenteredPlaceholderProps,
+} from "./components/centered-placeholder/CenteredPlaceholder";
 export { InlineCheckBox, type statusType } from "./components/inline-check-box/InlineCheckBox";
 export { Input } from "./components/input/Input";
 export { BgText } from "./components/back-ground-text/BgText";
+export {
+  HttpStatusScreen,
+  type HttpStatusScreenProps,
+} from "./components/http-status-screen/HttpStatusScreen";
 export { PlaceholderSpace } from "./components/placeholder-space/PlaceholderSpace";
 export { Logo } from "./components/logo/Logo";
 export { AmountWithSymbol } from "./components/amount-with-symbol/AmountWithSymb";

@@ -1,11 +1,19 @@
 import type { Tab } from "@fins/ui-kit";
-import { Header } from "@fins/ui-kit";
-import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Header, HttpStatusScreen } from "@fins/ui-kit";
+import {
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+import { NavigationBridge } from "./app/NavigationBridge";
 import { HeaderSessionTray } from "./features/header-session/HeaderSessionTray";
 import { RequireSession } from "./features/require-session/RequireSession";
 import { AdminHomePage } from "./pages/AdminHomePage";
 import { CreditsPage } from "./pages/CreditsPage";
 import { UsersPage } from "./pages/UsersPage";
+import { getSsoOrigin } from "./shared/lib/sso-origin";
 
 const NAV_ITEMS = [
   { id: "index", label: "Index", path: "/" },
@@ -28,7 +36,7 @@ function pathnameToTabId(pathname: string): Tab["id"] {
   return match?.id ?? "index";
 }
 
-export default function App() {
+function MainShell() {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -63,15 +71,62 @@ export default function App() {
           boxSizing: "border-box",
         }}
       >
-        <RequireSession>
-          <Routes>
-            <Route path="/" element={<AdminHomePage />} />
-            <Route path="/users" element={<UsersPage />} />
-            <Route path="/credits" element={<CreditsPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </RequireSession>
+        <Outlet />
       </div>
     </div>
+  );
+}
+
+function AdminForbiddenPage() {
+  return (
+    <HttpStatusScreen
+      code="403"
+      actionText="goto auth"
+      onAction={() => {
+        window.location.assign(`${getSsoOrigin()}/`);
+      }}
+    />
+  );
+}
+
+function AdminServerErrorPage() {
+  const navigate = useNavigate();
+  return (
+    <HttpStatusScreen
+      code="500"
+      actionText="goto /index"
+      onAction={() => navigate("/", { replace: true })}
+    />
+  );
+}
+
+function AdminNotFoundPage() {
+  const navigate = useNavigate();
+  return (
+    <HttpStatusScreen
+      code="404"
+      actionText="goto /index"
+      onAction={() => navigate("/", { replace: true })}
+    />
+  );
+}
+
+export default function App() {
+  return (
+    <>
+      <NavigationBridge />
+      <Routes>
+        <Route path="/403" element={<AdminForbiddenPage />} />
+        <Route path="/500" element={<AdminServerErrorPage />} />
+        <Route path="/" element={<MainShell />}>
+          <Route element={<RequireSession />}>
+            <Route index element={<AdminHomePage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="credits" element={<CreditsPage />} />
+          </Route>
+        </Route>
+        <Route path="*" element={<AdminNotFoundPage />} />
+      </Routes>
+    </>
   );
 }

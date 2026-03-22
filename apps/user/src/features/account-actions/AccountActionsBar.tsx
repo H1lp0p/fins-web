@@ -7,6 +7,7 @@ import {
 import {
   InlineCheckBox,
   LinkButton,
+  LoadingFrameIndicator,
   OnBlurContainer,
   useMessageStack,
   type statusType,
@@ -117,44 +118,64 @@ export function AccountActionsBar({
               });
           }}
         />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <LinkButton
+            text="Set main"
+            variant="success"
+            textClassName="text-info-accent"
+            disabled={cannotSetMain || mainLoading}
+            onClick={() => {
+              void setMain({ accountId: id })
+                .unwrap()
+                .catch(() => {
+                  pushMessage({
+                    type: "error",
+                    title: "Main account",
+                    text: "Не удалось назначить главный счёт.",
+                  });
+                });
+            }}
+          />
+          {mainLoading ? <LoadingFrameIndicator /> : null}
+        </div>
+      </OnBlurContainer>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          flexWrap: "wrap",
+        }}
+      >
         <LinkButton
-          text={mainLoading ? "…" : "Set main"}
-          variant="success"
+          text="Close"
+          variant="error"
           textClassName="text-info-accent"
-          disabled={cannotSetMain || mainLoading}
+          disabled={cannotClose || closeLoading}
           onClick={() => {
-            void setMain({ accountId: id })
+            void closeAcc({ accountId: id })
               .unwrap()
+              .then(() => {
+                onClosed?.();
+              })
               .catch(() => {
                 pushMessage({
                   type: "error",
-                  title: "Main account",
-                  text: "Не удалось назначить главный счёт.",
+                  title: "Close",
+                  text: "Не удалось закрыть счёт.",
                 });
               });
           }}
         />
-      </OnBlurContainer>
-      <LinkButton
-        text={closeLoading ? "…" : "Close"}
-        variant="error"
-        textClassName="text-info-accent"
-        disabled={cannotClose || closeLoading}
-        onClick={() => {
-          void closeAcc({ accountId: id })
-            .unwrap()
-            .then(() => {
-              onClosed?.();
-            })
-            .catch(() => {
-              pushMessage({
-                type: "error",
-                title: "Close",
-                text: "Не удалось закрыть счёт.",
-              });
-            });
-        }}
-      />
+        {closeLoading ? <LoadingFrameIndicator /> : null}
+      </div>
     </div>
   );
 }
