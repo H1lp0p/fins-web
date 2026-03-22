@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
   readonly VITE_BFF_URL?: string;
+  readonly VITE_SSO_URL?: string;
 }
 
 interface ImportMeta {

@@ -1,12 +1,13 @@
-import { BgText } from "@fins/ui-kit";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { HomePage } from "./pages/HomePage";
+import { UiPreviewPage } from "./pages/UiPreviewPage";
 
 export default function App() {
-
   return (
-    <main className="bg-background">
-      
-      <BgText text="WIP"/>
-        
-    </main>
+    <Routes>
+      <Route path="/preview" element={<UiPreviewPage />} />
+      <Route path="/" element={<HomePage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
