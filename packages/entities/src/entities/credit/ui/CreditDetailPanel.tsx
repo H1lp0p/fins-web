@@ -6,8 +6,8 @@ import {
   DEFAULT_CHARS,
 } from "@fins/ui-kit";
 import { CreditRuleInfo } from "../../credit-rule";
-import { currencyCodeToAmountSymbol } from "../../../shared/lib/currency-symbol";
-import { formatDateDdMmYyyy } from "../../../shared/lib/format-date-time";
+import { currencyCodeToAmountSymbol } from "../../../lib/currency-symbol";
+import { formatDateDdMmYyyy } from "../../../lib/format-date-time";
 import styles from "./CreditDetailPanel.module.css";
 
 export type CreditDetailPanelProps = {

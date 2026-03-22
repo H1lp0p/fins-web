@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import type { CardAccountEntity } from "@fins/api";
-import { AmountWithSymbol, BluredContainer, OnBlurContainer } from "@fins/ui-kit";
-import { currencyCodeToAmountSymbol } from "../../../shared/lib/currency-symbol";
+import { AmountWithSymbol, OnBlurContainer } from "@fins/ui-kit";
+import { currencyCodeToAmountSymbol } from "../../../lib/currency-symbol";
 import styles from "./CardAccountInfo.module.css";
 
 export type CardAccountDisplayStatus =

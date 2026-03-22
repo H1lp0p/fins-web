@@ -1,4 +1,6 @@
+import type { CardAccountEntity, CreditEntity } from "@fins/api";
 import {
+  mapCardAccountFromDto,
   useGetAllCreditRulesQuery,
   useGetByUserIdQuery,
   useGetUserCardAccountQuery,
@@ -20,20 +22,22 @@ function CreditPageContent() {
   const { data: user } = useGetUserQuery();
   const userId = user?.id ?? "";
 
-  const { data: credits = [] } = useGetByUserIdQuery(
+  const { data: creditsRaw = [] } = useGetByUserIdQuery(
     { userId },
     { skip: !userId },
   );
+  /** RTK типизирует ответ как DTO, хотя `transformResponse` уже отдаёт сущности. */
+  const credits = creditsRaw as CreditEntity[];
   const { data: rules = [] } = useGetAllCreditRulesQuery();
   const { data: accountsPage } = useGetUserCardAccountsQuery(
     { userId, pageIndex: 0, pageSize: 100 },
     { skip: !userId },
   );
 
-  const accounts = useMemo(
-    () => sortAccountsForIndex(accountsPage?.content ?? []),
-    [accountsPage?.content],
-  );
+  const accounts = useMemo(() => {
+    const entities = (accountsPage?.content ?? []).map(mapCardAccountFromDto);
+    return sortAccountsForIndex(entities);
+  }, [accountsPage?.content]);
 
   const [pageMode, setPageMode] = useState<PageMode>("list");
   const [selectedCreditId, setSelectedCreditId] = useState<string | null>(null);
@@ -47,10 +51,13 @@ function CreditPageContent() {
   const draftAccount = accounts.find((a) => a.id === draftAccountId) ?? null;
 
   const cardAccountId = selectedCredit?.cardAccountId;
-  const { data: linkedAccount } = useGetUserCardAccountQuery(
+  const { data: linkedAccountRaw } = useGetUserCardAccountQuery(
     { accountId: cardAccountId ?? "" },
     { skip: !cardAccountId },
   );
+  const linkedAccount: CardAccountEntity | undefined = linkedAccountRaw
+    ? mapCardAccountFromDto(linkedAccountRaw)
+    : undefined;
 
   const onToggleCredit = useCallback((id: string) => {
     setSelectedCreditId((prev) => (prev === id ? null : id));
