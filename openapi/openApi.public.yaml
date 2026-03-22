@@ -891,8 +891,9 @@ components:
         id:
           type: string
           format: uuid
-        account:
-          $ref: '#/components/schemas/CardAccount'
+        cardAccountId:
+          type: string
+          format: uuid
         dateTime:
           type: string
           format: date-time

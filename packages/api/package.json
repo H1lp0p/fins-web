@@ -21,6 +21,8 @@
   ],
   "sideEffects": false,
   "scripts": {
+    "bundle:openapi": "redocly bundle ../../openapi/openApi.public.yaml -o openapi-bundle/public.bundle.yaml && redocly bundle ../../openapi/openApi.sso.yaml -o openapi-bundle/sso.bundle.yaml",
+    "generate:api": "pnpm run bundle:openapi && rtk-query-codegen-openapi openapi-codegen.public.cjs && rtk-query-codegen-openapi openapi-codegen.sso.cjs",
     "build": "vite build"
   },
   "peerDependencies": {
@@ -30,6 +32,7 @@
     "react-redux": "^9.2.0"
   },
   "devDependencies": {
+    "@redocly/cli": "^2.24.1",
     "@reduxjs/toolkit": "^2.5.0",
     "@rtk-query/codegen-openapi": "^2.2.0",
     "@types/react": "^18.3.18",

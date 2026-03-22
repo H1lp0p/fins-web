@@ -1,5 +1,11 @@
 /**
- * Entry только для приложения SSO: auth-эндпоинты и связанный код.
- * Не реэкспортировать из `index.ts`.
+ * Entry только для приложения SSO. Не реэкспортировать из `index.ts`.
  */
-export const FINS_API_SSO_ENTRY = "@fins/api/sso";
+export { initSsoBffApi } from "./generated/sso/emptySsoApi";
+export * from "./generated/sso/generatedSsoApi";
+export type { BffError } from "./entities/bff-error";
+export {
+  extractBffError,
+  mapBffErrorFromBody,
+  tryParseBffError,
+} from "./entities/bff-error";
