@@ -1,0 +1,48 @@
+{
+  "name": "@fins/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./sso": {
+      "types": "./dist/sso.d.ts",
+      "import": "./dist/sso.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "bundle:openapi": "redocly bundle ../../openapi/openApi.public.yaml -o openapi-bundle/public.bundle.yaml && redocly bundle ../../openapi/openApi.sso.yaml -o openapi-bundle/sso.bundle.yaml",
+    "generate:api": "pnpm run bundle:openapi && rtk-query-codegen-openapi openapi-codegen.public.cjs && rtk-query-codegen-openapi openapi-codegen.sso.cjs",
+    "build": "vite build"
+  },
+  "peerDependencies": {
+    "@reduxjs/toolkit": "^2.5.0",
+    "react": "^18.3.1 || ^19.0.0",
+    "react-dom": "^18.3.1 || ^19.0.0",
+    "react-redux": "^9.2.0"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^2.24.1",
+    "@reduxjs/toolkit": "^2.5.0",
+    "@rtk-query/codegen-openapi": "^2.2.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-redux": "^9.2.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.0.11",
+    "vite-plugin-dts": "^4.5.0"
+  }
+}
