@@ -1,7 +1,6 @@
 import type { CreditEntity } from "@fins/api";
 import { AmountWithSymbol } from "@fins/ui-kit";
-import { creditTotalDebtDisplay } from "../../../entities/credit";
-import { currencyCodeToAmountSymbol } from "../../../shared/lib/currency-symbol";
+import { creditTotalDebtDisplay, currencyCodeToAmountSymbol } from "@fins/entities";
 
 type CreditsTopLeftWidgetProps =
   | { mode: "creditSummary"; credit: CreditEntity }

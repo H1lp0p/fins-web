@@ -1,7 +1,7 @@
 import { useGetTransactionOperationsQuery } from "@fins/api";
-import { LinkButton } from "@fins/ui-kit";
+import { LinkButton, OnBlurContainer } from "@fins/ui-kit";
 import { useRef } from "react";
-import { TransactionHistoryItem } from "../../entities/transaction";
+import { TransactionHistoryItem } from "@fins/entities";
 
 type AccountTransactionsPanelProps = {
   accountId: string;
@@ -22,37 +22,50 @@ export function AccountTransactionsPanel({
 
   return (
     <div
-      className="ph-mid pv-mid color-info"
+      className="pv-mid color-info gap-mid"
       style={{
         height: "100%",
         width: "100%",
         boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
-        gap: "0.5rem",
         minHeight: 0,
         minWidth: 0,
       }}
     >
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <LinkButton
-          text="Full up"
-          variant="success"
-          textClassName="text-info"
-          onClick={() => {
-            const el = scrollRef.current;
-            if (el) el.scrollTop = 0;
+      <div className="ph-mid" 
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        width: "100%",
+        boxSizing: "border-box",
+      }}>
+        <OnBlurContainer className="ph-mid pv-mid" 
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            boxSizing: "border-box",
           }}
-        />
+        >  
+          <LinkButton
+            text="Full up"
+            variant="success"
+            textClassName="text-info"
+            onClick={() => {
+              const el = scrollRef.current;
+              if (el) el.scrollTop = 0;
+            }}
+          />
+        </OnBlurContainer>
       </div>
       <div
+        className="ph-mid gap-mid rounded"
         ref={scrollRef}
         style={{
           flex: 1,
           overflow: "auto",
           display: "flex",
           flexDirection: "column",
-          gap: "0.5rem",
           minHeight: 0,
         }}
       >
@@ -69,16 +82,24 @@ export function AccountTransactionsPanel({
           ))
         )}
       </div>
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <LinkButton
-          text="Full down"
-          variant="success"
-          textClassName="text-info"
-          onClick={() => {
-            const el = scrollRef.current;
-            if (el) el.scrollTop = el.scrollHeight;
+      <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+        <OnBlurContainer className="ph-mid pv-mid" 
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            boxSizing: "border-box",
           }}
-        />
+        >
+          <LinkButton
+            text="Full down"
+            variant="success"
+            textClassName="text-info"
+            onClick={() => {
+              const el = scrollRef.current;
+              if (el) el.scrollTop = el.scrollHeight;
+            }}
+          />
+        </OnBlurContainer>
       </div>
     </div>
   );

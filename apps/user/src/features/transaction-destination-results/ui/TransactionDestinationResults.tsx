@@ -3,16 +3,18 @@ import type {
   CreditEntity,
   TransferDestinationUser,
 } from "@fins/api";
-import { CardAccountInfo } from "../../../entities/card-account";
-import { CreditShortInfo } from "../../../entities/credit";
-import { UserCard } from "../../../entities/user";
+import {
+  CardAccountInfo,
+  CreditShortInfo,
+  UserCard,
+  currencyCodeToAmountSymbol,
+} from "@fins/entities";
 import type { TransactionDestinationTabId } from "../../transaction-destination-search";
 import {
   filterCardAccountsByQuery,
   filterCreditsByQuery,
   filterUsersByQuery,
 } from "../../../shared/lib/filter-entities-by-query";
-import { currencyCodeToAmountSymbol } from "../../../shared/lib/currency-symbol";
 import styles from "./TransactionDestinationResults.module.css";
 
 export type TransactionDestinationResultsProps = {

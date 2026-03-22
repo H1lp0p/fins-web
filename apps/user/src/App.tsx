@@ -5,13 +5,11 @@ import { HeaderSessionTray } from "./features/header-session/HeaderSessionTray";
 import { CreditPage } from "./pages/CreditPage";
 import { HomePage } from "./pages/HomePage";
 import { TransactionsPage } from "./pages/TransactionsPage";
-import { UiPreviewPage } from "./pages/UiPreviewPage";
 
 const NAV_ITEMS = [
   { id: "index", label: "Index", path: "/" },
   { id: "transactions", label: "Transactions", path: "/transactions" },
   { id: "credit", label: "Credit", path: "/credit" },
-  { id: "preview", label: "Preview", path: "/preview" },
 ] as const;
 
 const HEADER_TABS: Tab[] = NAV_ITEMS.map(({ id, label, path }) => ({
@@ -55,12 +53,6 @@ export default function App() {
         trailingContent={<HeaderSessionTray />}
       />
       <Routes>
-        <Route path="/preview" element={
-          <>
-            <BgText text="Preview" />
-            <UiPreviewPage />
-          </>
-          } />
         <Route path="/" element={
           <>
             <BgText text="Home" />
