@@ -1,0 +1,18 @@
+/**
+ * Типы WebSocket «операции по счёту» из `openapi/asyncApi.transactions.yaml`.
+ * Перегенерация: `pnpm --filter @fins/api run generate:ws-types` (или `pnpm run generate:api`).
+ */
+export type { ClientSubscribePayload } from "./ClientSubscribePayload";
+export type { ClientUnsubscribePayload } from "./ClientUnsubscribePayload";
+export type { ServerSnapshotPayload } from "./ServerSnapshotPayload";
+export type { ServerTransactionPayload } from "./ServerTransactionPayload";
+export type { ServerErrorPayload } from "./ServerErrorPayload";
+export type { TransactionsStream } from "./TransactionsStream";
+export type { PageTransactionOperation } from "./PageTransactionOperation";
+export type { TransactionOperation } from "./TransactionOperation";
+export type { MoneyValueDto } from "./MoneyValueDto";
+export type { SortObject } from "./SortObject";
+export type { PageableObject } from "./PageableObject";
+export { AnonymousSchema_16 } from "./AnonymousSchema_16";
+export { AnonymousSchema_18 } from "./AnonymousSchema_18";
+export { AnonymousSchema_20 } from "./AnonymousSchema_20";

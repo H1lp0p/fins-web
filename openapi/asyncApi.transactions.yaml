@@ -1,0 +1,278 @@
+asyncapi: 2.6.0
+info:
+  title: Fins BFF — поток операций по счёту (WebSocket)
+  version: "1.0.0"
+  description: |
+    JSON-сообщения по одному WebSocket после установления соединения.
+    Аутентификация: та же httpOnly cookie сессии BFF (`fins_session`), что и у REST (`credentials` / `SameSite` как у приложения).
+
+    Подключение в dev: через прокси Vite тот же host/port, что у SPA, путь `/api/ws/transactions` (в `vite.config` уже `ws: true` для `/api`).
+  license:
+    name: MIT
+
+defaultContentType: application/json
+
+servers:
+  bff-local:
+    url: ws://localhost:8000/api/ws/transactions
+    protocol: ws
+    description: Прямо к uvicorn BFF (порт как в корневом README).
+  bff-vite-proxy:
+    url: ws://localhost:5173/api/ws/transactions
+    protocol: ws
+    description: >
+      Пример dev: браузер подключается к origin Vite; порт 5173 — типичный для первого приложения,
+      у sso/user/admin может быть другой свободный порт.
+
+channels:
+  transactionsStream:
+    description: >
+      Один канал на соединение: клиент шлёт subscribe/unsubscribe, сервер отвечает snapshot, затем событиями transaction и при ошибках — error.
+    bindings:
+      ws:
+        bindingVersion: 0.1.0
+    publish:
+      operationId: clientSend
+      summary: Сообщения от клиента к BFF
+      message:
+        oneOf:
+          - $ref: "#/components/messages/ClientSubscribe"
+          - $ref: "#/components/messages/ClientUnsubscribe"
+    subscribe:
+      operationId: clientReceive
+      summary: Сообщения от BFF к клиенту
+      message:
+        oneOf:
+          - $ref: "#/components/messages/ServerSnapshot"
+          - $ref: "#/components/messages/ServerTransaction"
+          - $ref: "#/components/messages/ServerError"
+
+components:
+  messages:
+    ClientSubscribe:
+      name: ClientSubscribe
+      title: Подписка на операции счёта
+      summary: Запрос снимка страницы и последующих обновлений по accountId
+      payload:
+        $ref: "#/components/schemas/ClientSubscribePayload"
+
+    ClientUnsubscribe:
+      name: ClientUnsubscribe
+      title: Отписка от счёта
+      summary: Прекращение push по указанному счёту (соединение может оставаться открытым)
+      payload:
+        $ref: "#/components/schemas/ClientUnsubscribePayload"
+
+    ServerSnapshot:
+      name: ServerSnapshot
+      title: Снимок страницы операций
+      summary: Первая выдача после subscribe; структура page совпадает с GET /core-api/transactions/{accountId} (OpenAPI PageTransactionOperation)
+      payload:
+        $ref: "#/components/schemas/ServerSnapshotPayload"
+
+    ServerTransaction:
+      name: ServerTransaction
+      title: Новая или обновлённая операция
+      summary: Событие после enroll/withdraw или внутреннего обновления мока/бекенда
+      payload:
+        $ref: "#/components/schemas/ServerTransactionPayload"
+
+    ServerError:
+      name: ServerError
+      title: Ошибка канала
+      summary: Невалидная подписка, нет сессии, счёт чужой и т.д.
+      payload:
+        $ref: "#/components/schemas/ServerErrorPayload"
+
+  schemas:
+    ClientSubscribePayload:
+      type: object
+      required:
+        - type
+        - accountId
+      properties:
+        type:
+          type: string
+          const: subscribe
+        accountId:
+          type: string
+          format: uuid
+        pageIndex:
+          type: integer
+          format: int32
+          default: 0
+          description: Необязательно; если не задано — поведение как у REST default
+        pageSize:
+          type: integer
+          format: int32
+          default: 30
+
+    ClientUnsubscribePayload:
+      type: object
+      required:
+        - type
+        - accountId
+      properties:
+        type:
+          type: string
+          const: unsubscribe
+        accountId:
+          type: string
+          format: uuid
+
+    ServerSnapshotPayload:
+      type: object
+      required:
+        - type
+        - accountId
+        - page
+      properties:
+        type:
+          type: string
+          const: snapshot
+        accountId:
+          type: string
+          format: uuid
+        page:
+          $ref: "#/components/schemas/PageTransactionOperation"
+
+    ServerTransactionPayload:
+      type: object
+      required:
+        - type
+        - accountId
+        - operation
+      properties:
+        type:
+          type: string
+          const: transaction
+        accountId:
+          type: string
+          format: uuid
+        operation:
+          $ref: "#/components/schemas/TransactionOperation"
+
+    ServerErrorPayload:
+      type: object
+      required:
+        - type
+        - message
+      properties:
+        type:
+          type: string
+          const: error
+        message:
+          type: string
+        code:
+          type: string
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+    MoneyValueDto:
+      type: object
+      properties:
+        value:
+          type: number
+        currency:
+          type: string
+          enum:
+            - DOLLAR
+            - EURO
+            - RUBLE
+
+    TransactionOperation:
+      type: object
+      description: >
+        Согласовано с components.schemas.TransactionOperation в openApi.public.yaml (в т.ч. опечатка transactionActoin).
+      properties:
+        id:
+          type: string
+          format: uuid
+        cardAccountId:
+          type: string
+          format: uuid
+        dateTime:
+          type: string
+          format: date-time
+        transactionType:
+          type: string
+          enum:
+            - WITHDRAWAL
+            - ENROLLMENT
+        transactionActoin:
+          type: string
+        transactionStatus:
+          type: string
+          enum:
+            - COMPLETE
+            - IN_PROGRESS
+            - DECLINED
+        money:
+          $ref: "#/components/schemas/MoneyValueDto"
+
+    SortObject:
+      type: object
+      properties:
+        empty:
+          type: boolean
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
+
+    PageableObject:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: "#/components/schemas/SortObject"
+        paged:
+          type: boolean
+        unpaged:
+          type: boolean
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+
+    PageTransactionOperation:
+      type: object
+      description: Как в OpenAPI PageTransactionOperation
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/TransactionOperation"
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: "#/components/schemas/SortObject"
+        numberOfElements:
+          type: integer
+          format: int32
+        first:
+          type: boolean
+        last:
+          type: boolean
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
+        empty:
+          type: boolean
