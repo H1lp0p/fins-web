@@ -1,13 +1,16 @@
 import { useGetUserCardAccountsQuery, useGetUserQuery } from "@fins/api";
-import { RectSpaceLayout } from "@fins/ui-kit";
-import { useMemo, useState } from "react";
+import { LinkButton, OnBlurContainer, RectSpaceLayout } from "@fins/ui-kit";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AccountActionsBar } from "../features/account-actions/AccountActionsBar";
+import { AccountCreateForm } from "../features/account-create-form/AccountCreateForm";
 import { AccountGrid } from "../features/account-grid/AccountGrid";
 import { AccountTransactionsPanel } from "../features/account-transactions/AccountTransactionsPanel";
 import { ExchangeRateWidget } from "../features/exchange-rate/ExchangeRateWidget";
 import { RequireSession } from "../features/require-session/RequireSession";
 import { CardAccountInfo } from "../entities/card-account";
 import { sortAccountsForIndex } from "../shared/lib/sort-accounts-for-index";
+
+type BottomLeftMode = "accounts" | "create";
 
 function IndexContent() {
   const { data: user } = useGetUserQuery();
@@ -23,21 +26,46 @@ function IndexContent() {
   }, [page?.content]);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [bottomMode, setBottomMode] = useState<BottomLeftMode>("accounts");
   const selected = accounts.find((a) => a.id === selectedId) ?? null;
+
+  const openAccountCreate = useCallback(() => {
+    setSelectedId(null);
+    setBottomMode("create");
+  }, []);
+
+  const closeAccountCreate = useCallback(() => {
+    setBottomMode("accounts");
+  }, []);
+
+  const onAccountCreated = useCallback((newId?: string) => {
+    setBottomMode("accounts");
+    if (newId) setSelectedId(newId);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    const acc = accounts.find((a) => a.id === selectedId);
+    if (acc?.deleted) setSelectedId(null);
+  }, [accounts, selectedId]);
 
   return (
     <div
       className="bg-background"
       style={{
-        position: "relative",
+        display: "flex",
+        justifyContent: "center",
         width: "100%",
-        minHeight: "calc(100vh - 5rem)",
+        boxSizing: "border-box",
       }}
     >
       <RectSpaceLayout
         topLeftContent={
           selected ? (
-            <div className="ph-mid pv-mid" style={{ height: "100%", boxSizing: "border-box" }}>
+            <div
+              className="ph-mid pv-mid"
+              style={{ height: "100%", width: "100%", minWidth: 0, boxSizing: "border-box" }}
+            >
               <CardAccountInfo account={selected} />
             </div>
           ) : undefined
@@ -46,7 +74,6 @@ function IndexContent() {
           selected && userId ? (
             <AccountActionsBar
               account={selected}
-              userId={userId}
               onClosed={() => setSelectedId(null)}
             />
           ) : (
@@ -54,16 +81,66 @@ function IndexContent() {
           )
         }
         bottomLeftContent={
-          selected?.id ? (
-            <AccountTransactionsPanel accountId={selected.id} />
-          ) : undefined
+          bottomMode === "create" && userId ? (
+            <AccountCreateForm
+              userId={userId}
+              onCancel={closeAccountCreate}
+              onCreated={onAccountCreated}
+            />
+          ) : selected?.id ? (
+            <div
+              style={{
+                height: "100%",
+                minHeight: 0,
+                minWidth: 0,
+                boxSizing: "border-box",
+              }}
+            >
+              <AccountTransactionsPanel accountId={selected.id} />
+            </div>
+          ) : (
+            <div
+              style={{
+                height: "100%",
+                minHeight: 0,
+                boxSizing: "border-box",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <OnBlurContainer
+                className="pv-mid ph-max"
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <LinkButton
+                  text="Create"
+                  variant="success"
+                  onClick={openAccountCreate}
+                />
+              </OnBlurContainer>
+            </div>
+          )
         }
         bottomRightContent={
-          <AccountGrid
-            accounts={accounts}
-            selectedId={selectedId}
-            onSelectAccount={setSelectedId}
-          />
+          <div
+            style={{
+              height: "100%",
+              minHeight: 0,
+              minWidth: 0,
+              boxSizing: "border-box",
+            }}
+          >
+            <AccountGrid
+              accounts={accounts}
+              selectedId={selectedId}
+              onSelectAccount={setSelectedId}
+            />
+          </div>
         }
       />
     </div>

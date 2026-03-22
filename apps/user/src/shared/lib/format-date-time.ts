@@ -20,3 +20,14 @@ export function formatDateOnly(iso: string | undefined): string {
   if (Number.isNaN(d.getTime())) return "—";
   return dateOnlyFormatter.format(d);
 }
+
+/** Дата как на макете `transaction-history-item`: `01.01.2025`. */
+export function formatDateDdMmYyyy(iso: string | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}.${mm}.${yyyy}`;
+}

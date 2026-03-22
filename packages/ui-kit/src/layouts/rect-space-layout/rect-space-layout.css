@@ -1,36 +1,58 @@
+/*
+ * Два ряда flex-колонок — то же деление, что в Figma (grid 0.5fr : 1fr):
+ * - верх: фикс. высота (было 110 в Figma; чуть выше — карточка счёта в слоте), колонки 1 : 2;
+ * - низ: flex-grow на остаток высоты, колонки 1 : 2.
+ * Селекторы с префиксом .rect-space-layout — не пересекаются с tri-col-space-layout.
+ */
 .rect-space-layout {
-
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: relative;
     z-index: 2;
+    box-sizing: border-box;
 
-    width: 60%;
-    height: 70%;
+    width: 60vw;
+    height: calc(100vh - 5.5rem);
+    max-width: 60vw;
+    max-height: calc(100vh - 5.5rem);
+    margin-inline: auto;
+    padding: var(--fins-max-gap);
 
-    display: grid;
-    grid-template-columns: .5fr 1fr;
-    grid-template-rows: .25fr 1fr;
-    gap: var(--fins-max-gap);
+    display: flex;
+    flex-direction: column;
+    gap: var(--fins-min-gap);
+    overflow: hidden;
 }
 
-.top-left-content {
-    grid-column: 1;
-    grid-row: 1;
+.rect-space-layout .rect-space-layout__row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--fins-min-gap);
+    min-width: 0;
+    min-height: 0;
 }
 
-.top-right-content {
-    grid-column: 2;
-    grid-row: 1;
+.rect-space-layout .rect-space-layout__row--top {
+    flex: 0 0 152px;
+    height: 152px;
 }
 
-.bottom-left-content {
-    grid-column: 1;
-    grid-row: 2;
+.rect-space-layout .rect-space-layout__row--bottom {
+    flex: 1 1 0;
+    min-height: 0;
 }
 
-.bottom-right-content {
-    grid-column: 2;
-    grid-row: 2;
+.rect-space-layout .top-left-content,
+.rect-space-layout .bottom-left-content {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.rect-space-layout .top-right-content,
+.rect-space-layout .bottom-right-content {
+    flex: 2 1 0;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
 }

@@ -284,6 +284,35 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /core-api/transactions/transfer:
+    post:
+      tags:
+        - transaction-operation-controller
+      operationId: transferMoney
+      summary: Перевод между счётами или на погашение кредита
+      description: >
+        Сумма `amount` в валюте `amountCurrency`. BFF конвертирует в валюты сторон.
+        При указанном `fromCardAccountId` — списание со счёта (withdraw в истории, action Transaction или payback).
+        Зачисление на цель — enroll в истории целевого счёта. Без `fromCardAccountId` — только зачисление с внешнего источника.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferMoneyDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /core-api/cardaccount/open/{userId}:
     post:
       tags:
@@ -344,6 +373,74 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /core-api/cardaccount/{accountId}/set-main:
+    post:
+      tags:
+        - card-account-controller
+      operationId: setMainAccount
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CardAccount'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /core-api/cardaccount/{accountId}/set-visibility:
+    post:
+      tags:
+        - card-account-controller
+      operationId: setAccountVisibility
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountSetVisibilityDto'
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CardAccount'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
         '500':
@@ -482,7 +579,6 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/PageCardAccount'
-  # Credit Service Endpoints
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -493,6 +589,7 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  # Credit Service Endpoints
   /credit-service/credit_rule/{creditRuleId}/edit:
     put:
       tags:
@@ -861,6 +958,39 @@ components:
           $ref: '#/components/schemas/MoneyValueDto'
         destination:
           type: string
+    TransferMoneyDto:
+      type: object
+      required:
+        - amount
+        - amountCurrency
+        - targetKind
+      properties:
+        fromCardAccountId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Счёт списания; null — зачисление только с внешнего источника
+        amount:
+          type: number
+          description: Сумма в валюте amountCurrency
+        amountCurrency:
+          $ref: '#/components/schemas/Currency'
+        targetKind:
+          type: string
+          enum:
+            - ACCOUNT
+            - CREDIT
+          description: Тип получателя
+        targetCardAccountId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Обязателен при targetKind=ACCOUNT
+        targetCreditId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Обязателен при targetKind=CREDIT
     CardAccount:
       type: object
       properties:
@@ -870,6 +1000,15 @@ components:
         userId:
           type: string
           format: uuid
+        name:
+          type: string
+          description: Отображаемое имя счёта
+        main:
+          type: boolean
+          description: Главный счёт пользователя
+        visible:
+          type: boolean
+          description: Видимость в списках (false = hidden)
         money:
           $ref: '#/components/schemas/MoneyValueDto'
         deleted:
@@ -878,6 +1017,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TransactionOperation'
+    AccountSetVisibilityDto:
+      type: object
+      required:
+        - visible
+      properties:
+        visible:
+          type: boolean
     CardAccountCreateModelDto:
       type: object
       properties:
@@ -1111,6 +1257,12 @@ components:
             $ref: '#/components/schemas/BffErrorBody'
     Forbidden:
       description: Доступ запрещён (недостаточно прав).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BffErrorBody'
+    NotFound:
+      description: Ресурс не найден.
       content:
         application/json:
           schema:

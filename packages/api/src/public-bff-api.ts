@@ -52,6 +52,12 @@ export const publicBffApi = rawPublicBffApi.enhanceEndpoints({
       transformResponse: (page: PageCardAccount) =>
         mapPagedCardAccountsFromDto(page),
     },
+    setMainAccount: {
+      transformResponse: (dto: CardAccount) => mapCardAccountFromDto(dto),
+    },
+    setAccountVisibility: {
+      transformResponse: (dto: CardAccount) => mapCardAccountFromDto(dto),
+    },
     editCreditRule: {
       transformResponse: (dto: CreditRule) => mapCreditRuleFromDto(dto),
     },
@@ -76,6 +82,9 @@ export const publicBffApi = rawPublicBffApi.enhanceEndpoints({
     getByCardAccountId: {
       transformResponse: (dto: Credit) => mapCreditFromDto(dto),
     },
+    transferMoney: {
+      invalidatesTags: ["transaction-operation-controller", "card-account-controller"],
+    },
   },
 });
 
@@ -92,8 +101,11 @@ export const {
   useGetUserQuery,
   useWithdrawMoneyMutation,
   useEnrollMoneyMutation,
+  useTransferMoneyMutation,
   useOpenAccountMutation,
   useCloseAccountMutation,
+  useSetMainAccountMutation,
+  useSetAccountVisibilityMutation,
   useGetTransactionOperationsQuery,
   useGetUserCardAccountQuery,
   useCheckAccountExistsQuery,

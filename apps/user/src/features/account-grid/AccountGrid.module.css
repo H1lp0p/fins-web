@@ -1,0 +1,25 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--fins-max-gap);
+  align-content: start;
+}
+
+.cardBtn {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.cardBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.wrap {
+  width: 100%;
+}
