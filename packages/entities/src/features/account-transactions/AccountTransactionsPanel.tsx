@@ -1,8 +1,30 @@
 import type { TransactionOperationEntity } from "@fins/api";
 import { useGetTransactionOperationsQuery } from "@fins/api";
-import { LinkButton, OnBlurContainer } from "@fins/ui-kit";
+import {
+  CenteredPlaceholder,
+  LinkButton,
+  LoadingFrameIndicator,
+  OnBlurContainer,
+} from "@fins/ui-kit";
 import { useRef } from "react";
 import { TransactionHistoryItem } from "../../entities/transaction";
+
+const listShellStyle = {
+  flex: 1,
+  overflow: "auto" as const,
+  display: "flex",
+  flexDirection: "column" as const,
+  minHeight: 0,
+};
+
+const centeredFlex = {
+  flex: 1,
+  minHeight: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "100%",
+};
 
 type AccountTransactionsPanelProps = {
   accountId: string;
@@ -49,6 +71,7 @@ export function AccountTransactionsPanel({
             display: "flex",
             justifyContent: "center",
             boxSizing: "border-box",
+            width: "100%",
           }}
         >
           <LinkButton
@@ -62,21 +85,13 @@ export function AccountTransactionsPanel({
           />
         </OnBlurContainer>
       </div>
-      <div
-        className="ph-mid gap-mid rounded"
-        ref={scrollRef}
-        style={{
-          flex: 1,
-          overflow: "auto",
-          display: "flex",
-          flexDirection: "column",
-          minHeight: 0,
-        }}
-      >
+      <div className="ph-mid gap-mid rounded" ref={scrollRef} style={listShellStyle}>
         {isLoading ? (
-          <span className="text-info color-input-placeholder">…</span>
+          <div style={centeredFlex}>
+            <LoadingFrameIndicator />
+          </div>
         ) : newestFirst.length === 0 ? (
-          <span className="text-info color-input-placeholder">Нет операций</span>
+          <CenteredPlaceholder text="page.content.length === 0" />
         ) : (
           newestFirst.map((op, idx) => (
             <TransactionHistoryItem
@@ -86,13 +101,21 @@ export function AccountTransactionsPanel({
           ))
         )}
       </div>
-      <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+      <div className="ph-mid" 
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          width: "100%",
+          boxSizing: "border-box",
+        }}
+      >
         <OnBlurContainer
           className="ph-mid pv-mid"
           style={{
             display: "flex",
             justifyContent: "center",
             boxSizing: "border-box",
+            width: "100%",
           }}
         >
           <LinkButton

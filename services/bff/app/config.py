@@ -4,6 +4,8 @@ from typing import Literal
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.constants import WAIT_IN_MILLIS
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -30,6 +32,9 @@ class Settings(BaseSettings):
     )
 
     bff_service_api_key: str | None = None
+
+    #: Задержка перед обработкой каждого запроса с путём `/api` (мс). Env: `WAIT_IN_MILLIS`.
+    wait_in_millis: int = Field(default=WAIT_IN_MILLIS, ge=0)
 
     @property
     def cors_origin_list(self) -> list[str]:

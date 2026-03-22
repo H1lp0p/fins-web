@@ -59,7 +59,11 @@ export function TransactionsPage() {
   const [withdrawMoney, { isLoading: withdrawLoading }] =
     useWithdrawMoneyMutation();
 
-  const { data: directoryRaw = [] } = useGetUsersDirectoryQuery(undefined, {
+  const {
+    data: directoryRaw = [],
+    isLoading: directoryLoading,
+    isFetching: directoryFetching,
+  } = useGetUsersDirectoryQuery(undefined, {
     skip: !userId,
   });
   const users: TransferDestinationUser[] = useMemo(
@@ -469,6 +473,7 @@ export function TransactionsPage() {
             onSelectAccount={setSelectedAccountId}
             onSelectCredit={setSelectedCreditId}
             onSelectUser={setSelectedUserId}
+            usersDirectoryLoading={directoryLoading || directoryFetching}
           />
         }
       />

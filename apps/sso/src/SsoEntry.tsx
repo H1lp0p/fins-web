@@ -2,6 +2,7 @@ import { useAuthValidateSessionQuery } from "@fins/api/sso";
 import {
   BgText,
   Header,
+  LoadingFrameIndicator,
   useMessageStack,
   type Tab,
 } from "@fins/ui-kit";
@@ -33,8 +34,20 @@ export default function SsoEntry() {
 
   if (session.isLoading) {
     return (
-      <main className="bg-background">
-        <BgText text="…" />
+      <main
+        className="bg-background"
+        style={{
+          position: "relative",
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <BgText text="Session" />
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <LoadingFrameIndicator />
+        </div>
       </main>
     );
   }
