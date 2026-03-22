@@ -1,8 +1,9 @@
-import type { CardAccountEntity, User } from "@fins/api";
+import type { CardAccountEntity, TransferDestinationUser } from "@fins/api";
 import {
-  useGetAllUsersQuery,
+  mapUserDirectoryEntryFromDto,
   useGetByUserIdQuery,
   useGetUserCardAccountsQuery,
+  useGetUsersDirectoryQuery,
   useGetUserQuery,
   useTransferMoneyMutation,
   useWithdrawMoneyMutation,
@@ -61,10 +62,13 @@ function TransactionsContent() {
   const [withdrawMoney, { isLoading: withdrawLoading }] =
     useWithdrawMoneyMutation();
 
-  const { data: usersRaw = [] } = useGetAllUsersQuery(undefined, {
+  const { data: directoryRaw = [] } = useGetUsersDirectoryQuery(undefined, {
     skip: !userId,
   });
-  const users = usersRaw as User[];
+  const users: TransferDestinationUser[] = useMemo(
+    () => directoryRaw.map(mapUserDirectoryEntryFromDto),
+    [directoryRaw],
+  );
 
   const [fromSelectedAccountId, setFromSelectedAccountId] = useState<
     string | null
@@ -220,8 +224,10 @@ function TransactionsContent() {
         const c = credits.find((x) => x.id === selectedCreditId);
         return c?.currency;
       }
-      case "users":
-        return "DOLLAR" as const;
+      case "users": {
+        const u = users.find((x) => x.id === selectedUserId);
+        return u?.mainAccountCurrency;
+      }
       case "other-service":
         return currencyCodeFromTransactionIndex(rightCurrencyIndex);
       default:
@@ -233,6 +239,8 @@ function TransactionsContent() {
     selectedAccountId,
     credits,
     selectedCreditId,
+    selectedUserId,
+    users,
     rightCurrencyIndex,
   ]);
 

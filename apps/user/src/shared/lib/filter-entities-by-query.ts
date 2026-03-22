@@ -1,4 +1,8 @@
-import type { CardAccountEntity, CreditEntity, User } from "@fins/api";
+import type {
+  CardAccountEntity,
+  CreditEntity,
+  TransferDestinationUser,
+} from "@fins/api";
 
 function norm(s: string): string {
   return s.trim().toLowerCase();
@@ -30,11 +34,14 @@ export function filterCreditsByQuery(
   });
 }
 
-export function filterUsersByQuery(users: User[], query: string): User[] {
+export function filterUsersByQuery(
+  users: TransferDestinationUser[],
+  query: string,
+): TransferDestinationUser[] {
   const q = norm(query);
   if (!q) return users;
   return users.filter((u) => {
-    const email = u.email.toLowerCase();
+    const email = (u.email ?? "").toLowerCase();
     const name = u.name.toLowerCase();
     const id = u.id.toLowerCase();
     return email.includes(q) || name.includes(q) || id.includes(q);

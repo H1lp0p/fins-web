@@ -1,4 +1,8 @@
-import { useGetUserCardAccountsQuery, useGetUserQuery } from "@fins/api";
+import {
+  mapCardAccountFromDto,
+  useGetUserCardAccountsQuery,
+  useGetUserQuery,
+} from "@fins/api";
 import { LinkButton, OnBlurContainer, RectSpaceLayout } from "@fins/ui-kit";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AccountActionsBar } from "../features/account-actions/AccountActionsBar";
@@ -21,8 +25,8 @@ function IndexContent() {
   );
 
   const accounts = useMemo(() => {
-    const raw = page?.content ?? [];
-    return sortAccountsForIndex(raw);
+    const entities = (page?.content ?? []).map(mapCardAccountFromDto);
+    return sortAccountsForIndex(entities);
   }, [page?.content]);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);

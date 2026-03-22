@@ -34,6 +34,13 @@ const injectedRtkApi = api
         query: () => ({ url: `/user-service/users` }),
         providesTags: ["Users"],
       }),
+      getUsersDirectory: build.query<
+        GetUsersDirectoryApiResponse,
+        GetUsersDirectoryApiArg
+      >({
+        query: () => ({ url: `/user-service/users/directory` }),
+        providesTags: ["Users"],
+      }),
       getUserById: build.query<GetUserByIdApiResponse, GetUserByIdApiArg>({
         query: (queryArg) => ({ url: `/user-service/users/${queryArg.id}` }),
         providesTags: ["Users"],
@@ -292,6 +299,9 @@ export type EditUser1ApiArg = {
 };
 export type GetAllUsersApiResponse = /** status 200 OK */ UserDto[];
 export type GetAllUsersApiArg = void;
+export type GetUsersDirectoryApiResponse =
+  /** status 200 OK */ UserDirectoryEntryDto[];
+export type GetUsersDirectoryApiArg = void;
 export type GetUserByIdApiResponse = /** status 200 OK */ UserDto;
 export type GetUserByIdApiArg = {
   id: string;
@@ -421,12 +431,17 @@ export type UserDto = {
   roles?: ("CLIENT" | "WORKER" | "BLOCKED_CLIENT" | "BLOCKED_WORKER")[];
   active?: boolean;
 };
+export type Currency = "DOLLAR" | "EURO" | "RUBLE";
+export type UserDirectoryEntryDto = {
+  userId: string;
+  username: string;
+  mainAccountCurrency: Currency;
+};
 export type WithdrawDto = {
   cardAccountId?: string;
   sum?: number;
   destination?: string;
 };
-export type Currency = "DOLLAR" | "EURO" | "RUBLE";
 export type MoneyValueDto = {
   value?: number;
   currency?: Currency;
@@ -553,6 +568,7 @@ export const {
   useEditUserMutation,
   useEditUser1Mutation,
   useGetAllUsersQuery,
+  useGetUsersDirectoryQuery,
   useGetUserByIdQuery,
   useDeleteUserByIdMutation,
   useIsUserActiveByIdQuery,

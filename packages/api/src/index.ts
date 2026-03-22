@@ -23,6 +23,7 @@ export {
   useEnrollMoneyMutation,
   useGetAllCreditRulesQuery,
   useGetAllUsersQuery,
+  useGetUsersDirectoryQuery,
   useGetByCardAccountIdQuery,
   useGetByUserIdQuery,
   useGetCreditRuleByIdQuery,
@@ -43,8 +44,16 @@ export {
 } from "./public-bff-api";
 export type { CurrencyCode, Money } from "./entities/money";
 export { mapMoneyFromDto } from "./entities/money";
-export type { User, UserRole } from "./entities/user";
-export { mapUserFromDto } from "./entities/user";
+export type {
+  TransferDestinationUser,
+  User,
+  UserRole,
+} from "./entities/user";
+export {
+  mapUserDirectoryEntryFromDto,
+  mapUserFromDto,
+  mapUserToTransferDestinationUser,
+} from "./entities/user";
 export type {
   CardAccountEntity,
   MapTransactionOperationContext,

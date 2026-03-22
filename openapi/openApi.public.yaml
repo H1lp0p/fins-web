@@ -92,6 +92,33 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /user-service/users/directory:
+    get:
+      tags:
+        - Users
+      operationId: getUsersDirectory
+      description: >
+        Краткий список пользователей для клиентского приложения (роль CLIENT и прочие без WORKER):
+        id, отображаемое имя и валюта основного счёта. Полный список UserDto — только у WORKER (`GET /user-service/users`).
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDirectoryEntryDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /user-service/users/{id}:
     get:
       tags:
@@ -937,6 +964,20 @@ components:
               - BLOCKED_WORKER
         active:
           type: boolean
+    UserDirectoryEntryDto:
+      required:
+        - userId
+        - username
+        - mainAccountCurrency
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        username:
+          type: string
+        mainAccountCurrency:
+          $ref: '#/components/schemas/Currency'
     # Core API Schemas
     WithdrawDto:
       type: object

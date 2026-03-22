@@ -89,9 +89,9 @@ export function CardAccountInfo({
         <h3
           className={`${styles.titleReset} text-info-accent ${nameColorClass(status)}`}
         >
-          {selected ? <span className="text-success">{"<"}</span> : null}
+          {selected ? <span className="color-success">{"<"}</span> : null}
           {displayName}
-          {selected ? <span className="text-success">{">"}</span> : null}
+          {selected ? <span className="color-success">{">"}</span> : null}
         </h3>
         {badge ? (
           <span
