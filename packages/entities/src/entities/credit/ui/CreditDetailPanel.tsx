@@ -18,13 +18,13 @@ export type CreditDetailPanelProps = {
   style?: CSSProperties;
 };
 
-function daysAgoLabel(iso: string | undefined): string {
-  if (!iso) return "—";
+function daysAgoLabel(iso: string | undefined): {amount: number, unit: DEFAULT_CHARS} {
+  if (!iso) return {amount: -1, unit: DEFAULT_CHARS.DAY};
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return {amount: -1, unit: DEFAULT_CHARS.DAY};
   const days = Math.floor((Date.now() - d.getTime()) / 86_400_000);
-  if (days < 0) return "—";
-  return `${days} ${DEFAULT_CHARS.DAY} ago`;
+  if (days < 0) return {amount: -1, unit: DEFAULT_CHARS.DAY};
+  return {amount: days, unit: DEFAULT_CHARS.DAY};
 }
 
 /**
@@ -42,16 +42,16 @@ export function CreditDetailPanel({
 
   return (
     <div
-      className={`${styles.scroll} ph-mid pv-mid ${className ?? ""}`.trim()}
+      className={`${styles.scroll} ph-mid pv-mid color-info ${className ?? ""}`.trim()}
       style={style}
     >
       <section className={styles.section}>
-        <h4 className={`${styles.sectionTitle} text-title color-input-placeholder`}>
+        <h4 className={`${styles.sectionTitle} text-title`}>
           Account
         </h4>
         <BluredContainer className="ph-mid pv-mid">
           <div className={styles.accountCardInner}>
-            <span className={`${styles.accountLabel} text-info color-input-placeholder`}>
+            <span className={`${styles.accountLabel} text-title`}>
               Credit account
             </span>
             {balance != null ? (
@@ -67,53 +67,68 @@ export function CreditDetailPanel({
         </BluredContainer>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ph-mid gap-mid text-info-accent`}>
         <div className={styles.debtRow}>
-          <span className="text-info color-info">Initial debt sum</span>
+          <span className="text-info-accent color-info">Initial debt sum</span>
           <AmountWithSymbol
             amount={credit.initialDebt ?? 0}
             symbol={symbol}
-            textClassName="text-info"
+            textClassName="text-info-accent"
+            style={{ alignSelf: "flex-end" }}
           />
         </div>
         <div className={styles.debtRow}>
-          <span className="text-info color-info">Current debt sum</span>
+          <span className="text-info-accent color-info">Current debt sum</span>
           <AmountWithSymbol
             amount={credit.currentDebtSum ?? 0}
             symbol={symbol}
-            textClassName="text-info"
+            textClassName="text-info-accent"
+            style={{ alignSelf: "flex-end" }}
           />
         </div>
         <div className={styles.debtRow}>
-          <span className="text-info color-info">Interest debt sum</span>
+          <span className="text-info-accent color-info">Interest debt sum</span>
           <AmountWithSymbol
             amount={credit.interestDebtSum ?? 0}
             symbol={symbol}
-            textClassName="text-info"
+            textClassName="text-info-accent"
+            style={{ alignSelf: "flex-end" }}
           />
         </div>
       </section>
 
       <section className={styles.section}>
-        <h4 className={`${styles.sectionTitle} text-title color-input-placeholder`}>
+        <h4 className={`${styles.sectionTitle} text-title`}>
           Rule
         </h4>
         {rule ? (
-          <CreditRuleInfo rule={rule} />
+          <CreditRuleInfo 
+            rule={rule}
+            style={{width: "100%"}}
+          />
         ) : (
-          <span className="text-info color-input-placeholder">—</span>
+          <span className="text-info-accent color-info">—</span>
         )}
       </section>
 
       <section className={styles.section}>
-        <h4 className={`${styles.sectionTitle} text-title color-input-placeholder`}>
+        <h4 className={`text-title`}>
           Last repayment
         </h4>
-        <div className={styles.lastRepayRow}>
-          <span className="text-info color-success">
-            {daysAgoLabel(credit.lastInterestUpdate)}
-          </span>
-          <span className="text-info color-success">
+        <div className={`${styles.lastRepayRow} gap-min text-info-accent`}>
+          <div 
+            className={`${styles.lastRepayRow} gap-min`}
+            style={{ alignSelf: "flex-start" }}
+          >
+            <AmountWithSymbol
+              amount={daysAgoLabel(credit.lastInterestUpdate).amount}
+              symbol={daysAgoLabel(credit.lastInterestUpdate).unit}
+              textClassName="text-info-accent"
+              style={{ alignSelf: "flex-start" }}
+            />
+              ago
+          </div>
+          <span className="text-info-accent color-input-placeholder">
             {formatDateDdMmYyyy(credit.lastInterestUpdate)}
           </span>
         </div>

@@ -10,7 +10,7 @@ import {
 import { RectSpaceLayout } from "@fins/ui-kit";
 import { useCallback, useMemo, useState } from "react";
 import { RequireSession } from "../features/require-session/RequireSession";
-import { sortAccountsForIndex } from "../shared/lib/sort-accounts-for-index";
+import { sortAccountsForIndex } from "@fins/entities";
 import { CreditsBottomLeftWidget } from "../widgets/credits-bottom-left";
 import { CreditsBottomRightWidget } from "../widgets/credits-bottom-right";
 import { CreditsTopLeftWidget } from "../widgets/credits-top-left";

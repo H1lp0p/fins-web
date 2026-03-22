@@ -60,7 +60,8 @@ async def edit_user(
         return _forbidden()
     if store.get_user_by_id(id) is None:
         return bff_error_response(404, message="Пользователь не найден")
-    store.update_user(id, body)
+    if store.update_user(id, body) is None:
+        return bff_error_response(404, message="Пользователь не найден")
     return Response(status_code=200)
 
 
@@ -71,7 +72,8 @@ async def edit_account(
 ):
     if user is None:
         return _unauth()
-    store.update_self_account(user.id, body)
+    if store.update_self_account(user.id, body) is None:
+        return bff_error_response(404, message="Пользователь не найден")
     return Response(status_code=200)
 
 
@@ -83,7 +85,7 @@ async def get_all_users(
         return _unauth()
     if not _is_worker(user):
         return _forbidden()
-    return [user_to_dto(u) for u in store.list_users()]
+    return [user_to_dto(u) for u in store.list_users_excluding_bank_treasury()]
 
 
 @router.get(
@@ -96,6 +98,30 @@ async def get_users_directory(
     if user is None:
         return _unauth()
     return store.list_users_directory_entries()
+
+
+@router.get("/user-service/admin/bank-treasury/balances")
+async def get_bank_treasury_balances(
+    user: Annotated[MockUser | None, Depends(get_current_user_optional)],
+):
+    if user is None:
+        return _unauth()
+    if not _is_worker(user):
+        return _forbidden()
+    return store.bank_treasury_balances()
+
+
+@router.get("/user-service/admin/bank-treasury/transactions")
+async def get_bank_treasury_transactions(
+    user: Annotated[MockUser | None, Depends(get_current_user_optional)],
+    pageIndex: int = 0,
+    pageSize: int = 30,
+):
+    if user is None:
+        return _unauth()
+    if not _is_worker(user):
+        return _forbidden()
+    return store.page_bank_treasury_transactions(pageIndex, pageSize)
 
 
 @router.get("/user-service/users/{id}")

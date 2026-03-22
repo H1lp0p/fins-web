@@ -26,7 +26,7 @@ export function RectSpaceLayout({ topLeftContent, topRightContent, bottomLeftCon
         <div className={`rect-space-layout ${className}`} style={style}>
             <div className="rect-space-layout__row rect-space-layout__row--top">
                 <div className="top-left-content">
-                    {!topLeftContent && <PlaceholderSpace compact />}
+                    {!topLeftContent && <PlaceholderSpace />}
                     {topLeftContent &&
                         <BluredContainer style={baseStyle}>
                             {topLeftContent}
@@ -34,7 +34,7 @@ export function RectSpaceLayout({ topLeftContent, topRightContent, bottomLeftCon
                     }
                 </div>
                 <div className="top-right-content">
-                    {!topRightContent && <PlaceholderSpace compact />}
+                    {!topRightContent && <PlaceholderSpace />}
                     {topRightContent &&
                         <BluredContainer style={baseStyle}>
                             {topRightContent}
@@ -44,7 +44,7 @@ export function RectSpaceLayout({ topLeftContent, topRightContent, bottomLeftCon
             </div>
             <div className="rect-space-layout__row rect-space-layout__row--bottom">
                 <div className="bottom-left-content">
-                    {!bottomLeftContent && <PlaceholderSpace compact />}
+                    {!bottomLeftContent && <PlaceholderSpace />}
                     {bottomLeftContent &&
                         <BluredContainer style={baseStyle}>
                             {bottomLeftContent}
@@ -52,7 +52,7 @@ export function RectSpaceLayout({ topLeftContent, topRightContent, bottomLeftCon
                     }
                 </div>
                 <div className="bottom-right-content">
-                    {!bottomRightContent && <PlaceholderSpace compact />}
+                    {!bottomRightContent && <PlaceholderSpace />}
                     {bottomRightContent &&
                         <BluredContainer style={baseStyle}>
                             {bottomRightContent}

@@ -78,19 +78,40 @@ export function AccountCreateForm({
           isValid={errorText == null}
         />
 
-        <div className={`${styles.currenciesRow} gap-min`}>
-          <p className={`text-info color-info ${styles.currencyLabel}`}>Currency</p>
-          {CURRENCIES.map((code) => (
-            <LinkButton
-              key={code}
-              text={CURRENCY_CHAR[code]}
-              variant={currency === code ? "success" : "info"}
-              onClick={() => {
-                setCurrency(code);
-                setErrorText(null);
-              }}
-            />
-          ))}
+        <div className={`${styles.currenciesContainer} gap-min`}>
+          <p className={`text-title color-info ${styles.currencyLabel}`}>Currency</p>
+          <div 
+            className="gap-min" 
+            style={{ 
+              display: "flex", 
+              flexDirection: "row",
+              justifyContent: "space-between",
+              width: "100%",
+              alignItems: "center",
+            }}
+          >
+            {CURRENCIES.map((code) => (
+              <OnBlurContainer 
+                key={code} 
+                className="ph-max pv-mid"
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                  <LinkButton
+                    text={CURRENCY_CHAR[code]}
+                    variant={currency === code ? "success" : "info"}
+                    textClassName="text-title"
+                    onClick={() => {
+                      setCurrency(code);
+                      setErrorText(null);
+                    }}
+                  />
+              </OnBlurContainer>
+            ))}
+          </div>
         </div>
 
         {errorText ? (
