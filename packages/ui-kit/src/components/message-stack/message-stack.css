@@ -1,0 +1,16 @@
+.fins-message-stack-dock {
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 1;
+  max-width: 30%;
+}
+
+.fins-message-stack-dock-inner {
+  pointer-events: auto;
+  max-height: min(40vh, 320px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--fins-mid-gap);
+  width: 100%;
+}
