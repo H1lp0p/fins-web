@@ -16,6 +16,7 @@ export { Logo } from "./components/logo/Logo";
 export { AmountWithSymbol } from "./components/amount-with-symbol/AmountWithSymb";
 export { TabList } from "./components/tabs/TabList";
 export { Header } from "./components/header/Header";
+export { InfoMessage } from "./components/message/InfoMessage";
 
 //Layouts
 export { SingleSpaceLayout } from "./layouts/single-space-layout/SingleSpaceLayout";
@@ -35,6 +36,7 @@ export { type TextStyleType } from "./types/textStyleType";
 export { type ColorStyleType, type BackgroundColorStyleType } from "./types/colorStyleType";
 export { DEFAULT_CHARS } from "./types/DefaultChars";
 export { type Tab } from "./types/Tab";
+export { type Message } from "./types/Message";
 
 // Lib
 export { formatNumber } from "./lib/formatNumber";
