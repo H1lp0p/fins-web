@@ -25,7 +25,7 @@ export function CreditPage() {
     { userId },
     { skip: !userId },
   );
-  /** RTK типизирует ответ как DTO, хотя `transformResponse` уже отдаёт сущности. */
+  
   const credits = creditsRaw as CreditEntity[];
   const { data: rules = [] } = useGetAllCreditRulesQuery();
   const { data: accountsPage } = useGetUserCardAccountsQuery(
@@ -95,11 +95,23 @@ export function CreditPage() {
 
   const topRightContent =
     pageMode === "create" ? (
-      <CreditsTopRightWidget kind="reset" onReset={resetCreate} />
+      <CreditsTopRightWidget
+        userId={userId}
+        kind="reset"
+        onReset={resetCreate}
+      />
     ) : selectedCredit?.id ? (
-      <CreditsTopRightWidget kind="payback" creditId={selectedCredit.id} />
+      <CreditsTopRightWidget
+        userId={userId}
+        kind="payback"
+        creditId={selectedCredit.id}
+      />
     ) : (
-      <CreditsTopRightWidget kind="createEntry" onCreate={openCreate} />
+      <CreditsTopRightWidget
+        userId={userId}
+        kind="createEntry"
+        onCreate={openCreate}
+      />
     );
 
   const bottomLeftContent =

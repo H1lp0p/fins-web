@@ -1,13 +1,8 @@
 import type { CurrencyCode } from "@fins/api";
 
-/** Курсы относительно USD (мок до бэкенда). */
 export const USD_PER_EUR = 1 / 0.87;
 export const USD_PER_RUB = 1 / 82.37;
 
-/**
- * Сколько единиц каждой валюты в 1 единице базы `base`
- * (как в виджете курса: при базе DOLLAR — 1 $, 0.87 €, 82.37 ₽).
- */
 export function tripleForBase(base: CurrencyCode): Record<CurrencyCode, number> {
   switch (base) {
     case "DOLLAR":
@@ -29,7 +24,6 @@ export function tripleForBase(base: CurrencyCode): Record<CurrencyCode, number> 
   }
 }
 
-/** Сколько единиц `to` за 1 единицу `from`. */
 export function mockRateFromTo(
   from: CurrencyCode,
   to: CurrencyCode,

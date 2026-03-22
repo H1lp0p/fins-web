@@ -2,6 +2,7 @@ import { generatedPublicApi as rawPublicBffApi } from "./generated/public/genera
 import type {
   CardAccount,
   Credit,
+  CreditRatingDto,
   CreditRule,
   PageCardAccount,
   PageTransactionOperation,
@@ -14,16 +15,13 @@ import {
 } from "./entities/card-and-transactions";
 import {
   mapCreditFromDto,
+  mapCreditRatingFromDto,
   mapCreditRuleFromDto,
   mapCreditRulesFromDto,
   mapCreditsFromDto,
 } from "./entities/credit";
 import { mapUserFromDto } from "./entities/user";
 
-/**
- * Публичный BFF API с `transformResponse` → доменные сущности.
- * `generatedPublicApi` из codegen остаётся «сырым»; приложения подключают этот инстанс.
- */
 export const publicBffApi = rawPublicBffApi.enhanceEndpoints({
   endpoints: {
     getAllUsers: {
@@ -83,6 +81,9 @@ export const publicBffApi = rawPublicBffApi.enhanceEndpoints({
     getByUserId: {
       transformResponse: (rows: Credit[]) => mapCreditsFromDto(rows),
     },
+    getCreditRatingByUser: {
+      transformResponse: (dto: CreditRatingDto) => mapCreditRatingFromDto(dto),
+    },
     getByCardAccountId: {
       transformResponse: (dto: Credit) => mapCreditFromDto(dto),
     },
@@ -123,6 +124,7 @@ export const {
   useGetCreditRuleByIdQuery,
   useGetAllCreditRulesQuery,
   useGetByUserIdQuery,
+  useGetCreditRatingByUserQuery,
   useGetByCardAccountIdQuery,
   useDeleteCreditRuleMutation,
   useDeleteCreditMutation,

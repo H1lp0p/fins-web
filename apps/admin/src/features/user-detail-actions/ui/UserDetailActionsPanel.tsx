@@ -1,4 +1,8 @@
-import type { UserDto } from "@fins/api";
+import type { CreditRatingEntity, UserDto } from "@fins/api";
+import {
+  formatCreditRatingLabel,
+  useGetCreditRatingByUserQuery,
+} from "@fins/api";
 import type { statusType } from "@fins/ui-kit";
 import {
   InlineCheckBox,
@@ -34,6 +38,19 @@ export function UserDetailActionsPanel({
   onWorkerClick,
   onActiveClick,
 }: UserDetailActionsPanelProps) {
+  const ratingUserId = user?.id ?? "";
+  const { data: ratingData, isFetching, isError } = useGetCreditRatingByUserQuery(
+    { userId: ratingUserId },
+    { skip: !ratingUserId },
+  );
+  const ratingEntity = ratingData as CreditRatingEntity | undefined;
+  const rating =
+    !ratingUserId || isError
+      ? "—"
+      : isFetching && !ratingEntity
+        ? "…"
+        : formatCreditRatingLabel(ratingEntity?.rating);
+
   return (
     <div
       className="ph-mid pv-mid gap-min color-info"
@@ -69,7 +86,17 @@ export function UserDetailActionsPanel({
               alignItems: "center",
             }}
           >
-            <span className="text-title color-info">{user.name}</span>
+            <div className="gap-min"
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "start",
+            }}
+            >
+              <span className="text-info-accent color-info">rating: {rating}</span>
+              <span className="text-title color-info">{user.name}</span>
+            </div>
             <LinkButton
               text="Back"
               variant="success"

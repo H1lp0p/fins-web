@@ -111,7 +111,6 @@ function injectAfter200Blocks(text) {
       while (i < lines.length) {
         const L = lines[i];
         if (isAnotherResponseKey(L)) {
-          // уже инжектировано (повторный запуск скрипта)
           if (L.trimStart().startsWith("'400'")) {
             break;
           }

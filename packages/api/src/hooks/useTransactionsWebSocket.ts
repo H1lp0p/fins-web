@@ -4,15 +4,15 @@ import type { TransactionsStream } from "../generated/ws/TransactionsStream";
 import { parseTransactionsWsServerMessage } from "../lib/transactions-ws-parse";
 
 export type UseTransactionsWebSocketOptions = {
-  /** UUID счёта; пока `null` / `undefined` — сокет не открываем */
+  
   accountId: string | null | undefined;
-  /** Распарсенные сообщения сервера по контракту AsyncAPI */
+  
   onMessage: (message: TransactionsStream) => void;
   pageIndex?: number;
   pageSize?: number;
-  /** Полный `ws:` / `wss:` URL; иначе тот же host, что у страницы, путь `/api/ws/transactions` */
+  
   url?: string;
-  /** По умолчанию `true` */
+  
   enabled?: boolean;
   onOpen?: () => void;
   onClose?: (event: CloseEvent) => void;
@@ -24,10 +24,6 @@ function defaultWsUrl(): string {
   return `${scheme}://${window.location.host}/api/ws/transactions`;
 }
 
-/**
- * WebSocket к BFF (`/api/ws/transactions`): при открытии шлёт `subscribe` для `accountId`.
- * Колбэки не нужно мемоизировать — внутри держатся через ref.
- */
 export function useTransactionsWebSocket(
   options: UseTransactionsWebSocketOptions,
 ): void {
@@ -102,7 +98,7 @@ export function useTransactionsWebSocket(
         try {
           ws.send(JSON.stringify({ type: "unsubscribe", accountId: id }));
         } catch {
-          /* ignore */
+          
         }
       }
       ws.close();

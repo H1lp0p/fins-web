@@ -1,11 +1,4 @@
-"""
-Сборка openApi.backend-gateway.yaml из JSON в openapi/from-backend/.
-
-Префиксы путей как в монорепо: enroll/withdraw из transaction-service → /core-api/transactions/...
-"""
-
 from __future__ import annotations
-
 import json
 import sys
 from pathlib import Path
@@ -15,12 +8,9 @@ try:
 except ImportError:
     print("Need PyYAML: pip install pyyaml", file=sys.stderr)
     raise
-
 ROOT = Path(__file__).resolve().parents[1]
 FROM_BACKEND = ROOT / "from-backend"
 OUT = ROOT / "openApi.backend-gateway.yaml"
-
-# (filename, path_prefix) — префикс без завершающего слэша; путь из JSON начинается с /
 MERGE_ORDER: list[tuple[str, str]] = [
     ("userServiceApi.json", "/user-service"),
     ("coreApi.json", "/core-api"),
@@ -30,11 +20,7 @@ MERGE_ORDER: list[tuple[str, str]] = [
 ]
 
 
-def _merge_schemas(
-    target: dict,
-    incoming: dict,
-    source: str,
-) -> None:
+def _merge_schemas(target: dict, incoming: dict, source: str) -> None:
     if not incoming:
         return
     existing = target.setdefault("schemas", {})
@@ -61,34 +47,29 @@ def _merge_security_schemes(target: dict, incoming: dict, source: str) -> None:
 def main() -> None:
     merged_paths: dict = {}
     components: dict = {}
-
     for filename, prefix in MERGE_ORDER:
         path = FROM_BACKEND / filename
         if not path.is_file():
             raise SystemExit(f"Missing: {path}")
         with path.open(encoding="utf-8") as f:
             spec = json.load(f)
-
         comp = spec.get("components") or {}
         _merge_schemas(components, comp.get("schemas"), filename)
         _merge_security_schemes(components, comp.get("securitySchemes"), filename)
-
         for p, item in (spec.get("paths") or {}).items():
             if not p.startswith("/"):
                 raise SystemExit(f"Unexpected path {p!r} in {filename}")
             full = f"{prefix}{p}"
             if full in merged_paths:
-                raise SystemExit(f"Duplicate path after merge: {full} (from {filename})")
+                raise SystemExit(
+                    f"Duplicate path after merge: {full} (from {filename})"
+                )
             merged_paths[full] = item
-
     out_spec = {
         "openapi": "3.0.1",
         "info": {
             "title": "Bank API",
-            "description": (
-                "Полный контракт шлюза. Собрано из openapi/from-backend/*.json "
-                "(скрипт scripts/merge_backend_gateway.py). Сплиты: openApi.public.yaml + openApi.sso.yaml."
-            ),
+            "description": "Полный контракт шлюза. Собрано из openapi/from-backend/*.json (скрипт scripts/merge_backend_gateway.py). Сплиты: openApi.public.yaml + openApi.sso.yaml.",
             "version": "1.0",
         },
         "servers": [
@@ -105,13 +86,9 @@ def main() -> None:
         "paths": dict(sorted(merged_paths.items(), key=lambda x: x[0])),
         "components": components,
     }
-
     OUT.write_text(
         yaml.dump(
-            out_spec,
-            allow_unicode=True,
-            default_flow_style=False,
-            sort_keys=False,
+            out_spec, allow_unicode=True, default_flow_style=False, sort_keys=False
         ),
         encoding="utf-8",
     )

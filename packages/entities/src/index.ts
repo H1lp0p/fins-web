@@ -1,4 +1,3 @@
-// lib
 export { currencyCodeToAmountSymbol } from "./lib/currency-symbol";
 export {
   formatDateTime,
@@ -17,7 +16,6 @@ export {
 } from "./lib/mock-exchange-rates";
 export { sortAccountsForIndex } from "./lib/sort-accounts-for-index";
 
-// entities
 export {
   CardAccountInfo,
   type CardAccountInfoProps,
@@ -44,7 +42,6 @@ export {
   type AdminUserRowCardProps,
 } from "./entities/user";
 
-// features
 export { AccountGrid } from "./features/account-grid/AccountGrid";
 export { CreditsGrid } from "./features/credit-list/CreditsGrid";
 export { ExchangeRateWidget } from "./features/exchange-rate/ExchangeRateWidget";

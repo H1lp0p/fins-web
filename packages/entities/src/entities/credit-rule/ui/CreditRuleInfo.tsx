@@ -12,14 +12,10 @@ export type CreditRuleInfoProps = {
   rule: CreditRuleEntity;
   className?: string;
   style?: CSSProperties;
-  /** Как у CardAccountInfo / CreditShortInfo: угловые скобки у названия. */
+  
   selected?: boolean;
 };
 
-/**
- * Карточка правила кредита (макет Figma `credit-rule-info`).
- * Классы `text-*`, `color-*`, `ph-*`, `pv-*`, `gap-*` — из ui-kit (тема).
- */
 export function CreditRuleInfo({
   rule,
   className,

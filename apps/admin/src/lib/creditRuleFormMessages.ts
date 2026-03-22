@@ -1,6 +1,5 @@
 import type { Message } from "@fins/ui-kit";
 
-/** Стиль подписей как в SSO `fieldErrorsToStyledMessages`. */
 function styledLineForField(field: string): string {
   switch (field) {
     case "ruleName":

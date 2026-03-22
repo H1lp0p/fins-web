@@ -24,7 +24,7 @@ interface InlineCheckBoxProps {
   status?: statusType;
   textClassName?: TextStyleType;
   contentColor?: ColorStyleType;
-  /** Не вызывает onClick; чекбокс в стиле disabled LinkButton. */
+  
   disabled?: boolean;
 }
 

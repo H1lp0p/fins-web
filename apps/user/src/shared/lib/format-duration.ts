@@ -1,4 +1,4 @@
-/** Период сбора процентов и т.п.: секунды → короткая строка. */
+
 export function formatDurationFromSeconds(total: number | undefined): string {
   if (total == null || Number.isNaN(total) || total < 0) return "—";
   if (total < 60) return `${total}s`;

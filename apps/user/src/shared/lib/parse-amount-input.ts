@@ -1,4 +1,4 @@
-/** Парсинг суммы из поля ввода (запятая как десятичный разделитель). */
+
 export function parseAmountInput(raw: string): number | null {
   const t = raw.trim().replace(/\s/g, "").replace(/,/g, ".");
   if (t === "") return null;

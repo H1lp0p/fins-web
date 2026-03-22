@@ -9,7 +9,7 @@ type FetchBaseQueryOptions = NonNullable<Parameters<typeof fetchBaseQuery>[0]>;
 
 export type BffClientOptions = {
   baseUrl: string;
-  /** По умолчанию `include` — httpOnly-куки BFF уходят с запросом. */
+  
   credentials?: RequestCredentials;
   prepareHeaders?: FetchBaseQueryOptions["prepareHeaders"];
   fetchFn?: FetchBaseQueryOptions["fetchFn"];
@@ -19,10 +19,6 @@ function normalizeBaseUrl(baseUrl: string): string {
   return baseUrl.trim().replace(/\/+$/, "");
 }
 
-/**
- * Фабрика base query под RTK Query: BFF URL + куки сессии.
- * Вызывать при создании `createApi` в приложении (отдельный store на клиент).
- */
 export function createBffFetchBaseQuery(
   options: BffClientOptions,
 ): BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> {

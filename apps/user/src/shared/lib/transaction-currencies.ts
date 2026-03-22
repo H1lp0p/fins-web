@@ -1,7 +1,6 @@
 import type { CurrencyCode } from "@fins/api";
 import { DEFAULT_CHARS } from "@fins/ui-kit";
 
-/** Порядок переключения валют для блока «Other service». */
 export const TRANSACTION_CURRENCY_SYMBOLS: readonly string[] = [
   DEFAULT_CHARS.DOLLAR,
   DEFAULT_CHARS.EURO,

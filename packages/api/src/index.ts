@@ -1,6 +1,4 @@
-/**
- * Общий entry для клиентов (user, admin): без SSO-only модулей.
- */
+
 export {
   createBffFetchBaseQuery,
   type BffClientOptions,
@@ -26,6 +24,7 @@ export {
   useGetUsersDirectoryQuery,
   useGetByCardAccountIdQuery,
   useGetByUserIdQuery,
+  useGetCreditRatingByUserQuery,
   useGetCreditRuleByIdQuery,
   useGetTransactionOperationsQuery,
   useGetBankTreasuryBalancesQuery,
@@ -73,10 +72,13 @@ export {
 export type {
   CreditEntity,
   CreditPercentageStrategy,
+  CreditRatingEntity,
   CreditRuleEntity,
 } from "./entities/credit";
 export {
+  formatCreditRatingLabel,
   mapCreditFromDto,
+  mapCreditRatingFromDto,
   mapCreditRuleFromDto,
   mapCreditRulesFromDto,
   mapCreditsFromDto,

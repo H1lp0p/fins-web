@@ -21,7 +21,7 @@ export function ExchangeRateWidget() {
   const values = useMemo(() => {
     const t = tripleForBase(base);
     const jitter = 1 + bump * 0.001;
-    /** Базовая валюта всегда 1.00; «дрожание» только у кросс-курсов. */
+    
     return {
       DOLLAR: base === "DOLLAR" ? 1 : t.DOLLAR * jitter,
       EURO: base === "EURO" ? 1 : t.EURO * jitter,

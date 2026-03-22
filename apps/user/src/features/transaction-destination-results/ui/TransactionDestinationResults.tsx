@@ -42,7 +42,7 @@ export type TransactionDestinationResultsProps = {
   onSelectAccount: (id: string) => void;
   onSelectCredit: (id: string) => void;
   onSelectUser: (id: string) => void;
-  /** Загрузка каталога пользователей (вкладка users). */
+  
   usersDirectoryLoading?: boolean;
 };
 

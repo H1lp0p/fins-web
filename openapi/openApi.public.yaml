@@ -854,6 +854,35 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /credit-service/credit_rating/{userId}/get_by_user:
+    get:
+      tags:
+        - credit-rating-controller
+      operationId: getCreditRatingByUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CreditRatingDTO'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /credit-service/credit/{cardAccountId}/get_by_card_account:
     get:
       tags:
@@ -1349,6 +1378,17 @@ components:
         ruleName:
           type: string
         percentage:
+          type: number
+    CreditRatingDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        rating:
           type: number
     Credit:
       type: object

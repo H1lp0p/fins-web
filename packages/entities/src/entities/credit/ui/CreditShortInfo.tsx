@@ -17,15 +17,10 @@ export type CreditShortInfoProps = {
   selected?: boolean;
 };
 
-/** Отображаемый долг: только тело + проценты, без прочих полей. */
 export function creditTotalDebtDisplay(credit: CreditEntity): number {
   return (credit.currentDebtSum ?? 0) + (credit.interestDebtSum ?? 0);
 }
 
-/**
- * Прогресс по контракту: `currentDebtSum / initialDebt` (0…1).
- * При невалидном `initialDebt` — `null`.
- */
 export function creditProgressRatio(credit: CreditEntity): number | null {
   const initial = credit.initialDebt;
   if (initial == null || initial <= 0 || Number.isNaN(initial)) {
@@ -35,7 +30,6 @@ export function creditProgressRatio(credit: CreditEntity): number | null {
   return Math.min(1, Math.max(0, current / initial));
 }
 
-/** Сколько «ячееек» по 10% закрасить (округление к ближайшим 10%). */
 export function filledBarSegments(ratio: number): number {
   return Math.min(
     BAR_INNER_LEN,
@@ -53,9 +47,6 @@ function styleRequestsFullWidth(s: CSSProperties | undefined): boolean {
   return String(s.width).trim() === "100%";
 }
 
-/**
- * Краткая карточка кредита (макет Figma `credit-short-info`).
- */
 export function CreditShortInfo({
   credit,
   className,

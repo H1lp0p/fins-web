@@ -18,7 +18,6 @@ export type User = {
   active: boolean | undefined;
 };
 
-/** Пользователь в списке получателей перевода (user SPA). */
 export type TransferDestinationUser = {
   id: string;
   name: string;
@@ -46,7 +45,6 @@ export function mapUserDirectoryEntryFromDto(
   };
 }
 
-/** Для WORKER: полный UserDto без валюты основного счёта в API — подставляем USD в UI. */
 export function mapUserToTransferDestinationUser(u: User): TransferDestinationUser {
   return {
     id: u.id,

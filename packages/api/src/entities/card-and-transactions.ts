@@ -11,7 +11,7 @@ export type CardAccountEntity = {
   userId?: string;
   name?: string;
   main?: boolean;
-  /** false = hidden в UI */
+  
   visible?: boolean;
   money?: Money;
   deleted?: boolean;
@@ -23,7 +23,7 @@ export type TransactionOperationEntity = {
   cardAccountId?: string;
   dateTime?: string;
   transactionType?: "WITHDRAWAL" | "ENROLLMENT";
-  /** С API приходит как `transactionActoin` — в домене исправленное имя. */
+  
   transactionAction?: string;
   transactionStatus?: "COMPLETE" | "IN_PROGRESS" | "DECLINED";
   money?: Money;
@@ -41,7 +41,7 @@ export type PagedTransactionOperations = Omit<
 };
 
 export type MapTransactionOperationContext = {
-  /** Если в DTO нет `cardAccountId`, подставляется (например id родительского счёта). */
+  
   cardAccountId?: string;
 };
 

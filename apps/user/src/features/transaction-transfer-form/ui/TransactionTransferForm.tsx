@@ -13,7 +13,7 @@ export type TransactionTransferFormProps = {
   amountValid: boolean;
   fromTrailingChar: DEFAULT_CHARS;
   toSymbol: DEFAULT_CHARS;
-  /** Сколько единиц «куда» за 1 единицу «откуда». */
+  
   rateToPerFrom: number;
   resultAmount: number;
 };
