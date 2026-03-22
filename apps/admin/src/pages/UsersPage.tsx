@@ -20,9 +20,15 @@ import { useSearchParams } from "react-router-dom";
 import { UserDetailActionsPanel } from "../features/user-detail-actions";
 import { UsersSearchPanel } from "../features/users-search";
 import { isValidUserId, rolesPayload } from "../shared/lib/user-id";
+import { getSsoOrigin } from "../shared/lib/sso-origin";
+
+function redirectToSsoWithReturn(): void {
+  const sso = getSsoOrigin();
+  const next = encodeURIComponent(window.location.href);
+  window.location.replace(`${sso}/?returnUrl=${next}`);
+}
 import {
   editUserFailedMessage,
-  forbiddenMessage,
   messageFromFetchError,
   userNotFoundMessage,
 } from "../lib/adminStackMessages";
@@ -112,8 +118,11 @@ export function UsersPage() {
     if (listError && !listErrRef.current) {
       listErrRef.current = true;
       const fe = listErrObj as FetchBaseQueryError | undefined;
-      if (fe?.status === 403) pushMessage(forbiddenMessage());
-      else if (fe) pushMessage(messageFromFetchError(fe));
+      if (fe?.status === 401) {
+        redirectToSsoWithReturn();
+        return;
+      }
+      if (fe && fe.status !== 403) pushMessage(messageFromFetchError(fe));
     }
     if (!listError) listErrRef.current = false;
   }, [userId, listError, listErrObj, pushMessage]);
@@ -126,10 +135,15 @@ export function UsersPage() {
     if (detailError && !detailErrRef.current) {
       detailErrRef.current = true;
       const fe = detailErrObj as FetchBaseQueryError | undefined;
-      if (fe?.status === 403) pushMessage(forbiddenMessage());
-      else if (fe?.status === 404) pushMessage(userNotFoundMessage());
-      else if (fe) pushMessage(messageFromFetchError(fe));
-      else pushMessage(userNotFoundMessage());
+      if (fe?.status === 401) {
+        redirectToSsoWithReturn();
+        return;
+      }
+      if (fe?.status !== 403) {
+        if (fe?.status === 404) pushMessage(userNotFoundMessage());
+        else if (fe) pushMessage(messageFromFetchError(fe));
+        else pushMessage(userNotFoundMessage());
+      }
     }
     if (detailOk) detailErrRef.current = false;
   }, [userId, detailError, detailOk, detailErrObj, pushMessage]);
@@ -208,7 +222,9 @@ export function UsersPage() {
     } catch (e) {
       const fe = e as FetchBaseQueryError | undefined;
       if (fe && typeof fe === "object" && "status" in fe) {
-        pushMessage(messageFromFetchError(fe as FetchBaseQueryError));
+        const err = fe as FetchBaseQueryError;
+        if (err.status === 401) redirectToSsoWithReturn();
+        else pushMessage(messageFromFetchError(err));
       } else {
         pushMessage(editUserFailedMessage());
       }
@@ -233,7 +249,9 @@ export function UsersPage() {
     } catch (e) {
       const fe = e as FetchBaseQueryError | undefined;
       if (fe && typeof fe === "object" && "status" in fe) {
-        pushMessage(messageFromFetchError(fe as FetchBaseQueryError));
+        const err = fe as FetchBaseQueryError;
+        if (err.status === 401) redirectToSsoWithReturn();
+        else pushMessage(messageFromFetchError(err));
       } else {
         pushMessage(editUserFailedMessage());
       }

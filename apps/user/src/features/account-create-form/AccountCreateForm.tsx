@@ -1,23 +1,55 @@
 import type { CurrencyCode } from "@fins/api";
-import { useOpenAccountMutation, validateOpenCardAccountForm } from "@fins/api";
-import { DEFAULT_CHARS, Input, LinkButton, OnBlurContainer } from "@fins/ui-kit";
+import {
+  extractBffError,
+  useOpenAccountMutation,
+  validateOpenCardAccountForm,
+} from "@fins/api";
+import {
+  DEFAULT_CHARS,
+  Input,
+  LinkButton,
+  OnBlurContainer,
+  useMessageStack,
+} from "@fins/ui-kit";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useCallback, useState } from "react";
+import {
+  openAccountFieldErrorsToMessages,
+  serverReturnedLine,
+} from "../../lib/userStackMessages";
 import styles from "./AccountCreateForm.module.css";
 
 const CURRENCIES: CurrencyCode[] = ["DOLLAR", "EURO", "RUBLE"];
 
-const CURRENCY_CHAR: Record<CurrencyCode, (typeof DEFAULT_CHARS)[keyof typeof DEFAULT_CHARS]> =
-  {
-    DOLLAR: DEFAULT_CHARS.DOLLAR,
-    EURO: DEFAULT_CHARS.EURO,
-    RUBLE: DEFAULT_CHARS.RUBLE,
-  };
+const CURRENCY_CHAR: Record<
+  CurrencyCode,
+  (typeof DEFAULT_CHARS)[keyof typeof DEFAULT_CHARS]
+> = {
+  DOLLAR: DEFAULT_CHARS.DOLLAR,
+  EURO: DEFAULT_CHARS.EURO,
+  RUBLE: DEFAULT_CHARS.RUBLE,
+};
 
 type AccountCreateFormProps = {
   userId: string;
   onCreated: (newAccountId?: string) => void;
   onCancel: () => void;
 };
+
+type FieldKey = "name" | "currency";
+
+function allFieldsValid(): Record<FieldKey, boolean> {
+  return { name: true, currency: true };
+}
+
+function asFetchBaseQueryError(
+  err: unknown,
+): FetchBaseQueryError | undefined {
+  if (typeof err !== "object" || err === null || !("status" in err)) {
+    return undefined;
+  }
+  return err as FetchBaseQueryError;
+}
 
 export function AccountCreateForm({
   userId,
@@ -27,24 +59,33 @@ export function AccountCreateForm({
   const [openAccount, { isLoading }] = useOpenAccountMutation();
   const [name, setName] = useState("");
   const [currency, setCurrency] = useState<CurrencyCode>("RUBLE");
-  const [errorText, setErrorText] = useState<string | null>(null);
+  const [fieldValid, setFieldValid] = useState<Record<FieldKey, boolean>>(
+    allFieldsValid,
+  );
+
+  const { pushMessage } = useMessageStack();
 
   const cancel = useCallback(() => {
     setName("");
     setCurrency("RUBLE");
-    setErrorText(null);
+    setFieldValid(allFieldsValid());
     onCancel();
   }, [onCancel]);
 
   const submit = useCallback(async () => {
-    setErrorText(null);
     const validated = validateOpenCardAccountForm({ name, currency });
     if (!validated.ok) {
-      const fromFields = Object.values(validated.fieldErrors).flat()[0];
-      const fromForm = validated.formErrors?.[0];
-      setErrorText(fromFields ?? fromForm ?? "Проверьте поля формы");
+      const keys = Object.keys(validated.fieldErrors) as FieldKey[];
+      setFieldValid({
+        name: !keys.includes("name"),
+        currency: !keys.includes("currency"),
+      });
+      for (const m of openAccountFieldErrorsToMessages(validated.fieldErrors)) {
+        pushMessage(m);
+      }
       return;
     }
+    setFieldValid(allFieldsValid());
     try {
       const created = await openAccount({
         userId,
@@ -53,10 +94,41 @@ export function AccountCreateForm({
       setName("");
       setCurrency("RUBLE");
       onCreated(created.id);
-    } catch {
-      setErrorText("Не удалось открыть счёт");
+    } catch (err) {
+      const fe = asFetchBaseQueryError(err);
+      if (fe !== undefined) {
+        const bff = extractBffError(fe);
+        const feMap = bff?.fieldErrors ?? {};
+        const keys = Object.keys(feMap) as FieldKey[];
+        setFieldValid({
+          name: !keys.includes("name"),
+          currency: !keys.includes("currency"),
+        });
+        const fromServer = openAccountFieldErrorsToMessages(feMap);
+        if (fromServer.length > 0) {
+          for (const m of fromServer) pushMessage(m);
+        } else {
+          pushMessage({
+            type: "error",
+            title: "RequestError",
+            text:
+              bff?.message ??
+              serverReturnedLine(fe) ??
+              (bff?.code
+                ? `Property {${bff.code}} doesn't fit requirements`
+                : "Property {Account} doesn't fit requirements"),
+          });
+        }
+      } else {
+        setFieldValid(allFieldsValid());
+        pushMessage({
+          type: "error",
+          title: "NetworkError",
+          text: "Property {Network} doesn't fit requirements",
+        });
+      }
     }
-  }, [currency, name, onCreated, openAccount, userId]);
+  }, [currency, name, onCreated, openAccount, pushMessage, userId]);
 
   return (
     <div
@@ -70,20 +142,28 @@ export function AccountCreateForm({
         justifyContent: "space-between",
       }}
     >
-      <div className="gap-min" style={{ display: "flex", flexDirection: "column" }}>
+      <div
+        className="gap-min"
+        style={{ display: "flex", flexDirection: "column" }}
+      >
         <Input
           title="Name"
           value={name}
-          onChange={setName}
-          isValid={errorText == null}
+          onChange={(v) => {
+            setName(v);
+            setFieldValid((prev) => ({ ...prev, name: true }));
+          }}
+          isValid={fieldValid.name}
         />
 
         <div className={`${styles.currenciesContainer} gap-min`}>
-          <p className={`text-title color-info ${styles.currencyLabel}`}>Currency</p>
-          <div 
-            className="gap-min" 
-            style={{ 
-              display: "flex", 
+          <p className={`text-title color-info ${styles.currencyLabel}`}>
+            Currency
+          </p>
+          <div
+            className="gap-min"
+            style={{
+              display: "flex",
               flexDirection: "row",
               justifyContent: "space-between",
               width: "100%",
@@ -91,8 +171,8 @@ export function AccountCreateForm({
             }}
           >
             {CURRENCIES.map((code) => (
-              <OnBlurContainer 
-                key={code} 
+              <OnBlurContainer
+                key={code}
                 className="ph-max pv-mid"
                 style={{
                   display: "flex",
@@ -100,25 +180,19 @@ export function AccountCreateForm({
                   alignItems: "center",
                 }}
               >
-                  <LinkButton
-                    text={CURRENCY_CHAR[code]}
-                    variant={currency === code ? "success" : "info"}
-                    textClassName="text-title"
-                    onClick={() => {
-                      setCurrency(code);
-                      setErrorText(null);
-                    }}
-                  />
+                <LinkButton
+                  text={CURRENCY_CHAR[code]}
+                  variant={currency === code ? "success" : "info"}
+                  textClassName="text-title"
+                  onClick={() => {
+                    setCurrency(code);
+                    setFieldValid((prev) => ({ ...prev, currency: true }));
+                  }}
+                />
               </OnBlurContainer>
             ))}
           </div>
         </div>
-
-        {errorText ? (
-          <p className="text-info color-error" style={{ margin: 0 }}>
-            {errorText}
-          </p>
-        ) : null}
       </div>
 
       <OnBlurContainer
