@@ -27,7 +27,7 @@ import {
 } from "../features/transaction-transfer-form";
 import { parseAmountInput } from "../shared/lib/parse-amount-input";
 import { parseTransactionsSearchParams } from "../shared/lib/transactions-endpoint";
-import { sortAccountsForIndex } from "../shared/lib/sort-accounts-for-index";
+import { sortAccountsForIndex } from "@fins/entities";
 import {
   currencyCodeFromTransactionIndex,
   symbolIndexInTransactionCurrencies,

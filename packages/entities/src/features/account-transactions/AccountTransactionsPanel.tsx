@@ -1,7 +1,8 @@
+import type { TransactionOperationEntity } from "@fins/api";
 import { useGetTransactionOperationsQuery } from "@fins/api";
 import { LinkButton, OnBlurContainer } from "@fins/ui-kit";
 import { useRef } from "react";
-import { TransactionHistoryItem } from "@fins/entities";
+import { TransactionHistoryItem } from "../../entities/transaction";
 
 type AccountTransactionsPanelProps = {
   accountId: string;
@@ -33,20 +34,23 @@ export function AccountTransactionsPanel({
         minWidth: 0,
       }}
     >
-      <div className="ph-mid" 
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        width: "100%",
-        boxSizing: "border-box",
-      }}>
-        <OnBlurContainer className="ph-mid pv-mid" 
+      <div
+        className="ph-mid"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          width: "100%",
+          boxSizing: "border-box",
+        }}
+      >
+        <OnBlurContainer
+          className="ph-mid pv-mid"
           style={{
             display: "flex",
             justifyContent: "center",
             boxSizing: "border-box",
           }}
-        >  
+        >
           <LinkButton
             text="Full up"
             variant="success"
@@ -77,13 +81,14 @@ export function AccountTransactionsPanel({
           newestFirst.map((op, idx) => (
             <TransactionHistoryItem
               key={op.id ?? String(idx)}
-              operation={op}
+              operation={op as TransactionOperationEntity}
             />
           ))
         )}
       </div>
       <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
-        <OnBlurContainer className="ph-mid pv-mid" 
+        <OnBlurContainer
+          className="ph-mid pv-mid"
           style={{
             display: "flex",
             justifyContent: "center",

@@ -7,10 +7,14 @@ import { LinkButton, OnBlurContainer, RectSpaceLayout } from "@fins/ui-kit";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AccountActionsBar } from "../features/account-actions/AccountActionsBar";
 import { AccountCreateForm } from "../features/account-create-form/AccountCreateForm";
-import { AccountGrid, CardAccountInfo, ExchangeRateWidget } from "@fins/entities";
-import { AccountTransactionsPanel } from "../features/account-transactions/AccountTransactionsPanel";
+import {
+  AccountGrid,
+  AccountTransactionsPanel,
+  CardAccountInfo,
+  ExchangeRateWidget,
+  sortAccountsForIndex,
+} from "@fins/entities";
 import { RequireSession } from "../features/require-session/RequireSession";
-import { sortAccountsForIndex } from "../shared/lib/sort-accounts-for-index";
 
 type BottomLeftMode = "accounts" | "create";
 

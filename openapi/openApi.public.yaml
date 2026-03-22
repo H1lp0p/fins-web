@@ -98,8 +98,9 @@ paths:
         - Users
       operationId: getUsersDirectory
       description: >
-        Краткий список пользователей для клиентского приложения (роль CLIENT и прочие без WORKER):
-        id, отображаемое имя и валюта основного счёта. Полный список UserDto — только у WORKER (`GET /user-service/users`).
+        Краткий список пользователей для клиентского приложения:
+        id, отображаемое имя и валюта основного счёта. Полный список UserDto — только у пользователей с ролью WORKER (`GET /user-service/users`).
+        У пользователя может не быть ни одной роли; при этом CLIENT и WORKER могут быть назначены одновременно.
       responses:
         '200':
           description: OK
@@ -191,6 +192,70 @@ paths:
             '*/*':
               schema:
                 type: boolean
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /user-service/admin/bank-treasury/balances:
+    get:
+      tags:
+        - Admin
+      operationId: getBankTreasuryBalances
+      description: >
+        Балансы трёх главных счетов банка (USD, EUR, RUB). Только для пользователей с ролью WORKER.
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BankTreasuryBalancesDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /user-service/admin/bank-treasury/transactions:
+    get:
+      tags:
+        - Admin
+      operationId: getBankTreasuryTransactions
+      description: >
+        Операции по трём счетам казначейства, отсортированные по времени (как page transactions).
+        Только для WORKER.
+      parameters:
+        - name: pageIndex
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 30
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageTransactionOperation'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -931,13 +996,21 @@ components:
         name:
           type: string
         newRoles:
+          description: >
+            Новый набор ролей. Пустой массив снимает все роли (пользователь может остаться без ролей).
+            Несколько ролей одновременно допустимы (например CLIENT и WORKER).
           uniqueItems: true
           type: array
+          minItems: 0
           items:
             type: string
             enum:
             - CLIENT
             - WORKER
+        active:
+          type: boolean
+          description: >
+            При указании — выставить флаг активности пользователя (доступ / блокировка).
     UserDto:
       required:
         - email
@@ -953,8 +1026,12 @@ components:
         email:
           type: string
         roles:
+          description: >
+            Роли пользователя. Может быть пустым: у пользователя может не быть ни одной роли.
+            Значения CLIENT и WORKER не взаимоисключающие — допустимы оба одновременно.
           uniqueItems: true
           type: array
+          minItems: 0
           items:
             type: string
             enum:
@@ -978,6 +1055,29 @@ components:
           type: string
         mainAccountCurrency:
           $ref: '#/components/schemas/Currency'
+    BankTreasuryBalanceItem:
+      required:
+        - cardAccountId
+        - balance
+      type: object
+      properties:
+        cardAccountId:
+          type: string
+          format: uuid
+        balance:
+          $ref: '#/components/schemas/MoneyValueDto'
+    BankTreasuryBalancesDto:
+      required:
+        - accounts
+      type: object
+      description: Три счёта казначейства в порядке DOLLAR, EURO, RUBLE.
+      properties:
+        accounts:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/BankTreasuryBalanceItem'
     # Core API Schemas
     WithdrawDto:
       type: object

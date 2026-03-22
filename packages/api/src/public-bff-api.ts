@@ -48,6 +48,10 @@ export const publicBffApi = rawPublicBffApi.enhanceEndpoints({
       transformResponse: (page: PageTransactionOperation) =>
         mapPagedTransactionOperationsFromDto(page),
     },
+    getBankTreasuryTransactions: {
+      transformResponse: (page: PageTransactionOperation) =>
+        mapPagedTransactionOperationsFromDto(page),
+    },
     getUserCardAccounts: {
       transformResponse: (page: PageCardAccount) =>
         mapPagedCardAccountsFromDto(page),
@@ -108,6 +112,8 @@ export const {
   useSetMainAccountMutation,
   useSetAccountVisibilityMutation,
   useGetTransactionOperationsQuery,
+  useGetBankTreasuryBalancesQuery,
+  useGetBankTreasuryTransactionsQuery,
   useGetUserCardAccountQuery,
   useCheckAccountExistsQuery,
   useGetUserCardAccountsQuery,

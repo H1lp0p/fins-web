@@ -2,6 +2,7 @@ import { emptySplitApi as api } from "./emptyPublicApi";
 export const addTagTypes = [
   "Users",
   "Account",
+  "Admin",
   "Users Internal",
   "transaction-operation-controller",
   "card-account-controller",
@@ -63,6 +64,26 @@ const injectedRtkApi = api
           url: `/user-service/users/${queryArg.id}/isActive`,
         }),
         providesTags: ["Users"],
+      }),
+      getBankTreasuryBalances: build.query<
+        GetBankTreasuryBalancesApiResponse,
+        GetBankTreasuryBalancesApiArg
+      >({
+        query: () => ({ url: `/user-service/admin/bank-treasury/balances` }),
+        providesTags: ["Admin"],
+      }),
+      getBankTreasuryTransactions: build.query<
+        GetBankTreasuryTransactionsApiResponse,
+        GetBankTreasuryTransactionsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/user-service/admin/bank-treasury/transactions`,
+          params: {
+            pageIndex: queryArg.pageIndex,
+            pageSize: queryArg.pageSize,
+          },
+        }),
+        providesTags: ["Admin"],
       }),
       getUserById1: build.query<GetUserById1ApiResponse, GetUserById1ApiArg>({
         query: (queryArg) => ({
@@ -314,6 +335,15 @@ export type IsUserActiveByIdApiResponse = /** status 200 OK */ boolean;
 export type IsUserActiveByIdApiArg = {
   id: string;
 };
+export type GetBankTreasuryBalancesApiResponse =
+  /** status 200 OK */ BankTreasuryBalancesDto;
+export type GetBankTreasuryBalancesApiArg = void;
+export type GetBankTreasuryTransactionsApiResponse =
+  /** status 200 OK */ PageTransactionOperation;
+export type GetBankTreasuryTransactionsApiArg = {
+  pageIndex?: number;
+  pageSize?: number;
+};
 export type GetUserById1ApiResponse = /** status 200 OK */ UserDto;
 export type GetUserById1ApiArg = {
   id: string;
@@ -422,12 +452,19 @@ export type BffErrorBody = {
 };
 export type UserEditModelDto = {
   name: string;
+  /** Новый набор ролей. Пустой массив снимает все роли (пользователь может остаться без ролей). Несколько ролей одновременно допустимы (например CLIENT и WORKER).
+   */
   newRoles?: ("CLIENT" | "WORKER")[];
+  /** При указании — выставить флаг активности пользователя (доступ / блокировка).
+   */
+  active?: boolean;
 };
 export type UserDto = {
   id: string;
   name: string;
   email: string;
+  /** Роли пользователя. Может быть пустым: у пользователя может не быть ни одной роли. Значения CLIENT и WORKER не взаимоисключающие — допустимы оба одновременно.
+   */
   roles?: ("CLIENT" | "WORKER" | "BLOCKED_CLIENT" | "BLOCKED_WORKER")[];
   active?: boolean;
 };
@@ -437,32 +474,16 @@ export type UserDirectoryEntryDto = {
   username: string;
   mainAccountCurrency: Currency;
 };
-export type WithdrawDto = {
-  cardAccountId?: string;
-  sum?: number;
-  destination?: string;
-};
 export type MoneyValueDto = {
   value?: number;
   currency?: Currency;
 };
-export type EnrollDto = {
-  cardAccountId?: string;
-  money?: MoneyValueDto;
-  destination?: string;
+export type BankTreasuryBalanceItem = {
+  cardAccountId: string;
+  balance: MoneyValueDto;
 };
-export type TransferMoneyDto = {
-  /** Счёт списания; null — зачисление только с внешнего источника */
-  fromCardAccountId?: string | null;
-  /** Сумма в валюте amountCurrency */
-  amount: number;
-  amountCurrency: Currency;
-  /** Тип получателя */
-  targetKind: "ACCOUNT" | "CREDIT";
-  /** Обязателен при targetKind=ACCOUNT */
-  targetCardAccountId?: string | null;
-  /** Обязателен при targetKind=CREDIT */
-  targetCreditId?: string | null;
+export type BankTreasuryBalancesDto = {
+  accounts: BankTreasuryBalanceItem[];
 };
 export type TransactionOperation = {
   id?: string;
@@ -472,26 +493,6 @@ export type TransactionOperation = {
   transactionActoin?: string;
   transactionStatus?: "COMPLETE" | "IN_PROGRESS" | "DECLINED";
   money?: MoneyValueDto;
-};
-export type CardAccount = {
-  id?: string;
-  userId?: string;
-  /** Отображаемое имя счёта */
-  name?: string;
-  /** Главный счёт пользователя */
-  main?: boolean;
-  /** Видимость в списках (false = hidden) */
-  visible?: boolean;
-  money?: MoneyValueDto;
-  deleted?: boolean;
-  transactionOperations?: TransactionOperation[];
-};
-export type CardAccountCreateModelDto = {
-  name?: string;
-  currency?: Currency;
-};
-export type AccountSetVisibilityDto = {
-  visible: boolean;
 };
 export type SortObject = {
   empty?: boolean;
@@ -518,6 +519,49 @@ export type PageTransactionOperation = {
   last?: boolean;
   pageable?: PageableObject;
   empty?: boolean;
+};
+export type WithdrawDto = {
+  cardAccountId?: string;
+  sum?: number;
+  destination?: string;
+};
+export type EnrollDto = {
+  cardAccountId?: string;
+  money?: MoneyValueDto;
+  destination?: string;
+};
+export type TransferMoneyDto = {
+  /** Счёт списания; null — зачисление только с внешнего источника */
+  fromCardAccountId?: string | null;
+  /** Сумма в валюте amountCurrency */
+  amount: number;
+  amountCurrency: Currency;
+  /** Тип получателя */
+  targetKind: "ACCOUNT" | "CREDIT";
+  /** Обязателен при targetKind=ACCOUNT */
+  targetCardAccountId?: string | null;
+  /** Обязателен при targetKind=CREDIT */
+  targetCreditId?: string | null;
+};
+export type CardAccount = {
+  id?: string;
+  userId?: string;
+  /** Отображаемое имя счёта */
+  name?: string;
+  /** Главный счёт пользователя */
+  main?: boolean;
+  /** Видимость в списках (false = hidden) */
+  visible?: boolean;
+  money?: MoneyValueDto;
+  deleted?: boolean;
+  transactionOperations?: TransactionOperation[];
+};
+export type CardAccountCreateModelDto = {
+  name?: string;
+  currency?: Currency;
+};
+export type AccountSetVisibilityDto = {
+  visible: boolean;
 };
 export type PageCardAccount = {
   totalPages?: number;
@@ -572,6 +616,8 @@ export const {
   useGetUserByIdQuery,
   useDeleteUserByIdMutation,
   useIsUserActiveByIdQuery,
+  useGetBankTreasuryBalancesQuery,
+  useGetBankTreasuryTransactionsQuery,
   useGetUserById1Query,
   useGetUserQuery,
   useWithdrawMoneyMutation,
