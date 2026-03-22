@@ -1,36 +1,28 @@
 import {
   extractBffError,
-  useAuthRegisterMutation,
-  validateSsoRegistrationForm,
+  useAuthLoginMutation,
+  validateSsoLoginForm,
 } from "@fins/api/sso";
 import { Input, LinkButton, OnBlurContainer, type Message } from "@fins/ui-kit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useState } from "react";
 
-/** Id формы для `requestSubmit()` с внешней кнопки (`RegistrationSubmitButton`). */
-export const SSO_REGISTRATION_FORM_ID = "sso-registration-form";
+export const SSO_LOGIN_FORM_ID = "sso-login-form";
 
-interface RegistrationFormProps {
+interface LoginFormProps {
   className?: string;
   style?: React.CSSProperties;
 }
 
-type FieldKey = "name" | "email" | "password" | "confirmPassword";
+type FieldKey = "email" | "password";
 
 const FIELD_LABEL: Record<FieldKey, string> = {
-  name: "Ник",
   email: "Email",
   password: "Пароль",
-  confirmPassword: "Подтверждение пароля",
 };
 
 function allFieldsValid(): Record<FieldKey, boolean> {
-  return {
-    name: true,
-    email: true,
-    password: true,
-    confirmPassword: true,
-  };
+  return { email: true, password: true };
 }
 
 function fieldErrorsToValidationMessages(
@@ -59,26 +51,19 @@ function asFetchBaseQueryError(
   return err as FetchBaseQueryError;
 }
 
-export function RegistrationForm({ className, style }: RegistrationFormProps) {
-  const [name, setName] = useState("");
+export function LoginForm({ className, style }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [fieldValid, setFieldValid] = useState<Record<FieldKey, boolean>>(
     allFieldsValid,
   );
   const [validationMessages, setValidationMessages] = useState<Message[]>([]);
 
-  const [register] = useAuthRegisterMutation();
+  const [login] = useAuthLoginMutation();
 
   const applyClientValidation = () => {
-    const result = validateSsoRegistrationForm({
-      name,
-      email,
-      password,
-      confirmPassword,
-    });
+    const result = validateSsoLoginForm({ email, password });
     if (result.ok) {
       setFieldValid(allFieldsValid());
       setValidationMessages([]);
@@ -86,10 +71,8 @@ export function RegistrationForm({ className, style }: RegistrationFormProps) {
     }
     const keys = Object.keys(result.fieldErrors) as FieldKey[];
     setFieldValid({
-      name: !keys.includes("name"),
       email: !keys.includes("email"),
       password: !keys.includes("password"),
-      confirmPassword: !keys.includes("confirmPassword"),
     });
     setValidationMessages(fieldErrorsToValidationMessages(result.fieldErrors));
     return null;
@@ -105,11 +88,9 @@ export function RegistrationForm({ className, style }: RegistrationFormProps) {
     if (body === null) return;
 
     try {
-      await register({ ssoRegisterBody: body }).unwrap();
-      setName("");
+      await login({ ssoLoginBody: body }).unwrap();
       setEmail("");
       setPassword("");
-      setConfirmPassword("");
       setFieldValid(allFieldsValid());
       setValidationMessages([]);
     } catch (err) {
@@ -119,17 +100,15 @@ export function RegistrationForm({ className, style }: RegistrationFormProps) {
         const feMap = bff?.fieldErrors ?? {};
         const keys = Object.keys(feMap) as FieldKey[];
         setFieldValid({
-          name: !keys.includes("name"),
           email: !keys.includes("email"),
           password: !keys.includes("password"),
-          confirmPassword: !keys.includes("confirmPassword"),
         });
         const fromServer = fieldErrorsToValidationMessages(feMap);
         if (fromServer.length > 0) {
           setValidationMessages(fromServer);
         } else {
           const text =
-            bff?.message ?? bff?.code ?? "Не удалось зарегистрироваться";
+            bff?.message ?? bff?.code ?? "Не удалось войти";
           setValidationMessages([
             { type: "error", title: "ValidationError", text },
           ]);
@@ -150,7 +129,7 @@ export function RegistrationForm({ className, style }: RegistrationFormProps) {
   return (
     <div className={className} style={style}>
       <form
-        id={SSO_REGISTRATION_FORM_ID}
+        id={SSO_LOGIN_FORM_ID}
         data-validation-messages-count={validationMessages.length}
         onSubmit={onSubmit}
         style={{
@@ -160,16 +139,6 @@ export function RegistrationForm({ className, style }: RegistrationFormProps) {
           maxWidth: "28rem",
         }}
       >
-        <Input
-          title="Name"
-          placeholder="user name example"
-          value={name}
-          onChange={(v) => {
-            setName(v);
-            clearFieldInvalid("name");
-          }}
-          isValid={fieldValid.name}
-        />
         <Input
           title="Email"
           placeholder="user.email@example.com"
@@ -182,7 +151,7 @@ export function RegistrationForm({ className, style }: RegistrationFormProps) {
         />
         <Input
           title="Pass"
-          placeholder="req: char[6:]; digit[1:]"
+          placeholder="password"
           value={password}
           onChange={(v) => {
             setPassword(v);
@@ -191,28 +160,17 @@ export function RegistrationForm({ className, style }: RegistrationFormProps) {
           isValid={fieldValid.password}
           type="password"
         />
-        <Input
-          title="Pass repeat"
-          placeholder="req: self.equal({Pass})"
-          value={confirmPassword}
-          onChange={(v) => {
-            setConfirmPassword(v);
-            clearFieldInvalid("confirmPassword");
-          }}
-          isValid={fieldValid.confirmPassword}
-          type="password"
-        />
       </form>
     </div>
   );
 }
 
-export function RegistrationSubmitButton() {
-  const [, { isLoading }] = useAuthRegisterMutation();
+export function LoginSubmitButton() {
+  const [, { isLoading }] = useAuthLoginMutation();
 
   const handleClick = () => {
     if (isLoading) return;
-    const form = document.getElementById(SSO_REGISTRATION_FORM_ID);
+    const form = document.getElementById(SSO_LOGIN_FORM_ID);
     if (form instanceof HTMLFormElement) {
       form.requestSubmit();
     }
@@ -228,7 +186,7 @@ export function RegistrationSubmitButton() {
         style={{ display: "flex", justifyContent: "center", width: "100%" }}
       >
         <LinkButton
-          text={isLoading ? "Sending…" : "Register"}
+          text={isLoading ? "Sending…" : "Login"}
           onClick={handleClick}
           variant="info"
           textClassName="text-info"
