@@ -1,6 +1,5 @@
 import type { CreditEntity } from "@fins/api";
 
-/** Демо под макет `credit-short-info` (~72,1% прогресса, долг с телом и %%). */
 export const DEMO_CREDIT_SHORT: CreditEntity = {
   id: "44444444-4444-4444-4444-444444444444",
   userId: "33333333-3333-3333-3333-333333333333",

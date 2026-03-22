@@ -2,7 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { generatedSsoApi, initSsoBffApi } from "@fins/api/sso";
 
 initSsoBffApi({
-  /** В dev совпадает с прокси Vite `/api` → BFF (см. apps/sso/vite.config.ts). */
+  
   baseUrl: import.meta.env.VITE_BFF_URL ?? "/api",
 });
 

@@ -3,9 +3,6 @@ import { useLayoutEffect, useState } from "react";
 import { ActiveSessionPanel } from "../active-session/ActiveSessionPanel";
 import { tryRedirectAfterSsoSuccess } from "../../shared/lib/sso-post-login-redirect";
 
-/**
- * Пользователь уже с сессией: сразу редирект, если есть куда; иначе панель «Continue / Sign out».
- */
 export function SsoAuthenticatedView() {
   const [redirecting, setRedirecting] = useState(true);
 

@@ -17,7 +17,7 @@ async function revokeSessionAndGoSso(): Promise<void> {
       credentials: "include",
     });
   } catch {
-    /* ignore */
+    
   }
   window.location.href = getSsoOrigin();
 }

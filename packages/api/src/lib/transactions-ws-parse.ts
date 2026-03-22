@@ -2,7 +2,6 @@ import type { ClientSubscribePayload } from "../generated/ws/ClientSubscribePayl
 import type { ClientUnsubscribePayload } from "../generated/ws/ClientUnsubscribePayload";
 import type { TransactionsStream } from "../generated/ws/TransactionsStream";
 
-/** Исходящие сообщения клиента по контракту AsyncAPI (поле `type`: subscribe | unsubscribe). */
 export type TransactionsWsClientPayload =
   | ClientSubscribePayload
   | ClientUnsubscribePayload;

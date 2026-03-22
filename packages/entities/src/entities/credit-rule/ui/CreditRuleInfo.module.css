@@ -1,8 +1,8 @@
-/* Только раскладка; цвета и шрифты — классы ui-kit (typography + themes). */
+
 
 .root {
   box-sizing: border-box;
-  width: 12.6875rem; /* ~203px */
+  width: 12.6875rem; 
   max-width: 100%;
 }
 

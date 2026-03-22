@@ -1,18 +1,13 @@
 from __future__ import annotations
-
 import asyncio
 import json
 from collections import defaultdict
 from uuid import UUID
-
 from fastapi import WebSocket
-
 from generated.bff_browser_models import TransactionOperation
 
 
 class TransactionsWsHub:
-    """Подписчики по accountId; рассылка после мутаций REST."""
-
     def __init__(self) -> None:
         self._subs: dict[UUID, set[WebSocket]] = defaultdict(set)
         self._lock = asyncio.Lock()
@@ -30,9 +25,7 @@ class TransactionsWsHub:
                     del self._subs[account_id]
 
     async def broadcast_transaction(
-        self,
-        account_id: UUID,
-        operation: TransactionOperation,
+        self, account_id: UUID, operation: TransactionOperation
     ) -> None:
         payload = {
             "type": "transaction",

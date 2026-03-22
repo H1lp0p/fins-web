@@ -6,7 +6,6 @@ export type ParsePositiveNumberResult =
   | { ok: true; value: number }
   | { ok: false; message: string };
 
-/** Целое или дробное число > 0 (суммы, лимиты). */
 export function parseStrictPositiveNumber(raw: unknown): ParsePositiveNumberResult {
   if (typeof raw === "number") {
     if (!Number.isFinite(raw) || raw <= 0) {
@@ -28,7 +27,6 @@ export function parseStrictPositiveNumber(raw: unknown): ParsePositiveNumberResu
   return { ok: false, message: "Некорректное значение" };
 }
 
-/** Число ≥ 0 (процент может быть 0 в зависимости от правил — отдельно проверяем диапазон). */
 export function parseNonNegativeNumber(raw: unknown): ParsePositiveNumberResult {
   if (typeof raw === "number") {
     if (!Number.isFinite(raw) || raw < 0) {
@@ -66,7 +64,6 @@ export function isNonEmptyId(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-/** Есть ли значение для опционального поля формы (учитывает `""` и пробелы). */
 export function isMeaningfullyPresent(raw: unknown): boolean {
   if (raw === undefined || raw === null) return false;
   if (typeof raw === "string") return raw.trim().length > 0;

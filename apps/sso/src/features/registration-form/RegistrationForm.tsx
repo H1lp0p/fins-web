@@ -17,7 +17,6 @@ import {
   serverReturnedLine,
 } from "../../lib/ssoValidationMessages";
 
-/** Id формы для `requestSubmit()` с внешней кнопки (`RegistrationSubmitButton`). */
 export const SSO_REGISTRATION_FORM_ID = "sso-registration-form";
 
 interface RegistrationFormProps {

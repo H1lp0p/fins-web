@@ -5,7 +5,7 @@ import styles from "./CreditsGrid.module.css";
 type CreditsGridProps = {
   credits: CreditEntity[];
   selectedId: string | null;
-  /** Повторный клик по выбранному id снимает выбор на стороне страницы. */
+  
   onToggleCredit: (creditId: string) => void;
 };
 

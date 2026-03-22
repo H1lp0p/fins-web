@@ -1,10 +1,4 @@
-/**
- * Origin SSO-приложения (редирект на логин / после логаута).
- *
- * Если задан `VITE_SSO_URL` — используется он. Иначе для локальной разработки
- * берётся тот же hostname, что у текущей страницы (`localhost` и `127.0.0.1`
- * — разные origin для cookie, их нельзя смешивать).
- */
+
 export function getSsoOrigin(): string {
   const explicit = import.meta.env.VITE_SSO_URL?.trim();
   if (explicit) {

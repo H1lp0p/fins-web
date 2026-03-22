@@ -12,12 +12,9 @@ export type CardAccountDisplayStatus =
 
 export type CardAccountInfoProps = {
   account: CardAccountEntity;
-  /** В API имени счёта нет — задаётся с экрана/мока. */
+  
   name?: string;
-  /**
-   * Состояние из макета Figma `card-account-info`.
-   * Если не задано: `deleted` → closed, `visible === false` → hidden, `main` → main, иначе default.
-   */
+  
   displayStatus?: CardAccountDisplayStatus;
   className?: string;
   style?: CSSProperties;
@@ -61,9 +58,6 @@ function nameColorClass(status: CardAccountDisplayStatus): string {
   }
 }
 
-/**
- * Карточка счёта (макет Figma `card-account-info`).
- */
 export function CardAccountInfo({
   account,
   name,

@@ -8,6 +8,7 @@ export const addTagTypes = [
   "card-account-controller",
   "credit-rule-controller",
   "credit-controller",
+  "credit-rating-controller",
   "preferences-controller",
 ] as const;
 const injectedRtkApi = api
@@ -267,6 +268,15 @@ const injectedRtkApi = api
         }),
         providesTags: ["credit-controller"],
       }),
+      getCreditRatingByUser: build.query<
+        GetCreditRatingByUserApiResponse,
+        GetCreditRatingByUserApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/credit-service/credit_rating/${queryArg.userId}/get_by_user`,
+        }),
+        providesTags: ["credit-rating-controller"],
+      }),
       getByCardAccountId: build.query<
         GetByCardAccountIdApiResponse,
         GetByCardAccountIdApiArg
@@ -432,6 +442,11 @@ export type GetAllCreditRulesApiResponse = /** status 200 OK */ CreditRule[];
 export type GetAllCreditRulesApiArg = void;
 export type GetByUserIdApiResponse = /** status 200 OK */ Credit[];
 export type GetByUserIdApiArg = {
+  userId: string;
+};
+export type GetCreditRatingByUserApiResponse =
+  /** status 200 OK */ CreditRatingDto;
+export type GetCreditRatingByUserApiArg = {
   userId: string;
 };
 export type GetByCardAccountIdApiResponse = /** status 200 OK */ Credit;
@@ -615,6 +630,11 @@ export type CreditCreateModelDto = {
   creditRuleId?: string;
   money?: MoneyValueDto;
 };
+export type CreditRatingDto = {
+  id?: string;
+  userId?: string;
+  rating?: number;
+};
 export type UserPreferencesDto = {
   theme?: "light" | "dark";
   hiddenAccounts?: string[];
@@ -648,6 +668,7 @@ export const {
   useGetCreditRuleByIdQuery,
   useGetAllCreditRulesQuery,
   useGetByUserIdQuery,
+  useGetCreditRatingByUserQuery,
   useGetByCardAccountIdQuery,
   useDeleteCreditRuleMutation,
   useDeleteCreditMutation,

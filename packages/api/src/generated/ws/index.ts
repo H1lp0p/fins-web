@@ -1,7 +1,3 @@
-/**
- * Типы WebSocket «операции по счёту» из `openapi/asyncApi.transactions.yaml`.
- * Перегенерация: `pnpm --filter @fins/api run generate:ws-types` (или `pnpm run generate:api`).
- */
 export type { ClientSubscribePayload } from "./ClientSubscribePayload";
 export type { ClientUnsubscribePayload } from "./ClientUnsubscribePayload";
 export type { ServerSnapshotPayload } from "./ServerSnapshotPayload";

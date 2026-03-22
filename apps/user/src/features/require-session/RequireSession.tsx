@@ -6,11 +6,6 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { accountSessionErrorMessage } from "../../lib/userStackMessages";
 import { getSsoOrigin } from "../../shared/lib/sso-origin";
 
-/**
- * Проверка сессии через `GET /user-service/account`.
- * 401 → редирект на SSO с `returnUrl`.
- * 403 → `/403`.
- */
 export function RequireSession() {
   const navigate = useNavigate();
   const { pushMessage } = useMessageStack();

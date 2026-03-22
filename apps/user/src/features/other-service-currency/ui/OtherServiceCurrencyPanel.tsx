@@ -3,7 +3,7 @@ import { TRANSACTION_CURRENCY_SYMBOLS } from "../../../shared/lib/transaction-cu
 import styles from "./OtherServiceCurrencyPanel.module.css";
 
 export type OtherServiceCurrencyPanelProps = {
-  /** Индекс в `TRANSACTION_CURRENCY_SYMBOLS`. */
+  
   currencyIndex: number;
   onCycleCurrency: () => void;
   className?: string;

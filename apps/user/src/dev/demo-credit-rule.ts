@@ -1,6 +1,5 @@
 import type { CreditRuleEntity } from "@fins/api";
 
-/** Демо-данные под макет Figma `credit-rule-info` (домашняя страница и `/preview`). */
 export const DEMO_CREDIT_RULE: CreditRuleEntity = {
   ruleName: "Rule name",
   percentage: 53,

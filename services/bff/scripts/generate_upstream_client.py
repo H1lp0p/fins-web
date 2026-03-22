@@ -1,12 +1,7 @@
-"""Пересобрать HTTP-клиент BFF → шлюз из openapi/openApi.backend-gateway.yaml."""
-
 from __future__ import annotations
-
 import sys
 from pathlib import Path
-
 from typer.testing import CliRunner
-
 from openapi_python_client.cli import app
 
 BFF_DIR = Path(__file__).resolve().parents[1]

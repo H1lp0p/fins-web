@@ -1,13 +1,5 @@
-/*
-  Темы через data-theme на <html> (как data-bs-theme в Bootstrap).
-  Все цвета — CSS-переменные; смена темы = смена значений переменных.
 
-  Плавность: одно глобальное правило на transition для наследуемых свойств
-  (color, background-color, border-color, …). Компоненты используют только var(--fins-…),
-  отдельно анимацию не задают.
-*/
 
-/* Длительность/кривая смены темы (можно переопределить на :root) */
 :root {
   --fins-theme-transition-duration: 0.01s;
   --fins-theme-transition-easing: ease;
@@ -15,17 +7,6 @@
   --fins-blur-radius: 16px;
 }
 
-/*
-  Слоты:
-  - background / on-background — холст страницы и основной цвет текста по умолчанию
-  - info — вторичный текст, обводки, нейтральный акцент UI
-  - on-blur — фон «карточек» / панелей поверх холста
-  - blur — заливка под frosted-glass (backdrop)
-  - input-placeholder — приглушённый текст полей
-  - success / error — позитивные действия, ошибки, выделение
-*/
-
-/* Светлая тема: холодные голубые тона */
 html {
   color-scheme: light;
 
@@ -52,29 +33,6 @@ html[data-theme="dark"] {
   --fins-blur: #0e1e1cdc;
 }
 
-
-/* @media (prefers-reduced-motion: no-preference) {
-  body,
-  body *,
-  body *::before,
-  body *::after {
-    transition-property: color, background-color, border-color, outline-color,
-      fill, stroke, text-decoration-color, box-shadow, column-rule-color;
-    transition-duration: var(--fins-theme-transition-duration);
-    transition-timing-function: var(--fins-theme-transition-easing);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body,
-  body *,
-  body *::before,
-  body *::after {
-    transition-duration: 0s !important;
-  }
-} */
-
-/* Базовая привязка страницы к слотам */
 body {
   background-color: var(--fins-background);
   color: var(--fins-on-background);
@@ -85,7 +43,6 @@ body *::selection {
   color: var(--fins-on-background);
 }
 
-/* Утилиты «цвет из слота» */
 .color-background {
   color: var(--fins-background);
 }
@@ -110,7 +67,6 @@ body *::selection {
 .color-blur {
   color: var(--fins-blur);
 }
-
 
 .bg-background {
   background-color: var(--fins-background);

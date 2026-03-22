@@ -1,7 +1,6 @@
-/** Id для цели «внешний вывод» / legacy `Out` в query. */
+
 export const TRANSACTIONS_OUT_SENTINEL_ID = "out";
 
-/** Источник: только счёт пользователя (`fromId` = id карточного счёта). */
 export type TransactionsFromEnd = {
   type: "User";
   id: string;
@@ -36,11 +35,6 @@ function normalizeToEnd(
   return { type: type as TransactionsToEnd["type"], id };
 }
 
-/**
- * Разбор query для страницы переводов.
- * Частичные пары (только type или только id) игнорируются.
- * Legacy: `fromType=Account` трактуется как счёт (`User` + id); `toType=Out` → `Other service`.
- */
 export function parseTransactionsSearchParams(
   search: URLSearchParams,
 ): ParsedTransactionsSearch {

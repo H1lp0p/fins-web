@@ -1,13 +1,8 @@
-"""Собрать openApi.public.yaml + openApi.sso.yaml в один YAML для кодгена BFF (без дублей components)."""
-
 from __future__ import annotations
-
 import copy
 from pathlib import Path
-
 import yaml
 
-# services/bff/scripts → repo root = parents[3]
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PUBLIC = REPO_ROOT / "openapi" / "openApi.public.yaml"
 SSO = REPO_ROOT / "openapi" / "openApi.sso.yaml"
@@ -23,10 +18,7 @@ def merge() -> Path:
     merged["info"] = {
         **merged.get("info", {}),
         "title": "Bank API — BFF browser (public + SSO)",
-        "description": (
-            "Слияние openApi.public.yaml и openApi.sso.yaml для кодгена BFF; "
-            "не редактировать вручную — пересобрать скриптом."
-        ),
+        "description": "Слияние openApi.public.yaml и openApi.sso.yaml для кодгена BFF; не редактировать вручную — пересобрать скриптом.",
         "version": merged.get("info", {}).get("version", "1.0"),
     }
     for path_key, item in (sso.get("paths") or {}).items():
