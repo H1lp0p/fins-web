@@ -65,7 +65,21 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - `GET /api/v1/ping` — тест API
 - **SSO (моки):** `POST /api/user-service/auth/register`, `POST /api/user-service/auth/login`, `GET /api/user-service/auth/validate`, `POST /api/user-service/auth/revoke` — cookie `fins_session` (имя из [.env.example](.env.example) / `SESSION_COOKIE_NAME`)
 - **Публичный REST (моки):** пути из [openApi.public.yaml](../../openapi/openApi.public.yaml) под префиксом `/api` — user-service, core-api, credit-service; сессия для большинства маршрутов; internal user — `X-API-KEY` + `BFF_SERVICE_API_KEY` в [.env.example](.env.example)
+  - `GET /api/user-service/users` — полный список `UserDto`, **только роль `WORKER`**
+  - `GET /api/user-service/users/directory` — для клиентов **без** `WORKER`: `userId`, `username`, `mainAccountCurrency` (основной счёт подтягивается из мок-сидинга)
 - **WebSocket:** `WS /api/ws/transactions` — после входа cookie `subscribe` / `unsubscribe` по контракту [asyncApi.transactions.yaml](../../openapi/asyncApi.transactions.yaml); push новых операций после `withdraw` / `enroll`
 - `GET /` — SPA SSO, если `static/sso` существует
+
+### Мок-пользователи (логин `POST /api/user-service/auth/login`)
+
+Пароли и роли задаются в [`app/mock_store.py`](app/mock_store.py) (`_seed_bff_mocks`). У каждого пользователя при первом запросе к счетам создаётся свой набор демо-счетов (у каждого ровно один **основной** счёт; валюты счетов — псевдослучайно от `user_id`).
+
+| Email | Пароль | Роль / примечание |
+| --- | --- | --- |
+| `test@email.com` | `asdfasdf123` | клиент (`CLIENT`), исторический тестовый аккаунт |
+| `alice@demo.local` | `demo123` | клиент |
+| `bob@demo.local` | `demo123` | клиент |
+| `worker@demo.local` | `demo123` | сотрудник (`WORKER`) — полный список пользователей и чужие счета в моках |
+| `blocked@demo.local` | `demo123` | неактивен (`active: false`) — **вход отклоняется**, для проверки недоступных учёток |
 
 CORS для dev: список origins в `CORS_ORIGINS` (см. `.env.example`); для `credentials: include` нельзя использовать `*`.

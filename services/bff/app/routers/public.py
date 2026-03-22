@@ -11,11 +11,14 @@ from app.errors import bff_error_response
 from app.mock_store import MockUser, store, user_to_dto
 from app.ws_hub import ws_hub
 from generated.bff_browser_models import (
+    AccountSetVisibilityDto,
     CardAccountCreateModelDto,
     CreditCreateModelDto,
     CreditRuleDTO,
     EnrollDto,
+    TransferMoneyDto,
     UserEditModelDto,
+    UserDirectoryEntryDto,
     WithdrawDto,
 )
 
@@ -81,6 +84,18 @@ async def get_all_users(
     if not _is_worker(user):
         return _forbidden()
     return [user_to_dto(u) for u in store.list_users()]
+
+
+@router.get(
+    "/user-service/users/directory",
+    response_model=list[UserDirectoryEntryDto],
+)
+async def get_users_directory(
+    user: Annotated[MockUser | None, Depends(get_current_user_optional)],
+):
+    if user is None:
+        return _unauth()
+    return store.list_users_directory_entries()
 
 
 @router.get("/user-service/users/{id}")
@@ -193,6 +208,28 @@ async def enroll_money(
     return Response(status_code=200)
 
 
+@router.post("/core-api/transactions/transfer")
+async def transfer_money(
+    body: TransferMoneyDto,
+    background_tasks: BackgroundTasks,
+    user: Annotated[MockUser | None, Depends(get_current_user_optional)],
+):
+    if user is None:
+        return _unauth()
+    st, items = store.transfer_money(user.id, body)
+    if st == "bad":
+        return bff_error_response(400, message="Некорректные данные")
+    if st == "forbidden":
+        return _forbidden()
+    if st == "funds":
+        return bff_error_response(400, message="Недостаточно средств")
+    if st == "not_found":
+        return bff_error_response(404, message="Счёт или кредит не найден")
+    for acc_id, op in items:
+        background_tasks.add_task(ws_hub.broadcast_transaction, acc_id, op)
+    return Response(status_code=200)
+
+
 @router.post("/core-api/cardaccount/open/{userId}")
 async def open_account(
     userId: UUID,
@@ -219,6 +256,33 @@ async def close_account(
     if r is False:
         return _forbidden()
     return True
+
+
+@router.post("/core-api/cardaccount/{accountId}/set-main")
+async def set_main_account(
+    accountId: UUID,
+    user: Annotated[MockUser | None, Depends(get_current_user_optional)],
+):
+    if user is None:
+        return _unauth()
+    dto = store.set_main_account(accountId, user.id)
+    if dto is None:
+        return bff_error_response(404, message="Счёт не найден или недоступен")
+    return dto
+
+
+@router.post("/core-api/cardaccount/{accountId}/set-visibility")
+async def set_account_visibility(
+    accountId: UUID,
+    body: AccountSetVisibilityDto,
+    user: Annotated[MockUser | None, Depends(get_current_user_optional)],
+):
+    if user is None:
+        return _unauth()
+    dto = store.set_account_visibility(accountId, user.id, body.visible)
+    if dto is None:
+        return bff_error_response(404, message="Счёт не найден или недоступен")
+    return dto
 
 
 @router.get("/core-api/transactions/{accountId}")

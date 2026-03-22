@@ -26,6 +26,8 @@ interface InlineCheckBoxProps {
   status?: statusType;
   textClassName?: TextStyleType;
   contentColor?: ColorStyleType;
+  /** Не вызывает onClick; чекбокс в стиле disabled LinkButton. */
+  disabled?: boolean;
 }
 
 export function InlineCheckBox({
@@ -34,6 +36,7 @@ export function InlineCheckBox({
   status = "empty",
   textClassName = "text-info",
   contentColor = "color-info",
+  disabled = false,
 }: InlineCheckBoxProps) {
   const [loadingFrame, setLoadingFrame] = useState(0);
 
@@ -61,11 +64,9 @@ export function InlineCheckBox({
             : "info";
 
   const handleClick = () => {
-    
-    if (status === "loading") {
+    if (disabled || status === "loading") {
       return;
     }
-    
     onClick(status);
   };
             
@@ -73,6 +74,7 @@ export function InlineCheckBox({
     <div
       className={`fins-inline-check-box-container ${textClassName}`}
       aria-busy={status === "loading" || undefined}
+      aria-disabled={disabled || undefined}
     >
       <span 
       className={` ${textClassName} ${contentColor}`} 
@@ -85,6 +87,7 @@ export function InlineCheckBox({
         variant={checkBoxVariant}
         onClick={handleClick}
         textClassName={textClassName}
+        disabled={disabled}
       />
     </div>
   );

@@ -1,0 +1,9 @@
+.currenciesRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.currencyLabel {
+  margin: 0;
+}

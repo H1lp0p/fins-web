@@ -34,6 +34,13 @@ const injectedRtkApi = api
         query: () => ({ url: `/user-service/users` }),
         providesTags: ["Users"],
       }),
+      getUsersDirectory: build.query<
+        GetUsersDirectoryApiResponse,
+        GetUsersDirectoryApiArg
+      >({
+        query: () => ({ url: `/user-service/users/directory` }),
+        providesTags: ["Users"],
+      }),
       getUserById: build.query<GetUserByIdApiResponse, GetUserByIdApiArg>({
         query: (queryArg) => ({ url: `/user-service/users/${queryArg.id}` }),
         providesTags: ["Users"],
@@ -89,6 +96,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["transaction-operation-controller"],
       }),
+      transferMoney: build.mutation<
+        TransferMoneyApiResponse,
+        TransferMoneyApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/core-api/transactions/transfer`,
+          method: "POST",
+          body: queryArg.transferMoneyDto,
+        }),
+        invalidatesTags: ["transaction-operation-controller"],
+      }),
       openAccount: build.mutation<OpenAccountApiResponse, OpenAccountApiArg>({
         query: (queryArg) => ({
           url: `/core-api/cardaccount/open/${queryArg.userId}`,
@@ -106,6 +124,27 @@ const injectedRtkApi = api
           invalidatesTags: ["card-account-controller"],
         },
       ),
+      setMainAccount: build.mutation<
+        SetMainAccountApiResponse,
+        SetMainAccountApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/core-api/cardaccount/${queryArg.accountId}/set-main`,
+          method: "POST",
+        }),
+        invalidatesTags: ["card-account-controller"],
+      }),
+      setAccountVisibility: build.mutation<
+        SetAccountVisibilityApiResponse,
+        SetAccountVisibilityApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/core-api/cardaccount/${queryArg.accountId}/set-visibility`,
+          method: "POST",
+          body: queryArg.accountSetVisibilityDto,
+        }),
+        invalidatesTags: ["card-account-controller"],
+      }),
       getTransactionOperations: build.query<
         GetTransactionOperationsApiResponse,
         GetTransactionOperationsApiArg
@@ -260,6 +299,9 @@ export type EditUser1ApiArg = {
 };
 export type GetAllUsersApiResponse = /** status 200 OK */ UserDto[];
 export type GetAllUsersApiArg = void;
+export type GetUsersDirectoryApiResponse =
+  /** status 200 OK */ UserDirectoryEntryDto[];
+export type GetUsersDirectoryApiArg = void;
 export type GetUserByIdApiResponse = /** status 200 OK */ UserDto;
 export type GetUserByIdApiArg = {
   id: string;
@@ -287,6 +329,10 @@ export type EnrollMoneyApiResponse = unknown;
 export type EnrollMoneyApiArg = {
   enrollDto: EnrollDto;
 };
+export type TransferMoneyApiResponse = unknown;
+export type TransferMoneyApiArg = {
+  transferMoneyDto: TransferMoneyDto;
+};
 export type OpenAccountApiResponse = /** status 200 OK */ CardAccount;
 export type OpenAccountApiArg = {
   userId: string;
@@ -295,6 +341,15 @@ export type OpenAccountApiArg = {
 export type CloseAccountApiResponse = /** status 200 OK */ boolean;
 export type CloseAccountApiArg = {
   accountId: string;
+};
+export type SetMainAccountApiResponse = /** status 200 OK */ CardAccount;
+export type SetMainAccountApiArg = {
+  accountId: string;
+};
+export type SetAccountVisibilityApiResponse = /** status 200 OK */ CardAccount;
+export type SetAccountVisibilityApiArg = {
+  accountId: string;
+  accountSetVisibilityDto: AccountSetVisibilityDto;
 };
 export type GetTransactionOperationsApiResponse =
   /** status 200 OK */ PageTransactionOperation;
@@ -376,12 +431,17 @@ export type UserDto = {
   roles?: ("CLIENT" | "WORKER" | "BLOCKED_CLIENT" | "BLOCKED_WORKER")[];
   active?: boolean;
 };
+export type Currency = "DOLLAR" | "EURO" | "RUBLE";
+export type UserDirectoryEntryDto = {
+  userId: string;
+  username: string;
+  mainAccountCurrency: Currency;
+};
 export type WithdrawDto = {
   cardAccountId?: string;
   sum?: number;
   destination?: string;
 };
-export type Currency = "DOLLAR" | "EURO" | "RUBLE";
 export type MoneyValueDto = {
   value?: number;
   currency?: Currency;
@@ -390,6 +450,19 @@ export type EnrollDto = {
   cardAccountId?: string;
   money?: MoneyValueDto;
   destination?: string;
+};
+export type TransferMoneyDto = {
+  /** Счёт списания; null — зачисление только с внешнего источника */
+  fromCardAccountId?: string | null;
+  /** Сумма в валюте amountCurrency */
+  amount: number;
+  amountCurrency: Currency;
+  /** Тип получателя */
+  targetKind: "ACCOUNT" | "CREDIT";
+  /** Обязателен при targetKind=ACCOUNT */
+  targetCardAccountId?: string | null;
+  /** Обязателен при targetKind=CREDIT */
+  targetCreditId?: string | null;
 };
 export type TransactionOperation = {
   id?: string;
@@ -403,6 +476,12 @@ export type TransactionOperation = {
 export type CardAccount = {
   id?: string;
   userId?: string;
+  /** Отображаемое имя счёта */
+  name?: string;
+  /** Главный счёт пользователя */
+  main?: boolean;
+  /** Видимость в списках (false = hidden) */
+  visible?: boolean;
   money?: MoneyValueDto;
   deleted?: boolean;
   transactionOperations?: TransactionOperation[];
@@ -410,6 +489,9 @@ export type CardAccount = {
 export type CardAccountCreateModelDto = {
   name?: string;
   currency?: Currency;
+};
+export type AccountSetVisibilityDto = {
+  visible: boolean;
 };
 export type SortObject = {
   empty?: boolean;
@@ -486,6 +568,7 @@ export const {
   useEditUserMutation,
   useEditUser1Mutation,
   useGetAllUsersQuery,
+  useGetUsersDirectoryQuery,
   useGetUserByIdQuery,
   useDeleteUserByIdMutation,
   useIsUserActiveByIdQuery,
@@ -493,8 +576,11 @@ export const {
   useGetUserQuery,
   useWithdrawMoneyMutation,
   useEnrollMoneyMutation,
+  useTransferMoneyMutation,
   useOpenAccountMutation,
   useCloseAccountMutation,
+  useSetMainAccountMutation,
+  useSetAccountVisibilityMutation,
   useGetTransactionOperationsQuery,
   useGetUserCardAccountQuery,
   useCheckAccountExistsQuery,
