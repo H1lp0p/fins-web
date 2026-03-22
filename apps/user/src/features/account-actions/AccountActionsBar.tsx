@@ -1,8 +1,9 @@
 import type { CardAccountEntity } from "@fins/api";
 import {
   useCloseAccountMutation,
-  useSetAccountVisibilityMutation,
+  useGetPreferencesQuery,
   useSetMainAccountMutation,
+  useUpdatePreferencesMutation,
 } from "@fins/api";
 import {
   InlineCheckBox,
@@ -30,17 +31,25 @@ export function AccountActionsBar({
   const navigate = useNavigate();
   const { pushMessage } = useMessageStack();
   const [setMain, { isLoading: mainLoading }] = useSetMainAccountMutation();
-  const [setVis, { isLoading: visLoading }] = useSetAccountVisibilityMutation();
+  const [updatePrefs, { isLoading: prefMutating }] =
+    useUpdatePreferencesMutation();
   const [closeAcc, { isLoading: closeLoading }] = useCloseAccountMutation();
 
   const id = account.id;
+  const {
+    data: prefs,
+    isLoading: prefsLoading,
+    isFetching: prefsFetching,
+  } = useGetPreferencesQuery(undefined, { skip: !id });
+
   if (!id) return null;
 
   const isDeleted = account.deleted === true;
   const isMain = account.main === true;
   const visible = account.visible !== false;
 
-  const visStatus: statusType = visLoading
+  const prefsPending = prefsLoading || prefsFetching;
+  const visStatus: statusType = prefMutating || prefsPending
     ? "loading"
     : isDeleted
       ? "denied"
@@ -101,12 +110,18 @@ export function AccountActionsBar({
           status={visStatus}
           textClassName="text-info-accent"
           contentColor="color-info"
-          disabled={cannotToggleVisibility}
+          disabled={cannotToggleVisibility || prefsPending || prefMutating}
           onClick={(s) => {
             if (s === "loading" || s === "denied") return;
-            void setVis({
-              accountId: id,
-              accountSetVisibilityDto: { visible: s !== "checked" },
+            const nextVisible = s !== "checked";
+            const hidden = new Set(prefs?.hiddenAccounts ?? []);
+            if (nextVisible) hidden.delete(id);
+            else hidden.add(id);
+            void updatePrefs({
+              userPreferencesDto: {
+                theme: prefs?.theme ?? "light",
+                hiddenAccounts: [...hidden],
+              },
             })
               .unwrap()
               .catch(() => {
