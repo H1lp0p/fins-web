@@ -8,8 +8,6 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.bff_error_body import BffErrorBody
-from typing import cast
 from uuid import UUID
 
 
@@ -34,45 +32,9 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | BffErrorBody | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | None:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
-        return response_200
-
-    if response.status_code == 400:
-        response_400 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_400
-
-    if response.status_code == 401:
-        response_401 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_401
-
-    if response.status_code == 403:
-        response_403 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_403
-
-    if response.status_code == 422:
-        response_422 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_422
-
-    if response.status_code == 500:
-        response_500 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_500
+        return None
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -80,7 +42,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | BffErrorBody]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -94,7 +56,7 @@ def sync_detailed(
     *,
     client: AuthenticatedClient | Client,
 
-) -> Response[Any | BffErrorBody]:
+) -> Response[Any]:
     """ 
     Args:
         credit_rule_id (UUID):
@@ -104,7 +66,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | BffErrorBody]
+        Response[Any]
      """
 
 
@@ -119,37 +81,13 @@ def sync_detailed(
 
     return _build_response(client=client, response=response)
 
-def sync(
-    credit_rule_id: UUID,
-    *,
-    client: AuthenticatedClient | Client,
-
-) -> Any | BffErrorBody | None:
-    """ 
-    Args:
-        credit_rule_id (UUID):
-
-    Raises:
-        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
-        httpx.TimeoutException: If the request takes longer than Client.timeout.
-
-    Returns:
-        Any | BffErrorBody
-     """
-
-
-    return sync_detailed(
-        credit_rule_id=credit_rule_id,
-client=client,
-
-    ).parsed
 
 async def asyncio_detailed(
     credit_rule_id: UUID,
     *,
     client: AuthenticatedClient | Client,
 
-) -> Response[Any | BffErrorBody]:
+) -> Response[Any]:
     """ 
     Args:
         credit_rule_id (UUID):
@@ -159,7 +97,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | BffErrorBody]
+        Response[Any]
      """
 
 
@@ -174,27 +112,3 @@ async def asyncio_detailed(
 
     return _build_response(client=client, response=response)
 
-async def asyncio(
-    credit_rule_id: UUID,
-    *,
-    client: AuthenticatedClient | Client,
-
-) -> Any | BffErrorBody | None:
-    """ 
-    Args:
-        credit_rule_id (UUID):
-
-    Raises:
-        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
-        httpx.TimeoutException: If the request takes longer than Client.timeout.
-
-    Returns:
-        Any | BffErrorBody
-     """
-
-
-    return (await asyncio_detailed(
-        credit_rule_id=credit_rule_id,
-client=client,
-
-    )).parsed

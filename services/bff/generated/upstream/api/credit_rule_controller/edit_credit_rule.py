@@ -8,8 +8,7 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.bff_error_body import BffErrorBody
-from ...models.credit_rule import CreditRule
+from ...models.credit_rule_answer_dto import CreditRuleAnswerDTO
 from ...models.credit_rule_dto import CreditRuleDTO
 from typing import cast
 from uuid import UUID
@@ -44,48 +43,13 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> BffErrorBody | CreditRule | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> CreditRuleAnswerDTO | None:
     if response.status_code == 200:
-        response_200 = CreditRule.from_dict(response.json())
+        response_200 = CreditRuleAnswerDTO.from_dict(response.json())
 
 
 
         return response_200
-
-    if response.status_code == 400:
-        response_400 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_400
-
-    if response.status_code == 401:
-        response_401 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_401
-
-    if response.status_code == 403:
-        response_403 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_403
-
-    if response.status_code == 422:
-        response_422 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_422
-
-    if response.status_code == 500:
-        response_500 = BffErrorBody.from_dict(response.json())
-
-
-
-        return response_500
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -93,7 +57,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[BffErrorBody | CreditRule]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[CreditRuleAnswerDTO]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -108,7 +72,7 @@ def sync_detailed(
     client: AuthenticatedClient | Client,
     body: CreditRuleDTO,
 
-) -> Response[BffErrorBody | CreditRule]:
+) -> Response[CreditRuleAnswerDTO]:
     """ 
     Args:
         credit_rule_id (UUID):
@@ -119,7 +83,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[BffErrorBody | CreditRule]
+        Response[CreditRuleAnswerDTO]
      """
 
 
@@ -141,7 +105,7 @@ def sync(
     client: AuthenticatedClient | Client,
     body: CreditRuleDTO,
 
-) -> BffErrorBody | CreditRule | None:
+) -> CreditRuleAnswerDTO | None:
     """ 
     Args:
         credit_rule_id (UUID):
@@ -152,7 +116,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        BffErrorBody | CreditRule
+        CreditRuleAnswerDTO
      """
 
 
@@ -169,7 +133,7 @@ async def asyncio_detailed(
     client: AuthenticatedClient | Client,
     body: CreditRuleDTO,
 
-) -> Response[BffErrorBody | CreditRule]:
+) -> Response[CreditRuleAnswerDTO]:
     """ 
     Args:
         credit_rule_id (UUID):
@@ -180,7 +144,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[BffErrorBody | CreditRule]
+        Response[CreditRuleAnswerDTO]
      """
 
 
@@ -202,7 +166,7 @@ async def asyncio(
     client: AuthenticatedClient | Client,
     body: CreditRuleDTO,
 
-) -> BffErrorBody | CreditRule | None:
+) -> CreditRuleAnswerDTO | None:
     """ 
     Args:
         credit_rule_id (UUID):
@@ -213,7 +177,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        BffErrorBody | CreditRule
+        CreditRuleAnswerDTO
      """
 
 

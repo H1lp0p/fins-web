@@ -9,11 +9,8 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 from ..types import UNSET, Unset
-from typing import cast
 from uuid import UUID
 
-if TYPE_CHECKING:
-  from ..models.transaction_operation import TransactionOperation
 
 
 
@@ -27,18 +24,22 @@ T = TypeVar("T", bound="CardAccount")
 class CardAccount:
     """ 
         Attributes:
+            is_main (bool):
             id (UUID | Unset):
+            name (str | Unset):
+            currency (str | Unset):
             user_id (UUID | Unset):
             money (float | Unset):
             deleted (bool | Unset):
-            transaction_operations (list[TransactionOperation] | Unset):
      """
 
+    is_main: bool
     id: UUID | Unset = UNSET
+    name: str | Unset = UNSET
+    currency: str | Unset = UNSET
     user_id: UUID | Unset = UNSET
     money: float | Unset = UNSET
     deleted: bool | Unset = UNSET
-    transaction_operations: list[TransactionOperation] | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -46,10 +47,15 @@ class CardAccount:
 
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.transaction_operation import TransactionOperation
+        is_main = self.is_main
+
         id: str | Unset = UNSET
         if not isinstance(self.id, Unset):
             id = str(self.id)
+
+        name = self.name
+
+        currency = self.currency
 
         user_id: str | Unset = UNSET
         if not isinstance(self.user_id, Unset):
@@ -59,30 +65,24 @@ class CardAccount:
 
         deleted = self.deleted
 
-        transaction_operations: list[dict[str, Any]] | Unset = UNSET
-        if not isinstance(self.transaction_operations, Unset):
-            transaction_operations = []
-            for transaction_operations_item_data in self.transaction_operations:
-                transaction_operations_item = transaction_operations_item_data.to_dict()
-                transaction_operations.append(transaction_operations_item)
-
-
-
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
+            "isMain": is_main,
         })
         if id is not UNSET:
             field_dict["id"] = id
+        if name is not UNSET:
+            field_dict["name"] = name
+        if currency is not UNSET:
+            field_dict["currency"] = currency
         if user_id is not UNSET:
             field_dict["userId"] = user_id
         if money is not UNSET:
             field_dict["money"] = money
         if deleted is not UNSET:
             field_dict["deleted"] = deleted
-        if transaction_operations is not UNSET:
-            field_dict["transactionOperations"] = transaction_operations
 
         return field_dict
 
@@ -90,8 +90,9 @@ class CardAccount:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.transaction_operation import TransactionOperation
         d = dict(src_dict)
+        is_main = d.pop("isMain")
+
         _id = d.pop("id", UNSET)
         id: UUID | Unset
         if isinstance(_id,  Unset):
@@ -101,6 +102,10 @@ class CardAccount:
 
 
 
+
+        name = d.pop("name", UNSET)
+
+        currency = d.pop("currency", UNSET)
 
         _user_id = d.pop("userId", UNSET)
         user_id: UUID | Unset
@@ -116,24 +121,14 @@ class CardAccount:
 
         deleted = d.pop("deleted", UNSET)
 
-        _transaction_operations = d.pop("transactionOperations", UNSET)
-        transaction_operations: list[TransactionOperation] | Unset = UNSET
-        if _transaction_operations is not UNSET:
-            transaction_operations = []
-            for transaction_operations_item_data in _transaction_operations:
-                transaction_operations_item = TransactionOperation.from_dict(transaction_operations_item_data)
-
-
-
-                transaction_operations.append(transaction_operations_item)
-
-
         card_account = cls(
+            is_main=is_main,
             id=id,
+            name=name,
+            currency=currency,
             user_id=user_id,
             money=money,
             deleted=deleted,
-            transaction_operations=transaction_operations,
         )
 
 
