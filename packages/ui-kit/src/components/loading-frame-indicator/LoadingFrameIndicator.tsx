@@ -8,7 +8,6 @@ export type LoadingFrameIndicatorProps = {
   className?: string;
 };
 
-/** ASCII-кадры как у `InlineCheckBox` в состоянии loading. */
 export function LoadingFrameIndicator({
   className = "text-info color-input-placeholder",
 }: LoadingFrameIndicatorProps) {

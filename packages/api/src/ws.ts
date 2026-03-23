@@ -1,7 +1,4 @@
-/**
- * Типы и утилиты WebSocket потока операций (AsyncAPI).
- * Импорт: `import { … } from "@fins/api/ws"`.
- */
+
 export * from "./generated/ws";
 export {
   isTransactionsWsServerMessage,

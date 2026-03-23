@@ -2,7 +2,6 @@ import type { Message } from "@fins/ui-kit";
 
 export type SsoFormContext = "register" | "login";
 
-/** HTTP-ответ без разобранного BFF-тела (например 404): `Server returned {404}`. */
 export function serverReturnedLine(fe: {
   status: number | string;
 }): string | undefined {
@@ -29,7 +28,6 @@ function styledLineForField(field: string, context: SsoFormContext): string {
   }
 }
 
-/** Одна строка на поле (стиль Property `{…}`). */
 export function fieldErrorsToStyledMessages(
   fieldErrors: Record<string, string[]>,
   context: SsoFormContext,

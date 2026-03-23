@@ -1,7 +1,7 @@
 [project]
 name = "fins-bff"
 version = "0.0.0"
-description = "BFF: API + статика SSO для Fins"
+description = "Fins BFF"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

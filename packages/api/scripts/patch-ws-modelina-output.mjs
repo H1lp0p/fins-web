@@ -1,8 +1,3 @@
-/**
- * Modelina пишет `import { Foo }` / `export { Foo }` для интерфейсов;
- * при verbatimModuleSyntax в tsconfig нужны `import type` / `export type`.
- * Enum-файлы AnonymousSchema_*.ts не трогаем.
- */
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -39,11 +34,7 @@ for (const name of fs.readdirSync(wsDir)) {
   fs.writeFileSync(fp, out.join("\n"), "utf8");
 }
 
-const indexTs = `/**
- * Типы WebSocket «операции по счёту» из \`openapi/asyncApi.transactions.yaml\`.
- * Перегенерация: \`pnpm --filter @fins/api run generate:ws-types\` (или \`pnpm run generate:api\`).
- */
-export type { ClientSubscribePayload } from "./ClientSubscribePayload";
+const indexTs = `export type { ClientSubscribePayload } from "./ClientSubscribePayload";
 export type { ClientUnsubscribePayload } from "./ClientUnsubscribePayload";
 export type { ServerSnapshotPayload } from "./ServerSnapshotPayload";
 export type { ServerTransactionPayload } from "./ServerTransactionPayload";

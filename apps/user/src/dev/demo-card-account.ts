@@ -15,7 +15,6 @@ export type CardAccountInfoDemo = {
   selected?: boolean;
 };
 
-/** Четыре варианта `card-account-info` как в Figma. */
 export const CARD_ACCOUNT_INFO_DEMOS: CardAccountInfoDemo[] = [
   { name: "Account name", account: { ...baseAccount, deleted: false } },
   {

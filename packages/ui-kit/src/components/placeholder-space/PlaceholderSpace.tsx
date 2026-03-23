@@ -2,7 +2,7 @@ import { BluredContainer } from "../blured-container/BluredContainer";
 import { Logo } from "../logo/Logo";
 
 type PlaceholderSpaceProps = {
-    /** В сетках вроде RectSpaceLayout — меньше логотип, без «шторы» на весь ряд. */
+    
     compact?: boolean;
 };
 

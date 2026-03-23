@@ -12,7 +12,7 @@ import styles from "./CreditDetailPanel.module.css";
 
 export type CreditDetailPanelProps = {
   credit: CreditEntity;
-  /** Счёт, привязанный к кредиту (баланс для блока Account). */
+  
   linkedAccount?: CardAccountEntity | null;
   className?: string;
   style?: CSSProperties;
@@ -27,9 +27,6 @@ function daysAgoLabel(iso: string | undefined): {amount: number, unit: DEFAULT_C
   return {amount: days, unit: DEFAULT_CHARS.DAY};
 }
 
-/**
- * Подробная информация по кредиту (скролл: счёт, долги, правило, дата обновления).
- */
 export function CreditDetailPanel({
   credit,
   linkedAccount,

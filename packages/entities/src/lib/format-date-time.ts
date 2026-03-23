@@ -21,7 +21,6 @@ export function formatDateOnly(iso: string | undefined): string {
   return dateOnlyFormatter.format(d);
 }
 
-/** Дата как на макете `transaction-history-item`: `01.01.2025`. */
 export function formatDateDdMmYyyy(iso: string | undefined): string {
   if (!iso) return "—";
   const d = new Date(iso);

@@ -37,9 +37,6 @@ function typeLabelColorClass(
   }
 }
 
-/**
- * Строка истории операций (макет Figma `transaction-history-item`).
- */
 export function TransactionHistoryItem({
   operation,
   className,

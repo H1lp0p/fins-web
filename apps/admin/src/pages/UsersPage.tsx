@@ -41,7 +41,7 @@ export function UsersPage() {
   const { pushMessage } = useMessageStack();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchDraft, setSearchDraft] = useState("");
-  /** Подтверждённый запрос — список фильтруется только после клика [Search]. */
+  
   const [appliedSearch, setAppliedSearch] = useState("");
   const userIdParam = searchParams.get("userId")?.trim() ?? "";
   const userId =

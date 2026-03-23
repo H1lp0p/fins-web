@@ -42,7 +42,7 @@ const HIDE_AFTER_MS = 5000;
 
 export type MessageStackProviderProps = {
   children: ReactNode;
-  /** Сколько сообщений одновременно; при переполнении удаляются самые старые. */
+  
   maxMessages?: number;
   className?: string;
   style?: CSSProperties;

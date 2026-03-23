@@ -1,11 +1,7 @@
-"""Merge public+sso OpenAPI → Pydantic v2 модели в generated/bff_browser_models.py."""
-
 from __future__ import annotations
-
 import subprocess
 import sys
 from pathlib import Path
-
 from merge_browser_openapi import merge as merge_browser_openapi
 
 BFF_DIR = Path(__file__).resolve().parents[1]

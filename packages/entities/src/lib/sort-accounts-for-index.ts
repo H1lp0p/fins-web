@@ -1,8 +1,5 @@
 import type { CardAccountEntity } from "@fins/api";
 
-/**
- * Порядок сетки счетов: main → default → hidden → closed (deleted).
- */
 export function sortAccountsForIndex(
   accounts: CardAccountEntity[],
 ): CardAccountEntity[] {

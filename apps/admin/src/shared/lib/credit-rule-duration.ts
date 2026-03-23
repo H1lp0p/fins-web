@@ -2,7 +2,6 @@ import { DEFAULT_CHARS } from "@fins/ui-kit";
 
 const DAY = 86400;
 
-/** Согласовано с `collection-period-display` в entities. */
 const MONTH = DAY * 30;
 const YEAR = DAY * 365;
 

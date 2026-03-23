@@ -1,7 +1,6 @@
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import type { BffErrorBody } from "../generated/public/generatedPublicApi";
 
-/** Доменное представление тела ошибки BFF (вместо сырого `BffErrorBody`). */
 export type BffError = {
   message?: string;
   code?: string;
@@ -42,9 +41,6 @@ export function mapBffErrorFromBody(body: BffErrorBody): BffError {
   };
 }
 
-/**
- * Разбор тела ответа (например `error.data` из RTK Query), без привязки к codegen.
- */
 export function tryParseBffError(data: unknown): BffError | undefined {
   if (data === null || typeof data !== "object" || Array.isArray(data)) {
     return undefined;
@@ -66,10 +62,6 @@ export function tryParseBffError(data: unknown): BffError | undefined {
   return { message, code, fieldErrors };
 }
 
-/**
- * Достаёт структурированную ошибку BFF из результата `fetchBaseQuery` / хука `useXQuery`.
- * Для `FETCH_ERROR` / `PARSING_ERROR` / `TIMEOUT_ERROR` возвращает `undefined`.
- */
 export function extractBffError(
   error: FetchBaseQueryError | undefined,
 ): BffError | undefined {

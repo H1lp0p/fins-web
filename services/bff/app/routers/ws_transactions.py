@@ -1,14 +1,23 @@
 from __future__ import annotations
-
 import json
 from typing import Any
 from uuid import UUID
-
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-
+from app.bff_user import BffUser
 from app.config import get_settings
+from app.deps import is_worker_user
 from app.mock_store import MockUser, store
+from app.session_store import SessionRecord, session_store
+from app.public_upstream_shape import normalize_public_response
+from app.upstream_context import UpstreamContext
 from app.ws_hub import ws_hub
+from generated.upstream.api.card_account_controller import (
+    get_user_card_account as upstream_get_card,
+)
+from generated.upstream.api.transaction_operation_controller import (
+    get_transaction_operations as upstream_list_tx,
+)
+from generated.upstream.types import Unset
 
 router = APIRouter()
 
@@ -23,6 +32,12 @@ def _user_from_ws(ws: WebSocket) -> MockUser | None:
     return store.user_for_session(token)
 
 
+def _upstream_session_from_ws(ws: WebSocket) -> tuple[SessionRecord | None, str | None]:
+    settings = get_settings()
+    token = ws.cookies.get(settings.session_cookie_name)
+    return (session_store.get(token), token)
+
+
 async def _send_json(ws: WebSocket, payload: dict[str, Any]) -> None:
     await ws.send_text(json.dumps(payload, default=str))
 
@@ -34,9 +49,29 @@ async def _send_error(ws: WebSocket, message: str, code: str | None = None) -> N
     await _send_json(ws, body)
 
 
+async def _upstream_user_may_access_account(
+    ctx: UpstreamContext, user: BffUser, account_id: UUID
+) -> bool:
+    if is_worker_user(user):
+        return True
+    r = await ctx.call_upstream(
+        lambda c, aid=account_id: upstream_get_card.asyncio_detailed(
+            client=c, account_id=aid
+        )
+    )
+    if r is None or int(r.status_code) != 200 or r.parsed is None:
+        return False
+    ca = r.parsed
+    uid = ca.user_id
+    if isinstance(uid, Unset):
+        return False
+    return uid == user.id
+
+
 @router.websocket("/ws/transactions")
 async def transactions_stream(websocket: WebSocket) -> None:
     await websocket.accept()
+    settings = get_settings()
     subscribed: set[UUID] = set()
     try:
         while True:
@@ -51,11 +86,16 @@ async def transactions_stream(websocket: WebSocket) -> None:
                 continue
             msg_type = data.get("type")
             if msg_type == "subscribe":
-                await _handle_subscribe(websocket, data, subscribed)
+                if settings.use_upstream:
+                    await _handle_subscribe_upstream(websocket, data, subscribed)
+                else:
+                    await _handle_subscribe_mock(websocket, data, subscribed)
             elif msg_type == "unsubscribe":
                 await _handle_unsubscribe(websocket, data, subscribed)
             else:
-                await _send_error(websocket, "Неизвестный тип сообщения", code="BAD_REQUEST")
+                await _send_error(
+                    websocket, "Неизвестный тип сообщения", code="BAD_REQUEST"
+                )
     except WebSocketDisconnect:
         pass
     finally:
@@ -63,10 +103,8 @@ async def transactions_stream(websocket: WebSocket) -> None:
             await ws_hub.unregister(aid, websocket)
 
 
-async def _handle_subscribe(
-    ws: WebSocket,
-    data: dict[str, Any],
-    subscribed: set[UUID],
+async def _handle_subscribe_mock(
+    ws: WebSocket, data: dict[str, Any], subscribed: set[UUID]
 ) -> None:
     user = _user_from_ws(ws)
     if user is None:
@@ -82,7 +120,7 @@ async def _handle_subscribe(
     if page_index < 0 or page_size < 1 or page_size > 500:
         await _send_error(ws, "Некорректные pageIndex/pageSize", code="BAD_REQUEST")
         return
-    if not store.account_owned_by(account_id, user.id) and not _is_worker(user):
+    if not store.account_owned_by(account_id, user.id) and (not _is_worker(user)):
         await _send_error(ws, "Нет доступа к счёту", code="FORBIDDEN")
         return
     page = store.page_transactions(account_id, page_index, page_size)
@@ -101,10 +139,59 @@ async def _handle_subscribe(
     )
 
 
+async def _handle_subscribe_upstream(
+    ws: WebSocket, data: dict[str, Any], subscribed: set[UUID]
+) -> None:
+    settings = get_settings()
+    rec, token = _upstream_session_from_ws(ws)
+    if rec is None:
+        await _send_error(ws, "Требуется вход", code="UNAUTHORIZED")
+        return
+    user = rec.user
+    if not isinstance(user, BffUser):
+        await _send_error(ws, "Требуется вход", code="UNAUTHORIZED")
+        return
+    try:
+        account_id = UUID(str(data["accountId"]))
+    except (KeyError, ValueError, TypeError):
+        await _send_error(ws, "Нужен accountId (UUID)", code="BAD_REQUEST")
+        return
+    page_index = int(data.get("pageIndex", 0))
+    page_size = int(data.get("pageSize", 30))
+    if page_index < 0 or page_size < 1 or page_size > 500:
+        await _send_error(ws, "Некорректные pageIndex/pageSize", code="BAD_REQUEST")
+        return
+    ctx = UpstreamContext(ws, settings, token, rec)
+    if not await _upstream_user_may_access_account(ctx, user, account_id):
+        await _send_error(ws, "Нет доступа к счёту", code="FORBIDDEN")
+        return
+    r = await ctx.call_upstream(
+        lambda c, aid=account_id, pi=page_index, ps=page_size: (
+            upstream_list_tx.asyncio_detailed(
+                client=c, account_id=aid, page_index=pi, page_size=ps
+            )
+        )
+    )
+    if r is None:
+        await _send_error(ws, "Требуется вход", code="UNAUTHORIZED")
+        return
+    if int(r.status_code) != 200 or r.parsed is None:
+        await _send_error(ws, "Не удалось загрузить операции", code="UPSTREAM_ERROR")
+        return
+    await ws_hub.register(account_id, ws)
+    subscribed.add(account_id)
+    await _send_json(
+        ws,
+        {
+            "type": "snapshot",
+            "accountId": str(account_id),
+            "page": normalize_public_response(r.parsed.to_dict()),
+        },
+    )
+
+
 async def _handle_unsubscribe(
-    ws: WebSocket,
-    data: dict[str, Any],
-    subscribed: set[UUID],
+    ws: WebSocket, data: dict[str, Any], subscribed: set[UUID]
 ) -> None:
     try:
         account_id = UUID(str(data["accountId"]))

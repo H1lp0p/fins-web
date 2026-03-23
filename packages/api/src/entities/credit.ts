@@ -1,5 +1,6 @@
 import type {
   Credit,
+  CreditRatingDto,
   CreditRule,
   CreditRuleDto,
 } from "../generated/public/generatedPublicApi";
@@ -18,10 +19,33 @@ export type CreditRuleEntity = {
   percentage?: number;
 };
 
+export type CreditRatingEntity = {
+  id?: string;
+  userId?: string;
+  rating?: number;
+};
+
+export function mapCreditRatingFromDto(
+  dto: CreditRatingDto,
+): CreditRatingEntity {
+  return {
+    id: dto.id,
+    userId: dto.userId,
+    rating: dto.rating,
+  };
+}
+
+export function formatCreditRatingLabel(rating: number | undefined): string {
+  if (rating === undefined || Number.isNaN(rating)) {
+    return "—";
+  }
+  return `${rating.toFixed(1)}/10`;
+}
+
 export type CreditEntity = {
   id?: string;
   userId?: string;
-  /** В API поле называется `cardAccount` (uuid счёта). */
+  
   cardAccountId?: string;
   lastInterestUpdate?: string;
   currentDebtSum?: number;

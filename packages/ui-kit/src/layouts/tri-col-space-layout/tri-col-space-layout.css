@@ -1,10 +1,4 @@
-/*
- * Два ряда flex — то же соотношение, что в grid 0.25fr : 1fr (1 : 4):
- * - верх: flex-grow 1;
- * - низ: flex-grow 4.
- * Колонки в каждом ряду: боковые равны, центр чуть шире прежних 1 : 0.5 : 1 → flex 3 : 2 : 3.
- * Селекторы с префиксом .tri-col-space-layout — не пересекаются с rect-space-layout.
- */
+
 .tri-col-space-layout {
     position: relative;
     z-index: 2;
