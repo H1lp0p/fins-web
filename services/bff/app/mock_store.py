@@ -33,6 +33,7 @@ from generated.bff_browser_models import (
     UserDirectoryEntryDto,
     UserDto,
     UserEditModelDto,
+    UserPreferencesDto,
     WithdrawDto,
 )
 
@@ -119,6 +120,12 @@ class MockAccount:
     visible: bool = True
 
 
+@dataclass
+class _UserPrefs:
+    theme: str = "light"
+    hidden_accounts: set[str] = field(default_factory=set)
+
+
 class MockStore:
     """In-memory домен для моков BFF."""
 
@@ -130,6 +137,7 @@ class MockStore:
         self._tx: dict[UUID, list[TransactionOperation]] = {}
         self._credit_rules: dict[UUID, CreditRule] = {}
         self._credits: dict[UUID, Credit] = {}
+        self._preferences: dict[UUID, _UserPrefs] = {}
 
     # --- auth ---
     def register(self, name: str, email: str, password: str) -> MockUser | None:
@@ -188,6 +196,7 @@ class MockStore:
             cr_rm = [cid for cid, c in self._credits.items() if c.userId == user_id]
             for cid in cr_rm:
                 del self._credits[cid]
+            self._preferences.pop(user_id, None)
         return True
 
     def update_user(self, user_id: UUID, body: UserEditModelDto) -> MockUser | None:
@@ -283,32 +292,70 @@ class MockStore:
                 if acc.user_id == user_id:
                     acc.main = False
             a.main = True
+            pref = self._preferences.get(user_id)
+            if pref is not None:
+                pref.hidden_accounts.discard(str(account_id))
         return self.card_account_dto(account_id, embed_tx=False)
 
-    def set_account_visibility(
-        self,
-        account_id: UUID,
-        user_id: UUID,
-        visible: bool,
-    ) -> CardAccount | None:
-        """None — не найден / чужой / закрыт."""
+    def _hidden_account_ids_unlocked(self, user_id: UUID) -> set[str]:
+        p = self._preferences.get(user_id)
+        if p is None:
+            return set()
+        return set(p.hidden_accounts)
+
+    def _account_visible_unlocked(self, a: MockAccount, hidden: set[str]) -> bool:
+        if a.main or a.deleted:
+            return True
+        return str(a.id) not in hidden
+
+    def get_user_preferences(self, user_id: UUID) -> UserPreferencesDto:
         with self._lock:
-            a = self._accounts.get(account_id)
-            if a is None or a.user_id != user_id or a.deleted:
-                return None
-            a.visible = visible
-        return self.card_account_dto(account_id, embed_tx=False)
+            p = self._preferences.get(user_id)
+            if p is None:
+                return UserPreferencesDto(theme="light", hiddenAccounts=[])
+            theme = p.theme if p.theme in ("light", "dark") else "light"
+            hidden_sorted = sorted(p.hidden_accounts)
+        return UserPreferencesDto(theme=theme, hiddenAccounts=hidden_sorted)
+
+    def update_user_preferences(
+        self, user_id: UUID, body: UserPreferencesDto
+    ) -> UserPreferencesDto:
+        raw_theme = body.theme
+        theme = raw_theme if raw_theme in ("light", "dark") else "light"
+        new_hidden: set[str] = set()
+        with self._lock:
+            for sid in body.hiddenAccounts or []:
+                try:
+                    aid = UUID(sid)
+                except ValueError:
+                    continue
+                acc = self._accounts.get(aid)
+                if (
+                    acc is not None
+                    and acc.user_id == user_id
+                    and not acc.deleted
+                    and not acc.main
+                ):
+                    new_hidden.add(str(aid))
+            self._preferences[user_id] = _UserPrefs(
+                theme=theme, hidden_accounts=new_hidden
+            )
+            out_hidden = sorted(new_hidden)
+        return UserPreferencesDto(theme=theme, hiddenAccounts=out_hidden)
 
     def card_account_dto(self, account_id: UUID, *, embed_tx: bool) -> CardAccount:
-        a = self.get_account(account_id)
-        assert a is not None
-        txs = self._tx.get(account_id, []) if embed_tx else None
+        with self._lock:
+            a = self._accounts.get(account_id)
+            assert a is not None
+            txs = self._tx.get(account_id, []) if embed_tx else None
+            hidden = self._hidden_account_ids_unlocked(a.user_id)
+            visible = self._account_visible_unlocked(a, hidden)
         return CardAccount(
             id=a.id,
             userId=a.user_id,
             name=a.display_name,
             main=a.main,
-            visible=a.visible,
+            visible=visible,
             money=_money(a.balance, a.currency_code),
             deleted=a.deleted,
             transactionOperations=list(txs[-50:]) if txs is not None else None,

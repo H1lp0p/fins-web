@@ -1,5 +1,10 @@
-import { useGetUserQuery } from "@fins/api";
-import { LinkButton } from "@fins/ui-kit";
+import {
+  useGetPreferencesQuery,
+  useGetUserQuery,
+  useUpdatePreferencesMutation,
+} from "@fins/api";
+import { LinkButton, getFinsTheme, setFinsTheme } from "@fins/ui-kit";
+import { useEffect } from "react";
 import { getSsoOrigin } from "../../shared/lib/sso-origin";
 
 const BFF_BASE = import.meta.env.VITE_BFF_URL ?? "/api";
@@ -18,8 +23,21 @@ async function revokeSessionAndGoSso(): Promise<void> {
 
 export function HeaderSessionTray() {
   const { data: user } = useGetUserQuery();
+  const { data: prefs } = useGetPreferencesQuery(undefined, {
+    skip: !user?.id,
+  });
+  const [updatePrefs] = useUpdatePreferencesMutation();
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const t = prefs?.theme === "dark" ? "dark" : "light";
+    setFinsTheme(t);
+  }, [user?.id, prefs?.theme]);
 
   if (!user?.id) return null;
+
+  const themeLabel =
+    (prefs?.theme ?? getFinsTheme() ?? "light") === "dark" ? "dark" : "light";
 
   return (
     <div
@@ -34,12 +52,29 @@ export function HeaderSessionTray() {
       <span className="text-info" style={{ textAlign: "right" }}>
         {user.name}
       </span>
-      <LinkButton
-        text="Log-out"
-        variant="error"
-        textClassName="text-info"
-        onClick={() => void revokeSessionAndGoSso()}
-      />
+      <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap", justifyContent: "flex-end" }}>
+        <LinkButton
+          text={themeLabel === "dark" ? "Theme: dark" : "Theme: light"}
+          variant="success"
+          textClassName="text-info"
+          onClick={() => {
+            const next = themeLabel === "dark" ? "light" : "dark";
+            setFinsTheme(next);
+            void updatePrefs({
+              userPreferencesDto: {
+                theme: next,
+                hiddenAccounts: prefs?.hiddenAccounts ?? [],
+              },
+            });
+          }}
+        />
+        <LinkButton
+          text="Log-out"
+          variant="error"
+          textClassName="text-info"
+          onClick={() => void revokeSessionAndGoSso()}
+        />
+      </div>
     </div>
   );
 }
