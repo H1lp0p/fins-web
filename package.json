@@ -13,6 +13,7 @@
     "generate:bff:upstream": "python services/bff/scripts/generate_upstream_client.py",
     "generate:bff:browser-models": "python services/bff/scripts/generate_browser_models.py",
     "generate:contracts": "pnpm run generate:api && pnpm run generate:bff:upstream && pnpm run generate:bff:browser-models",
+    "merge:openapi:backend-gateway": "python openapi/scripts/merge_backend_gateway.py",
     "dev:sso": "pnpm --filter @fins/sso dev",
     "dev:user": "pnpm --filter @fins/user dev",
     "dev:admin": "pnpm --filter @fins/admin dev"
