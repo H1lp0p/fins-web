@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 
+
 # Build
 dist/
 build/
@@ -34,3 +35,6 @@ services/bff/static/sso/
 *.log
 npm-debug.log*
 pnpm-debug.log*
+
+# Stuf
+/temp/

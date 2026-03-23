@@ -15,17 +15,40 @@
   --fins-blur-radius: 16px;
 }
 
-:root,
+/*
+  Слоты:
+  - background / on-background — холст страницы и основной цвет текста по умолчанию
+  - info — вторичный текст, обводки, нейтральный акцент UI
+  - on-blur — фон «карточек» / панелей поверх холста
+  - blur — заливка под frosted-glass (backdrop)
+  - input-placeholder — приглушённый текст полей
+  - success / error — позитивные действия, ошибки, выделение
+*/
+
+/* Светлая тема: холодные голубые тона */
+html {
+  color-scheme: light;
+
+  --fins-background: #e8f1f9;
+  --fins-on-background: #0f2a42;
+  --fins-success: #078fab;
+  --fins-error: #d63d5c;
+  --fins-info: #355a78;
+  --fins-on-blur: #d9e8f4;
+  --fins-input-placeholder: #6b8aa8;
+  --fins-blur: #d9e8f4d9;
+}
+
 html[data-theme="dark"] {
   color-scheme: dark;
 
   --fins-background: #091413;
-  --fins-success: #00D9C0;
-  --fins-error: #FF4365;
-  --fins-info: #D9D9D9;
-  --fins-on-background: #0E1E1C;
+  --fins-success: #00d9c0;
+  --fins-error: #ff4365;
+  --fins-info: #d9d9d9;
+  --fins-on-background: #0e1e1c;
   --fins-on-blur: #022827;
-  --fins-input-placeholder: #254E4A;
+  --fins-input-placeholder: #254e4a;
   --fins-blur: #0e1e1cdc;
 }
 

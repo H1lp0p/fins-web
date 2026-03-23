@@ -59,8 +59,8 @@ export const publicBffApi = rawPublicBffApi.enhanceEndpoints({
     setMainAccount: {
       transformResponse: (dto: CardAccount) => mapCardAccountFromDto(dto),
     },
-    setAccountVisibility: {
-      transformResponse: (dto: CardAccount) => mapCardAccountFromDto(dto),
+    updatePreferences: {
+      invalidatesTags: ["preferences-controller", "card-account-controller"],
     },
     editCreditRule: {
       transformResponse: (dto: CreditRule) => mapCreditRuleFromDto(dto),
@@ -110,7 +110,6 @@ export const {
   useOpenAccountMutation,
   useCloseAccountMutation,
   useSetMainAccountMutation,
-  useSetAccountVisibilityMutation,
   useGetTransactionOperationsQuery,
   useGetBankTreasuryBalancesQuery,
   useGetBankTreasuryTransactionsQuery,
@@ -127,4 +126,6 @@ export const {
   useGetByCardAccountIdQuery,
   useDeleteCreditRuleMutation,
   useDeleteCreditMutation,
+  useGetPreferencesQuery,
+  useUpdatePreferencesMutation,
 } = publicBffApi;
