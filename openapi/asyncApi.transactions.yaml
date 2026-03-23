@@ -3,31 +3,30 @@ info:
   title: Fins BFF — поток операций по счёту (WebSocket)
   version: "1.0.0"
   description: |
-    JSON-сообщения по одному WebSocket после установления соединения.
-    Аутентификация: та же httpOnly cookie сессии BFF (`fins_session`), что и у REST (`credentials` / `SameSite` как у приложения).
+    Контракт **браузер ↔ BFF**: одно JSON-сообщение на кадр WebSocket.
+    Аутентификация: httpOnly cookie сессии BFF (`fins_session`), как у REST.
 
-    Подключение в dev: через прокси Vite тот же host/port, что у SPA, путь `/api/ws/transactions` (в `vite.config` уже `ws: true` для `/api`).
+    После `subscribe` BFF сам запрашивает первый снимок через **REST** к шлюзу (страница операций по счёту) и отправляет клиенту `snapshot`.
+    События `transaction` — когда BFF получает инкремент от апстрима (тот же уровень защиты, что и остальной бекенд).
+
+    В dev путь к BFF: `/api/ws/transactions` (прокси Vite с `ws: true` для `/api`).
   license:
     name: MIT
 
 defaultContentType: application/json
 
 servers:
-  bff-local:
+  bff:
     url: ws://localhost:8000/api/ws/transactions
     protocol: ws
-    description: Прямо к uvicorn BFF (порт как в корневом README).
-  bff-vite-proxy:
-    url: ws://localhost:5173/api/ws/transactions
-    protocol: ws
     description: >
-      Пример dev: браузер подключается к origin Vite; порт 5173 — типичный для первого приложения,
-      у sso/user/admin может быть другой свободный порт.
+      Хост/порт подставьте под своё окружение; при dev через Vite — тот же origin, что у SPA.
 
 channels:
   transactionsStream:
     description: >
-      Один канал на соединение: клиент шлёт subscribe/unsubscribe, сервер отвечает snapshot, затем событиями transaction и при ошибках — error.
+      Канал на соединение: клиент — subscribe/unsubscribe; BFF — snapshot (после внутреннего REST),
+      затем transaction; при ошибках — error.
     bindings:
       ws:
         bindingVersion: 0.1.0
@@ -66,14 +65,15 @@ components:
     ServerSnapshot:
       name: ServerSnapshot
       title: Снимок страницы операций
-      summary: Первая выдача после subscribe; структура page совпадает с GET /core-api/transactions/{accountId} (OpenAPI PageTransactionOperation)
+      summary: >
+        Первая выдача после subscribe: BFF собирает `page` через REST (как GET страницы операций по accountId в OpenAPI шлюза).
       payload:
         $ref: "#/components/schemas/ServerSnapshotPayload"
 
     ServerTransaction:
       name: ServerTransaction
       title: Новая или обновлённая операция
-      summary: Событие после enroll/withdraw или внутреннего обновления мока/бекенда
+      summary: Инкремент от апстрима, проброшенный BFF
       payload:
         $ref: "#/components/schemas/ServerTransactionPayload"
 
@@ -101,7 +101,6 @@ components:
           type: integer
           format: int32
           default: 0
-          description: Необязательно; если не задано — поведение как у REST default
         pageSize:
           type: integer
           format: int32
@@ -172,29 +171,37 @@ components:
             items:
               type: string
 
-    MoneyValueDto:
+    CardAccount:
       type: object
-      properties:
-        value:
-          type: number
-        currency:
-          type: string
-          enum:
-            - DOLLAR
-            - EURO
-            - RUBLE
-
-    TransactionOperation:
-      type: object
-      description: >
-        Согласовано с components.schemas.TransactionOperation в openApi.public.yaml (в т.ч. опечатка transactionActoin).
+      required:
+        - isMain
       properties:
         id:
           type: string
           format: uuid
-        cardAccountId:
+        name:
+          type: string
+        isMain:
+          type: boolean
+        currency:
+          type: string
+        userId:
           type: string
           format: uuid
+        money:
+          type: number
+        deleted:
+          type: boolean
+
+    TransactionOperation:
+      type: object
+      description: Согласовано с `TransactionOperation` в OpenAPI шлюза (core-api / from-backend).
+      properties:
+        id:
+          type: string
+          format: uuid
+        account:
+          $ref: "#/components/schemas/CardAccount"
         dateTime:
           type: string
           format: date-time
@@ -203,49 +210,51 @@ components:
           enum:
             - WITHDRAWAL
             - ENROLLMENT
-        transactionActoin:
-          type: string
         transactionStatus:
           type: string
           enum:
             - COMPLETE
             - IN_PROGRESS
             - DECLINED
+        action:
+          type: string
+        currency:
+          type: string
         money:
-          $ref: "#/components/schemas/MoneyValueDto"
+          type: number
 
     SortObject:
       type: object
       properties:
-        empty:
+        unsorted:
           type: boolean
         sorted:
           type: boolean
-        unsorted:
+        empty:
           type: boolean
 
     PageableObject:
       type: object
       properties:
-        offset:
-          type: integer
-          format: int64
-        sort:
-          $ref: "#/components/schemas/SortObject"
-        paged:
-          type: boolean
         unpaged:
           type: boolean
         pageNumber:
           type: integer
           format: int32
+        paged:
+          type: boolean
         pageSize:
           type: integer
           format: int32
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: "#/components/schemas/SortObject"
 
     PageTransactionOperation:
       type: object
-      description: Как в OpenAPI PageTransactionOperation
+      description: Как PageTransactionOperation в OpenAPI шлюза.
       properties:
         totalPages:
           type: integer

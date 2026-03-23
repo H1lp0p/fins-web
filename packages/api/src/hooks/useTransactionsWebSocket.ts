@@ -98,6 +98,13 @@ export function useTransactionsWebSocket(
     };
 
     return () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        try {
+          ws.send(JSON.stringify({ type: "unsubscribe", accountId: id }));
+        } catch {
+          /* ignore */
+        }
+      }
       ws.close();
     };
   }, [enabled, accountId, pageIndex, pageSize, url]);

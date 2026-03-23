@@ -25,11 +25,9 @@ T = TypeVar("T", bound="UserEditModelDto")
 class UserEditModelDto:
     """ 
         Attributes:
-            name (str):
             new_roles (list[UserEditModelDtoNewRolesItem] | Unset):
      """
 
-    name: str
     new_roles: list[UserEditModelDtoNewRolesItem] | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -38,8 +36,6 @@ class UserEditModelDto:
 
 
     def to_dict(self) -> dict[str, Any]:
-        name = self.name
-
         new_roles: list[str] | Unset = UNSET
         if not isinstance(self.new_roles, Unset):
             new_roles = []
@@ -53,7 +49,6 @@ class UserEditModelDto:
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
-            "name": name,
         })
         if new_roles is not UNSET:
             field_dict["newRoles"] = new_roles
@@ -65,8 +60,6 @@ class UserEditModelDto:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        name = d.pop("name")
-
         _new_roles = d.pop("newRoles", UNSET)
         new_roles: list[UserEditModelDtoNewRolesItem] | Unset = UNSET
         if _new_roles is not UNSET:
@@ -80,7 +73,6 @@ class UserEditModelDto:
 
 
         user_edit_model_dto = cls(
-            name=name,
             new_roles=new_roles,
         )
 

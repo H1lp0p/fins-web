@@ -27,11 +27,13 @@ class WithdrawDto:
             card_account_id (UUID | Unset):
             sum_ (float | Unset):
             destination (str | Unset):
+            currency (str | Unset):
      """
 
     card_account_id: UUID | Unset = UNSET
     sum_: float | Unset = UNSET
     destination: str | Unset = UNSET
+    currency: str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -47,6 +49,8 @@ class WithdrawDto:
 
         destination = self.destination
 
+        currency = self.currency
+
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -58,6 +62,8 @@ class WithdrawDto:
             field_dict["sum"] = sum_
         if destination is not UNSET:
             field_dict["destination"] = destination
+        if currency is not UNSET:
+            field_dict["currency"] = currency
 
         return field_dict
 
@@ -80,10 +86,13 @@ class WithdrawDto:
 
         destination = d.pop("destination", UNSET)
 
+        currency = d.pop("currency", UNSET)
+
         withdraw_dto = cls(
             card_account_id=card_account_id,
             sum_=sum_,
             destination=destination,
+            currency=currency,
         )
 
 

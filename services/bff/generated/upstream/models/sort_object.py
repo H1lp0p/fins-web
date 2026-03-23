@@ -23,14 +23,14 @@ T = TypeVar("T", bound="SortObject")
 class SortObject:
     """ 
         Attributes:
-            empty (bool | Unset):
-            sorted_ (bool | Unset):
             unsorted (bool | Unset):
+            sorted_ (bool | Unset):
+            empty (bool | Unset):
      """
 
-    empty: bool | Unset = UNSET
-    sorted_: bool | Unset = UNSET
     unsorted: bool | Unset = UNSET
+    sorted_: bool | Unset = UNSET
+    empty: bool | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -38,23 +38,23 @@ class SortObject:
 
 
     def to_dict(self) -> dict[str, Any]:
-        empty = self.empty
+        unsorted = self.unsorted
 
         sorted_ = self.sorted_
 
-        unsorted = self.unsorted
+        empty = self.empty
 
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
         })
-        if empty is not UNSET:
-            field_dict["empty"] = empty
-        if sorted_ is not UNSET:
-            field_dict["sorted"] = sorted_
         if unsorted is not UNSET:
             field_dict["unsorted"] = unsorted
+        if sorted_ is not UNSET:
+            field_dict["sorted"] = sorted_
+        if empty is not UNSET:
+            field_dict["empty"] = empty
 
         return field_dict
 
@@ -63,16 +63,16 @@ class SortObject:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        empty = d.pop("empty", UNSET)
+        unsorted = d.pop("unsorted", UNSET)
 
         sorted_ = d.pop("sorted", UNSET)
 
-        unsorted = d.pop("unsorted", UNSET)
+        empty = d.pop("empty", UNSET)
 
         sort_object = cls(
-            empty=empty,
-            sorted_=sorted_,
             unsorted=unsorted,
+            sorted_=sorted_,
+            empty=empty,
         )
 
 
