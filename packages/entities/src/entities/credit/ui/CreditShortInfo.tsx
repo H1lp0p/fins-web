@@ -22,15 +22,24 @@ export function creditTotalDebtDisplay(credit: CreditEntity): number {
 }
 
 export function creditProgressRatio(credit: CreditEntity): number | null {
+  console.log(credit);
+  
   const initial = credit.initialDebt;
   if (initial == null || initial <= 0 || Number.isNaN(initial)) {
     return null;
   }
   const current = credit.currentDebtSum ?? 0;
-  return Math.min(1, Math.max(0, current / initial));
+  console.log(Math.min(1, Math.max(0, (initial - current) / initial)));
+  
+  return Math.min(1, Math.max(0, (initial - current) / initial));
 }
 
 export function filledBarSegments(ratio: number): number {
+  console.log(ratio, Math.min(
+    BAR_INNER_LEN,
+    Math.max(0, Math.round((ratio * 100) / 10)),
+  ));
+  
   return Math.min(
     BAR_INNER_LEN,
     Math.max(0, Math.round((ratio * 100) / 10)),
