@@ -1,0 +1,177 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "notification API",
+        "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8007/api/notification-service",
+            "description": "Generated server url"
+        }
+    ],
+    "security": [
+        {
+            "JWT": []
+        },
+        {
+            "user-id-header": []
+        },
+        {
+            "user-role-header": []
+        }
+    ],
+    "paths": {
+        "/notifications/{id}/read": {
+            "put": {
+                "tags": [
+                    "notification-sse-controller"
+                ],
+                "operationId": "markAsRead",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/notifications/unread": {
+            "get": {
+                "tags": [
+                    "notification-sse-controller"
+                ],
+                "operationId": "getUnreadNotifications",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Notification"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications/subscribe": {
+            "get": {
+                "tags": [
+                    "notification-sse-controller"
+                ],
+                "operationId": "subscribe",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/event-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SseEmitter"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications/all": {
+            "get": {
+                "tags": [
+                    "notification-sse-controller"
+                ],
+                "operationId": "getAllNotifications",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Notification"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Notification": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "eventId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "userId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "operationId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "number"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "read": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "SseEmitter": {
+                "type": "object",
+                "properties": {
+                    "timeout": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "JWT": {
+                "type": "http",
+                "name": "JWT",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            },
+            "user-id-header": {
+                "type": "apiKey",
+                "name": "X-USER-ID",
+                "in": "header"
+            },
+            "user-role-header": {
+                "type": "apiKey",
+                "name": "X-USER-ROLES",
+                "in": "header"
+            }
+        }
+    }
+}

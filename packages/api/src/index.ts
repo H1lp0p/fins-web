@@ -89,4 +89,17 @@ export {
   mapBffErrorFromBody,
   tryParseBffError,
 } from "./entities/bff-error";
+export type { Notification } from "./entities/notification";
+export { isNotificationPayload } from "./entities/notification";
+export {
+  defaultNotificationsBffBaseUrl,
+  fetchAllNotifications,
+  fetchUnreadNotifications,
+  markNotificationRead,
+} from "./lib/notification-bff-http";
+export { readNotificationSseStream } from "./lib/notification-sse-parse";
+export {
+  useNotificationsSse,
+  type UseNotificationsSseOptions,
+} from "./hooks/useNotificationsSse";
 export * from "./forms";
