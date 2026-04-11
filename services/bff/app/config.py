@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     upstream_gateway_identity_path_markers: str = "/preferences-service/"
     use_mock_bank_treasury: bool = True
     wait_in_millis: int = Field(default=WAIT_IN_MILLIS, ge=0)
+    notification_service_base_url: str | None = None
+    notification_sse_mock_enabled: bool = True
+    notification_sse_mock_interval_seconds: int = Field(default=60, ge=1)
 
     @property
     def use_upstream(self) -> bool:
@@ -40,6 +43,21 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def use_notification_proxy(self) -> bool:
+        return bool(
+            self.use_upstream
+            and self.notification_service_base_url
+            and self.notification_service_base_url.strip()
+        )
+
+    @property
+    def use_notification_sse_mock(self) -> bool:
+        """Тестовый SSE без notification-service (если не включён реальный прокси)."""
+        return bool(
+            self.notification_sse_mock_enabled and not self.use_notification_proxy
+        )
 
 
 @lru_cache

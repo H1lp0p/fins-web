@@ -6,6 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import "@fins/ui-kit/style.css";
 import "@fins/entities/style.css";
 import { AppErrorBoundary } from "./app/AppErrorBoundary";
+import { NotificationMessagesProvider } from "./app/NotificationMessagesProvider";
 import App from "./App";
 import "./index.css";
 import { store } from "./store";
@@ -15,9 +16,11 @@ createRoot(document.getElementById("root")!).render(
     <Provider store={store}>
       <BrowserRouter>
         <MessageStackProvider maxMessages={5}>
-          <AppErrorBoundary>
-            <App />
-          </AppErrorBoundary>
+          <NotificationMessagesProvider>
+            <AppErrorBoundary>
+              <App />
+            </AppErrorBoundary>
+          </NotificationMessagesProvider>
         </MessageStackProvider>
       </BrowserRouter>
     </Provider>

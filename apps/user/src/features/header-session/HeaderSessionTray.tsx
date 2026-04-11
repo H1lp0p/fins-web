@@ -19,7 +19,9 @@ async function revokeSessionAndGoSso(): Promise<void> {
   } catch {
     
   }
-  window.location.href = getSsoOrigin();
+  const sso = getSsoOrigin();
+  const next = encodeURIComponent(window.location.href);
+  window.location.href = `${sso}/?returnUrl=${next}`;
 }
 
 export function HeaderSessionTray() {
