@@ -1,50 +1,51 @@
 # Fins
 
-Monorepo: React (Vite), `@fins/ui-kit`, BFF (FastAPI), OpenAPI contracts.
+Monorepo: React (Vite), пакеты `@fins/ui-kit`, `@fins/api`, `@fins/entities`, BFF (FastAPI), OpenAPI-контракты.
 
-## Requirements
+## Требования
 
-- Node LTS, pnpm 9+ (`corepack enable` / `corepack prepare pnpm@9.15.4 --activate`)
-- Python ≥ 3.11 (BFF)
-- Docker (optional, see `deploy/README.md`)
+- Node LTS, **pnpm 9+** (`corepack enable` / `corepack prepare pnpm@9.15.4 --activate`)
+- Python ≥ 3.11 (BFF, codegen)
+- Docker (опционально, см. [`deploy/README.md`](deploy/README.md))
 
-## Commands
-
-| Command | Purpose |
-|---------|---------|
-| `pnpm install` | Dependencies |
-| `pnpm build` | ui-kit → api → entities → all `apps/*` |
-| `pnpm dev:sso` / `dev:user` / `dev:admin` | Dev servers |
-| `pnpm --filter @fins/ui-kit build` | Build ui-kit only |
-| `pnpm run generate:contracts` | RTK client + BFF upstream client + Pydantic browser models (needs `pip install -e ".[dev]"` in `services/bff`) |
-| `pnpm run merge:openapi:backend-gateway` | Rebuild `openapi/openApi.backend-gateway.yaml` from `openapi/from-backend/` |
-
-## OpenAPI (`openapi/`)
-
-| File | Role |
-|------|------|
-| `openApi.backend-gateway.yaml` | BFF → backend gateway (merged from `from-backend/`) |
-| `openApi.public.yaml` | Browser → BFF (public API) |
-| `openApi.sso.yaml` | Auth routes |
-| `bundles/openApi.bff.browser.yaml` | public + sso bundle for BFF Pydantic codegen |
-| `asyncApi.transactions.yaml` | WS contract for transactions |
-
-## Env
-
-- Repo root: `.env.example` — `BFF_ORIGIN` for Vite proxy to BFF
-- `services/bff/.env.example` — BFF (`UPSTREAM_BASE_URL`, etc.)
-
-## BFF
+## Быстрый старт
 
 ```bash
-cd services/bff
-python -m venv .venv
-.\.venv\Scripts\activate
-pip install -e .
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+pnpm install
+pnpm build
 ```
 
-SSO static: build `pnpm --filter @fins/sso build`, copy `apps/sso/dist/*` → `services/bff/static/sso/`. Details: `services/bff/README.md`.
+Дальше — поднять BFF ([`services/bff/README.md`](services/bff/README.md)) и фронты: `pnpm dev:user` / `dev:admin` / `dev:sso`.
+
+## Команды (корень)
+
+| Команда | Назначение |
+|---------|------------|
+| `pnpm install` | Зависимости |
+| `pnpm build` | ui-kit → api → entities → все `apps/*` |
+| `pnpm dev:sso` / `dev:user` / `dev:admin` | Dev-серверы приложений |
+| `pnpm --filter @fins/ui-kit build` | Только ui-kit |
+| `pnpm run generate:contracts` | RTK + upstream-клиент BFF + browser models (нужен `pip install -e ".[dev]"` в `services/bff`) |
+| `pnpm run merge:openapi:backend-gateway` | Пересобрать `openapi/openApi.backend-gateway.yaml` из `openapi/from-backend/` |
+
+## Документация по модулям
+
+| Модуль | README |
+|--------|--------|
+| BFF | [`services/bff/README.md`](services/bff/README.md) |
+| Контракты / codegen | [`openapi/README.md`](openapi/README.md) |
+| `@fins/api` | [`packages/api/README.md`](packages/api/README.md) |
+| `@fins/ui-kit` | [`packages/ui-kit/README.md`](packages/ui-kit/README.md) |
+| `@fins/entities` | [`packages/entities/README.md`](packages/entities/README.md) |
+| Приложение user | [`apps/user/README.md`](apps/user/README.md) |
+| Приложение admin | [`apps/admin/README.md`](apps/admin/README.md) |
+| SSO | [`apps/sso/README.md`](apps/sso/README.md) |
+| Docker | [`deploy/README.md`](deploy/README.md) |
+
+## Переменные окружения
+
+- Корень: [`.env.example`](.env.example) — `BFF_ORIGIN` для прокси Vite → BFF.
+- BFF: [`services/bff/.env.example`](services/bff/.env.example) — gateway, сессия, CORS и др.
 
 ## Docker
 
@@ -52,4 +53,4 @@ SSO static: build `pnpm --filter @fins/sso build`, copy `apps/sso/dist/*` → `s
 docker compose -f deploy/docker-compose.yml up --build
 ```
 
-See `deploy/README.md`.
+Подробности: [`deploy/README.md`](deploy/README.md).

@@ -102,4 +102,10 @@ export {
   useNotificationsSse,
   type UseNotificationsSseOptions,
 } from "./hooks/useNotificationsSse";
+export {
+  getRejectedRequestMessage,
+  shouldNavigateToForbidden,
+  shouldNavigateToServerError,
+  type RtkRejectedPayload,
+} from "./lib/public-api-error";
 export * from "./forms";

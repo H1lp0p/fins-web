@@ -91,9 +91,12 @@ function AdminForbiddenPage() {
 
 function AdminServerErrorPage() {
   const navigate = useNavigate();
+  const { state } = useLocation();
+  const errorMessage = (state as { errorMessage?: string } | null)?.errorMessage;
   return (
     <HttpStatusScreen
       code="500"
+      detailText={errorMessage}
       actionText="goto /index"
       onAction={() => navigate("/", { replace: true })}
     />

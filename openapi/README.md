@@ -1,18 +1,32 @@
-# OpenAPI
+# OpenAPI / AsyncAPI
 
-| File | Role |
+Контракты между фронтом, BFF и gateway. Сборка merged-файлов и codegen — из **корня** монорепо (`pnpm`).
+
+## Основные файлы
+
+| Файл | Роль |
 |------|------|
-| `openApi.backend-gateway.yaml` | Full gateway spec; build: `pnpm run merge:openapi:backend-gateway` (needs PyYAML) |
-| `from-backend/` | Exported gateway JSON fragments |
-| `openApi.public.yaml` | Browser → BFF (non-auth) |
-| `openApi.sso.yaml` | Auth |
-| `bundles/openApi.bff.browser.yaml` | public + sso merge for BFF models |
-| `asyncApi.transactions.yaml` | WS `/api/ws/transactions` |
+| `openApi.backend-gateway.yaml` | BFF → API Gateway; собирается: `pnpm run merge:openapi:backend-gateway` (нужен PyYAML), исходники в `from-backend/` |
+| `openApi.public.yaml` | Браузер → BFF (публичное API) |
+| `openApi.sso.yaml` | Авторизация |
+| `bundles/openApi.bff.browser.yaml` | merge public + sso для Pydantic-моделей BFF |
+| `asyncApi.transactions.yaml` | WebSocket `/api/ws/transactions` |
 
-## Codegen (repo root)
+Подробнее про сценарии: [`README.md`](../README.md) в корне (таблица OpenAPI).
+
+## Команды
+
+Полная пересборка артефактов codegen (после правок спек):
 
 ```bash
 pnpm run generate:contracts
 ```
 
-Uses `@fins/api` (RTK), then BFF upstream client and browser Pydantic models (`services/bff`, `pip install -e ".[dev]"`).
+Отдельно:
+
+- только merge gateway: `pnpm run merge:openapi:backend-gateway`
+- только фронт + WS: `pnpm run generate:api`
+- только Python upstream-клиент BFF: `pnpm run generate:bff:upstream`
+- только `bff_browser_models`: `pnpm run generate:bff:browser-models`
+
+Для `generate:contracts` в `services/bff` должны быть установлены зависимости с `[dev]` (см. [`services/bff/README.md`](../services/bff/README.md)).

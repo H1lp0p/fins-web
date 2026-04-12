@@ -5,13 +5,13 @@ type AppErrorBoundaryProps = {
   children: ReactNode;
 };
 
-type State = { hasError: boolean };
+type State = { hasError: boolean; detailText?: string };
 
 export class AppErrorBoundary extends Component<AppErrorBoundaryProps, State> {
   state: State = { hasError: false };
 
-  static getDerivedStateFromError(): State {
-    return { hasError: true };
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, detailText: error.message };
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
@@ -23,6 +23,7 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, State> {
       return (
         <HttpStatusScreen
           code="500"
+          detailText={this.state.detailText}
           actionText="goto /index"
           onAction={() => {
             window.location.assign(`${window.location.origin}/`);

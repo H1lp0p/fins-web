@@ -12,7 +12,7 @@ export const apiErrorListener = createListenerMiddleware();
 apiErrorListener.startListening({
   predicate: (action) => {
     if (!isRejected(action)) return false;
-    if (!action.type.startsWith("finsPublicApi/")) return false;
+    if (!action.type.startsWith("finsSsoApi/")) return false;
     const payload = action.payload as RtkRejectedPayload;
     return (
       shouldNavigateToForbidden(payload) || shouldNavigateToServerError(payload)
