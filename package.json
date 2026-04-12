@@ -2,8 +2,18 @@
   "name": "fins-monorepo",
   "private": true,
   "packageManager": "pnpm@9.15.4",
+  "pnpm": {
+    "overrides": {
+      "typescript": "~5.7.3"
+    }
+  },
   "scripts": {
-    "build": "pnpm --filter @fins/ui-kit build && pnpm --filter \"./apps/*\" build",
+    "build": "pnpm --filter @fins/ui-kit build && pnpm --filter @fins/api build && pnpm --filter @fins/entities build && pnpm --filter \"./apps/*\" build",
+    "generate:api": "pnpm --filter @fins/api generate:api",
+    "generate:bff:upstream": "python services/bff/scripts/generate_upstream_client.py",
+    "generate:bff:browser-models": "python services/bff/scripts/generate_browser_models.py",
+    "generate:contracts": "pnpm run generate:api && pnpm run generate:bff:upstream && pnpm run generate:bff:browser-models",
+    "merge:openapi:backend-gateway": "python openapi/scripts/merge_backend_gateway.py",
     "dev:sso": "pnpm --filter @fins/sso dev",
     "dev:user": "pnpm --filter @fins/user dev",
     "dev:admin": "pnpm --filter @fins/admin dev"

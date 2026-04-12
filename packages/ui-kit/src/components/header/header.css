@@ -1,0 +1,32 @@
+.header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: var(--fins-max-gap);
+    width: 100%;
+
+    box-sizing: border-box;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+
+    backdrop-filter: blur(var(--fins-blur-radius));
+}
+
+.header > :first-child {
+    justify-self: start;
+    min-width: 0;
+}
+
+.header > :nth-child(2) {
+    justify-self: center;
+}
+
+.header > :nth-child(3) {
+    display: flex;
+    justify-self: end;
+    min-width: 0;
+}

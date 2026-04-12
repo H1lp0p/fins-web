@@ -1,0 +1,63 @@
+
+
+.root {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.mono {
+  font-family: ui-monospace, "Cascadia Code", "Cascadia Mono", "Segoe UI Mono",
+    Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  gap: 0.35rem 1rem;
+  align-items: start;
+}
+
+.leftTop {
+  min-width: 0;
+}
+
+.leftBottom {
+  min-width: 0;
+}
+
+.rightTop {
+  justify-self: end;
+  text-align: right;
+}
+
+.rightBottom {
+  justify-self: end;
+  text-align: right;
+}
+
+.typeLabel {
+  letter-spacing: 0.06em;
+}
+
+.desc {
+  margin: 0;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.amountLine {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 0.2rem;
+  white-space: nowrap;
+}
+
+.amountSymbol {
+  letter-spacing: normal;
+}

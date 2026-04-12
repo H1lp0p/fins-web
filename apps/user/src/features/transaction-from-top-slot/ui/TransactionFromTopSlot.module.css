@@ -1,0 +1,15 @@
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--fins-max-gap);
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.cardGrow {
+  flex: 1;
+  min-width: 0;
+}

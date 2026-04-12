@@ -1,0 +1,34 @@
+.text-absolute {
+  font-family: var(--font-family-kelly-slab);
+  font-weight: 400;
+  font-size: 20rem;
+  letter-spacing: 0.2em;
+}
+
+.text-giant {
+  font-family: var(--font-family-kelly-slab);
+  font-weight: 400;
+  font-size: 4rem;
+  letter-spacing: 0.2em;
+}
+
+.text-title {
+  font-family: var(--font-family-kelly-slab);
+  font-weight: 400;
+  font-size: 1.5rem;
+  letter-spacing: 0.2em;
+}
+
+.text-info-accent {
+  font-family: var(--font-family-kelly-slab);
+  font-weight: 400;
+  font-size: 1rem;
+  letter-spacing: 0.2em;
+}
+
+.text-info {
+  font-family: var(--font-family-kelly-slab);
+  font-weight: 400;
+  font-size: 0.875rem;
+  letter-spacing: 0.2em;
+}

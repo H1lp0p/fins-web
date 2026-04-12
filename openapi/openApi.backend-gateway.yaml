@@ -1,0 +1,1310 @@
+openapi: 3.0.1
+info:
+  title: Bank API
+  description: 'Полный контракт шлюза. Собрано из openapi/from-backend/*.json (скрипт
+    scripts/merge_backend_gateway.py). Сплиты: openApi.public.yaml + openApi.sso.yaml.'
+  version: '1.0'
+servers:
+- url: http://api.thallassianangel.su/api
+  description: 'Прод: шлюз; имя сервиса — первый сегмент пути (user-service, core-api,
+    …).'
+- url: http://localhost:8000/api
+  description: Локальная разработка (порт по окружению).
+security:
+- JWT: []
+paths:
+  /core-api/cardaccount/all/{userId}:
+    get:
+      tags:
+      - card-account-controller
+      operationId: getUserCardAccounts
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: pageIndex
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: pageSize
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 30
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageCardAccount'
+  /core-api/cardaccount/close/{accountId}:
+    post:
+      tags:
+      - card-account-controller
+      operationId: closeAccount
+      parameters:
+      - name: accountId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: boolean
+  /core-api/cardaccount/exists/{accountId}:
+    get:
+      tags:
+      - card-account-controller
+      operationId: checkAccountExists
+      parameters:
+      - name: accountId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: boolean
+  /core-api/cardaccount/open/{userId}:
+    post:
+      tags:
+      - card-account-controller
+      operationId: openAccount
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardAccountCreateDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CardAccount'
+  /core-api/cardaccount/{accountId}:
+    get:
+      tags:
+      - card-account-controller
+      operationId: getUserCardAccount
+      parameters:
+      - name: accountId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CardAccount'
+  /core-api/cardaccount/{accountId}/set-main:
+    post:
+      tags:
+      - card-account-controller
+      operationId: setMainAccount
+      parameters:
+      - name: accountId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CardAccount'
+  /core-api/currency/all:
+    get:
+      tags:
+      - currency-controller
+      operationId: getCurrencyList
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CurrencyClientDto'
+  /core-api/currency/{charcode}:
+    get:
+      tags:
+      - currency-controller
+      operationId: getCurrencyByCharCode
+      parameters:
+      - name: charcode
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CurrencyDto'
+  /core-api/transactions/convert:
+    post:
+      tags:
+      - transaction-operation-controller
+      operationId: convertCurrency
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferCurrencyRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+  /core-api/transactions/enroll:
+    post:
+      tags:
+      - transaction-send-controller
+      operationId: enrollMoney
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+  /core-api/transactions/transfer:
+    post:
+      tags:
+      - transaction-operation-controller
+      operationId: transferMoney
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+  /core-api/transactions/withdraw:
+    post:
+      tags:
+      - transaction-send-controller
+      operationId: withdrawMoney
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+  /core-api/transactions/{accountId}:
+    get:
+      tags:
+      - transaction-operation-controller
+      operationId: getTransactionOperations
+      parameters:
+      - name: accountId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: pageIndex
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: pageSize
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 30
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageTransactionOperation'
+  /credit-service/credit/create:
+    post:
+      tags:
+      - credit-controller
+      operationId: createCredit
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditCreateModelDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CreditAnswerDTO'
+  /credit-service/credit/{cardAccountId}/enrollment:
+    post:
+      tags:
+      - credit-controller
+      operationId: makeEnrollment
+      parameters:
+      - name: cardAccountId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: money
+        in: query
+        required: true
+        schema:
+          type: number
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CreditAnswerDTO'
+  /credit-service/credit/{cardAccountId}/get_by_card_account:
+    get:
+      tags:
+      - credit-controller
+      operationId: getByCardAccountId
+      parameters:
+      - name: cardAccountId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CreditAnswerDTO'
+  /credit-service/credit/{creditId}/delete:
+    delete:
+      tags:
+      - credit-controller
+      operationId: deleteCredit
+      parameters:
+      - name: creditId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+  /credit-service/credit/{userId}/get_by_user_id:
+    get:
+      tags:
+      - credit-controller
+      operationId: getByUserId_1
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreditAnswerDTO'
+  /credit-service/credit_rating/{userId}/get_by_user:
+    get:
+      tags:
+      - credit-rating-controller
+      operationId: getByUserId
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CreditRatingDTO'
+  /credit-service/credit_rule/create:
+    post:
+      tags:
+      - credit-rule-controller
+      operationId: createCreditRule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditRuleDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CreditRuleAnswerDTO'
+  /credit-service/credit_rule/get_all:
+    get:
+      tags:
+      - credit-rule-controller
+      operationId: getAllCreditRules
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreditRuleAnswerDTO'
+  /credit-service/credit_rule/{creditRuleId}/delete:
+    delete:
+      tags:
+      - credit-rule-controller
+      operationId: deleteCreditRule
+      parameters:
+      - name: creditRuleId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+  /credit-service/credit_rule/{creditRuleId}/edit:
+    put:
+      tags:
+      - credit-rule-controller
+      operationId: editCreditRule
+      parameters:
+      - name: creditRuleId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditRuleDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CreditRuleAnswerDTO'
+  /credit-service/credit_rule/{creditRuleId}/get_by_id:
+    get:
+      tags:
+      - credit-rule-controller
+      operationId: getCreditRuleById
+      parameters:
+      - name: creditRuleId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CreditRuleAnswerDTO'
+  /credit-service/payment_history_record/{cardAccountId}/find_by_card_account_id:
+    get:
+      tags:
+      - payment-history-record-controller
+      operationId: findByCardAccountId
+      parameters:
+      - name: cardAccountId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentHistoryRecordDTO'
+  /credit-service/payment_history_record/{userId}/find_by_user_id:
+    get:
+      tags:
+      - payment-history-record-controller
+      operationId: findByUserId
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentHistoryRecordDTO'
+  /preferences-service/preferences:
+    get:
+      tags:
+      - preferences-controller
+      operationId: getPreferences
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserPreferencesDto'
+    put:
+      tags:
+      - preferences-controller
+      operationId: updatePreferences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPreferencesDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserPreferencesDto'
+  /user-service/account:
+    get:
+      tags:
+      - Account
+      operationId: getUser
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserDto'
+  /user-service/account/edit:
+    put:
+      tags:
+      - Account
+      operationId: editUser_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserEditModelDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+  /user-service/admin/bank-treasury/balances:
+    get:
+      tags:
+      - Admin
+      operationId: getBankTreasuryBalances
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BankTreasuryBalancesDto'
+  /user-service/admin/bank-treasury/transactions:
+    get:
+      tags:
+      - Admin
+      operationId: getBankTreasuryTransactions
+      parameters:
+      - name: pageIndex
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: pageSize
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 30
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageTransactionOperation'
+  /user-service/auth/login:
+    post:
+      tags:
+      - Auth
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginModelDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/JwtModelDto'
+  /user-service/auth/oauth2/authorization/{providerId}:
+    get:
+      tags:
+      - Auth
+      operationId: initiateOAuth2Login
+      parameters:
+      - name: providerId
+        in: path
+        description: OAuth2 provider ID (google, github, etc.)
+        required: true
+        schema:
+          type: string
+        example: google
+      responses:
+        '200':
+          description: OK
+  /user-service/auth/refresh:
+    post:
+      tags:
+      - Auth
+      operationId: refreshAndRotate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshModelDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/JwtModelDto'
+  /user-service/auth/register:
+    post:
+      tags:
+      - Auth
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterModelDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/JwtModelDto'
+  /user-service/auth/revoke:
+    post:
+      tags:
+      - Auth
+      operationId: revoke
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshModelDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+  /user-service/auth/validate:
+    get:
+      tags:
+      - Auth
+      operationId: isTokenValid
+      responses:
+        '200':
+          description: OK
+  /user-service/internal/users/{id}:
+    get:
+      tags:
+      - Users Internal
+      operationId: getUserById_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-API-KEY
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserDto'
+  /user-service/users:
+    get:
+      tags:
+      - Users
+      operationId: getAllUsers
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDto'
+  /user-service/users/by-email/{email}:
+    get:
+      tags:
+      - Users
+      operationId: getUserByEmail
+      parameters:
+      - name: email
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserDto'
+  /user-service/users/{id}:
+    get:
+      tags:
+      - Users
+      operationId: getUserById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserDto'
+    delete:
+      tags:
+      - Users
+      operationId: deleteUserById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+  /user-service/users/{id}/edit:
+    put:
+      tags:
+      - Users
+      operationId: editUser
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserEditModelDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+  /user-service/users/{id}/isActive:
+    get:
+      tags:
+      - Users
+      operationId: isUserActiveById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: boolean
+components:
+  schemas:
+    UserEditModelDto:
+      type: object
+      properties:
+        newRoles:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            enum:
+            - CLIENT
+            - WORKER
+    TokenRefreshModelDto:
+      required:
+      - value
+      type: object
+      properties:
+        value:
+          type: string
+    RegisterModelDto:
+      required:
+      - email
+      - name
+      - password
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          maxLength: 255
+          minLength: 6
+          type: string
+    JwtModelDto:
+      required:
+      - accessToken
+      - refreshToken
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+    LoginModelDto:
+      required:
+      - email
+      - password
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          maxLength: 255
+          minLength: 6
+          type: string
+    UserDto:
+      required:
+      - email
+      - id
+      - name
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+        roles:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            enum:
+            - CLIENT
+            - WORKER
+        active:
+          type: boolean
+    MoneyValueDto:
+      type: object
+      properties:
+        value:
+          type: number
+        currency:
+          type: string
+          enum:
+          - DOLLAR
+          - EURO
+          - RUBLE
+    BankTreasuryBalanceItem:
+      required:
+      - cardAccountId
+      - balance
+      type: object
+      properties:
+        cardAccountId:
+          type: string
+          format: uuid
+        balance:
+          $ref: '#/components/schemas/MoneyValueDto'
+    BankTreasuryBalancesDto:
+      required:
+      - accounts
+      type: object
+      properties:
+        accounts:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/BankTreasuryBalanceItem'
+    TransferRequest:
+      type: object
+      properties:
+        fromCardAccountId:
+          type: string
+          format: uuid
+        toCardAccountId:
+          type: string
+          format: uuid
+        sum:
+          type: number
+        currency:
+          type: string
+    TransferCurrencyRequest:
+      type: object
+      properties:
+        fromCardAccountId:
+          type: string
+          format: uuid
+        toCardAccountId:
+          type: string
+          format: uuid
+        sumFrom:
+          type: number
+        currencyFrom:
+          type: string
+        currencyTo:
+          type: string
+    CardAccountCreateDto:
+      type: object
+      properties:
+        name:
+          type: string
+        currency:
+          type: string
+        isMain:
+          type: boolean
+    CardAccount:
+      required:
+      - isMain
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        isMain:
+          type: boolean
+        currency:
+          type: string
+        userId:
+          type: string
+          format: uuid
+        money:
+          type: number
+        deleted:
+          type: boolean
+    PageTransactionOperation:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionOperation'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/SortObject'
+        empty:
+          type: boolean
+    PageableObject:
+      type: object
+      properties:
+        unpaged:
+          type: boolean
+        pageNumber:
+          type: integer
+          format: int32
+        paged:
+          type: boolean
+        pageSize:
+          type: integer
+          format: int32
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: '#/components/schemas/SortObject'
+    SortObject:
+      type: object
+      properties:
+        unsorted:
+          type: boolean
+        sorted:
+          type: boolean
+        empty:
+          type: boolean
+    TransactionOperation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        account:
+          $ref: '#/components/schemas/CardAccount'
+        dateTime:
+          type: string
+          format: date-time
+        transactionType:
+          type: string
+          enum:
+          - WITHDRAWAL
+          - ENROLLMENT
+        transactionStatus:
+          type: string
+          enum:
+          - COMPLETE
+          - IN_PROGRESS
+          - DECLINED
+        action:
+          type: string
+        currency:
+          type: string
+        money:
+          type: number
+    CurrencyDto:
+      type: object
+      properties:
+        ID:
+          type: string
+        NumCode:
+          type: string
+        CharCode:
+          type: string
+        Nominal:
+          type: integer
+          format: int32
+        Name:
+          type: string
+        Value:
+          type: number
+        Previous:
+          type: number
+    CurrencyClientDto:
+      type: object
+      properties:
+        Date:
+          type: string
+          format: date-time
+        PreviousDate:
+          type: string
+          format: date-time
+        PreviousURL:
+          type: string
+        Timestamp:
+          type: string
+          format: date-time
+        Valute:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/CurrencyDto'
+    PageCardAccount:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/CardAccount'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/SortObject'
+        empty:
+          type: boolean
+    WithdrawDto:
+      type: object
+      properties:
+        cardAccountId:
+          type: string
+          format: uuid
+        sum:
+          type: number
+        destination:
+          type: string
+        currency:
+          type: string
+    EnrollDto:
+      type: object
+      properties:
+        cardAccountId:
+          type: string
+          format: uuid
+        sum:
+          type: number
+        destination:
+          type: string
+        currency:
+          type: string
+    CreditRuleDTO:
+      type: object
+      properties:
+        collectionPeriodSeconds:
+          type: integer
+          format: int32
+        openingDate:
+          type: string
+          format: date-time
+        ruleName:
+          type: string
+        percentage:
+          type: number
+    CreditRuleAnswerDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        collectionPeriodSeconds:
+          type: integer
+          format: int32
+        openingDate:
+          type: string
+          format: date-time
+        ruleName:
+          type: string
+        percentage:
+          type: number
+    CreditAnswerDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        lastInterestUpdate:
+          type: string
+          format: date-time
+        userId:
+          type: string
+          format: uuid
+        cardAccount:
+          type: string
+          format: uuid
+        currency:
+          type: string
+        currentDebtSum:
+          type: number
+        initialDebt:
+          type: number
+        interestDebtSum:
+          type: number
+        creditRule:
+          $ref: '#/components/schemas/CreditRuleAnswerDTO'
+    CreditCreateModelDto:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        cardAccount:
+          type: string
+          format: uuid
+        currency:
+          type: string
+        totalDebt:
+          type: number
+        creditRuleId:
+          type: string
+          format: uuid
+    PaymentHistoryRecordDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sum:
+          type: number
+        date:
+          type: string
+          format: date-time
+        cardAccount:
+          type: string
+          format: uuid
+        currency:
+          type: string
+        transactionStatus:
+          type: string
+          enum:
+          - COMPLETE
+          - IN_PROGRESS
+          - DECLINED
+    CreditRatingDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        rating:
+          type: number
+    UserPreferencesDto:
+      type: object
+      properties:
+        theme:
+          type: string
+        hiddenAccounts:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+  securitySchemes:
+    JWT:
+      type: http
+      name: JWT
+      scheme: bearer
+      bearerFormat: JWT
+    user-id-header:
+      type: apiKey
+      name: X-USER-ID
+      in: header
+    user-role-header:
+      type: apiKey
+      name: X-USER-ROLES
+      in: header

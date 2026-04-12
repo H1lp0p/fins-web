@@ -1,29 +1,26 @@
-# Docker / nginx
+# Deploy
 
-Сборка фронтов внутри образов, единая сеть Compose: **nginx** отдаёт user/admin и проксирует на **BFF** (SSO + `/api`).
+Сборка и запуск через Docker Compose.
 
 ## Запуск
 
-Из **корня репозитория**:
+Из **корня** репозитория:
 
 ```bash
 docker compose -f deploy/docker-compose.yml up --build
 ```
 
-Открой в браузере (порт **8080** на хосте → 80 в контейнере):
+По умолчанию хост **8080** → nginx **80**. Примеры URL: `http://auth.localhost:8080`, `http://user.localhost:8080`, `http://admin.localhost:8080`.
 
-- http://auth.localhost:8080/ — SSO через BFF
-- http://user.localhost:8080/ — клиент пользователя; API BFF: http://user.localhost:8080/api/…
-- http://admin.localhost:8080/ — админка
-
-Поддомены `*.localhost` обычно указывают на `127.0.0.1` без правки `hosts`. Если не открывается — добавь в `hosts` строки для `auth.localhost`, `user.localhost`, `admin.localhost`.
-
-## Проверка API
+Проверка BFF за прокси:
 
 ```bash
 curl http://user.localhost:8080/api/v1/ping
 ```
 
-## Порты
+Чтобы пробросить порт 80 на хост, измените маппинг в `docker-compose.yml` (на Windows может понадобиться запуск от администратора).
 
-Чтобы слушать 80 на хосте, в `docker-compose.yml` замени `8080:80` на `80:80` (на Windows может понадобиться запуск от администратора).
+## Связка с кодом
+
+- Образы и nginx обычно собирают фронты и BFF; детали — в `deploy/docker-compose.yml` и Dockerfile’ах рядом.
+- Переменные окружения для production задаются в compose или в `.env`, согласованно с [`services/bff/.env.example`](../services/bff/.env.example) и фронтовыми `VITE_*`.

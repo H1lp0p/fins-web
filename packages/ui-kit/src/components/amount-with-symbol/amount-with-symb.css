@@ -1,0 +1,11 @@
+.amount-with-symbol {
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.amount-with-symbol__symbol {
+    letter-spacing: normal;
+}

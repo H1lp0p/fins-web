@@ -1,0 +1,27 @@
+
+
+.root {
+  box-sizing: border-box;
+  width: 12.6875rem; 
+  max-width: 100%;
+}
+
+.flexCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.titleReset {
+  margin: 0;
+}
+
+.flexEnd {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.rowBetween {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}

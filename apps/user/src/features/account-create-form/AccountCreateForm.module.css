@@ -1,0 +1,10 @@
+.currenciesContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.currencyLabel {
+  margin: 0;
+}

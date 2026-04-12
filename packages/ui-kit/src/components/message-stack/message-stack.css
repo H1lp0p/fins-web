@@ -1,0 +1,33 @@
+.fins-message-stack-anim {
+  transition: opacity 0.35s ease;
+}
+
+.fins-message-stack-anim--visible {
+  opacity: 1;
+}
+
+.fins-message-stack-anim--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fins-message-stack-anim--hidden .fins-message-stack-dock-inner {
+  pointer-events: none;
+}
+
+.fins-message-stack-dock {
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 1;
+  max-width: 30%;
+}
+
+.fins-message-stack-dock-inner {
+  pointer-events: auto;
+  max-height: min(40vh, 320px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--fins-mid-gap);
+  width: 100%;
+}

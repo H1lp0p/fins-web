@@ -1,0 +1,31 @@
+.scroll {
+  box-sizing: border-box;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.section {
+  margin-bottom: var(--fins-min-gap);
+}
+
+.sectionTitle {
+  margin: 0 0 var(--fins-min-gap);
+}
+
+.debtRow {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.lastRepayRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.accountCardInner {
+  display: flex;
+  flex-direction: column;
+}

@@ -1,13 +1,16 @@
 :root {
-  font-family: system-ui, sans-serif;
+  font-family: var(--font-family-kelly-slab), serif;
   line-height: 1.5;
 }
 
+html,
 body {
+  height: 100%;
   margin: 0;
-  min-height: 100vh;
+  overflow: hidden;
 }
 
 #root {
-  min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
 }
