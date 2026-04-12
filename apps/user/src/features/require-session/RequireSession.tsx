@@ -1,4 +1,8 @@
-import { useGetUserQuery } from "@fins/api";
+import {
+  shouldNavigateToForbidden,
+  shouldNavigateToServerError,
+  useGetUserQuery,
+} from "@fins/api";
 import { BgText, LoadingFrameIndicator, useMessageStack } from "@fins/ui-kit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useEffect, useRef } from "react";
@@ -30,8 +34,11 @@ export function RequireSession() {
       window.location.replace(`${sso}/?returnUrl=${next}`);
       return;
     }
-    if (e.status === 403) {
+    if (shouldNavigateToForbidden(e)) {
       navigate("/403", { replace: true });
+      return;
+    }
+    if (shouldNavigateToServerError(e)) {
       return;
     }
     if (warnedRef.current) return;
@@ -66,7 +73,10 @@ export function RequireSession() {
 
   if (account.isError) {
     const e = account.error as FetchBaseQueryError;
-    if (e.status === 401 || e.status === 403) {
+    if (e.status === 401) {
+      return null;
+    }
+    if (shouldNavigateToForbidden(e) || shouldNavigateToServerError(e)) {
       return null;
     }
     return (

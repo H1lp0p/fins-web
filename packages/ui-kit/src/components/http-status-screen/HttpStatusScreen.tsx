@@ -6,12 +6,15 @@ export type HttpStatusScreenProps = {
   code: string;
   actionText: string;
   onAction: () => void;
+  /** Текст ошибки (например от сервера), отдельно от кнопки навигации */
+  detailText?: string;
 };
 
 export function HttpStatusScreen({
   code,
   actionText,
   onAction,
+  detailText,
 }: HttpStatusScreenProps) {
   return (
     <main
@@ -24,12 +27,34 @@ export function HttpStatusScreen({
     >
       <BgText text={code} />
       <SingleSpaceLayout>
-        <LinkButton
-          text={actionText}
-          onClick={onAction}
-          variant="info"
-          textClassName="text-info"
-        />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "1rem",
+            width: "100%",
+            maxWidth: "36rem",
+            textAlign: "center",
+          }}
+        >
+          {detailText ? (
+            <>
+              <span className="text-info color-info">
+                  ErrorMessage:
+              </span>
+              <span className="text-info color-error" style={{ lineHeight: 1.45 }}>
+                "{detailText}"
+              </span>
+            </>
+          ) : null}
+          <LinkButton
+            text={actionText}
+            onClick={onAction}
+            variant="info"
+            textClassName="text-info"
+          />
+        </div>
       </SingleSpaceLayout>
     </main>
   );

@@ -1,5 +1,10 @@
 import { createListenerMiddleware, isRejected } from "@reduxjs/toolkit";
-import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import {
+  getRejectedRequestMessage,
+  shouldNavigateToForbidden,
+  shouldNavigateToServerError,
+  type RtkRejectedPayload,
+} from "@fins/api";
 import { getAppNavigate } from "./navigationRef";
 
 export const apiErrorListener = createListenerMiddleware();
@@ -8,23 +13,28 @@ apiErrorListener.startListening({
   predicate: (action) => {
     if (!isRejected(action)) return false;
     if (!action.type.startsWith("finsPublicApi/")) return false;
-    const payload = action.payload as FetchBaseQueryError | undefined;
-    const status = payload?.status;
-    return status === 403 || status === 500;
+    const payload = action.payload as RtkRejectedPayload;
+    return (
+      shouldNavigateToForbidden(payload) || shouldNavigateToServerError(payload)
+    );
   },
   effect: (action) => {
-    const payload = action.payload as FetchBaseQueryError;
+    const payload = action.payload as RtkRejectedPayload;
     const nav = getAppNavigate();
     if (!nav) return;
     const path = window.location.pathname;
-    if (payload.status === 403) {
+    if (shouldNavigateToForbidden(payload)) {
       if (path === "/403") return;
       nav("/403", { replace: true });
       return;
     }
-    if (payload.status === 500) {
+    if (shouldNavigateToServerError(payload)) {
       if (path === "/500") return;
-      nav("/500", { replace: true });
+      const msg = getRejectedRequestMessage(payload);
+      nav("/500", {
+        replace: true,
+        ...(msg !== undefined ? { state: { errorMessage: msg } } : {}),
+      });
     }
   },
 });

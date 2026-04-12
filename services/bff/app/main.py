@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.api_delay_middleware import ApiDelayMiddleware
 from app.request_logging_middleware import RequestLoggingMiddleware
+from app.simulate_random_error_middleware import SimulateRandomErrorMiddleware
 from app.config import get_settings
 from app.routers import notifications_proxy, public, sso, ws_transactions
 from app.upstream_runtime import (
@@ -65,6 +66,7 @@ app.add_middleware(
 )
 app.add_middleware(ApiDelayMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
+app.add_middleware(SimulateRandomErrorMiddleware)
 
 
 @app.get("/health")
