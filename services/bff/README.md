@@ -40,7 +40,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 | `app/routers/public_upstream.py` | Маршруты `/api/...` → вызовы **сгенерированного** клиента `generated/upstream/` к gateway. |
 | `app/routers/sso.py` | Регистрация/логин/revoke; при upstream — прокси к auth в gateway, cookie-сессия. |
 | `app/routers/ws_transactions.py` | WebSocket `/api/ws/transactions`. |
-| `app/routers/notifications_proxy.py` | REST + SSE уведомлений; при настроенном URL — прокси на notification-service, иначе опциональный мок-SSE. |
+| `app/routers/notifications_proxy.py` | Уведомления: REST (unread/all/read), SSE subscribe, FCM `POST/DELETE …/fcm/token`; при настроенном URL — прокси на notification-service, иначе мок-SSE и no-op для FCM. |
 | `app/upstream_runtime.py`, `upstream_context.py` | httpx-клиенты к `UPSTREAM_BASE_URL`, Bearer и заголовки `X-USER-ID` / `X-USER-ROLES` на нужных путях. |
 | `generated/upstream/` | **Кодоген** из `openapi/openApi.backend-gateway.yaml` (`openapi-python-client`). Не править руками. |
 | `generated/bff_browser_models.py` | Pydantic-модели для ответов/ошибок в формате, ожидаемом фронтом (отдельный скрипт codegen). |
@@ -93,6 +93,6 @@ Docker-сборка всего стенда: см. `deploy/README.md`.
 | SSL errors к upstream | `UPSTREAM_VERIFY_SSL=false` только временно в dev; в проде — валидный сертификат. |
 | 404/не те пути к бекенду | Gateway URL и префиксы в спеке; после смены API — `merge` + `generate:bff:upstream` и деплой нового `generated/upstream`. |
 | Ошибки парсинга ответа на фронте | Сверить `bff_browser_models` codegen с тем, что реально отдаёт BFF (`finish_upstream_response` / нормализация в `public_upstream_shape`). |
-| Пустой notification SSE | `NOTIFICATION_SERVICE_BASE_URL` или мок-флаги; см. `app/routers/notifications_proxy.py`. |
+| Пустой notification SSE / FCM не регистрируется | `NOTIFICATION_SERVICE_BASE_URL` или мок-флаги; FCM-токен без upstream — no-op 200; см. `app/routers/notifications_proxy.py`. |
 
 Логи upstream при `UPSTREAM_REQUEST_LOG=true` смотреть в консоли/файле `logs/bff.log`.

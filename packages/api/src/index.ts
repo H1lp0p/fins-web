@@ -1,14 +1,18 @@
 
 export {
+  BFF_IDEMPOTENCY_KEY_HEADER,
   createBffFetchBaseQuery,
   type BffClientOptions,
 } from "./lib/bff-fetch-base-query";
+export type {
+  BffCircuitBreakerConfig,
+} from "./lib/bff-circuit-breaker";
+export { BffCircuitBreaker } from "./lib/bff-circuit-breaker";
 export { initPublicBffApi } from "./generated/public/emptyPublicApi";
 export type * from "./generated/public/generatedPublicApi";
 export { addTagTypes } from "./generated/public/generatedPublicApi";
 export {
   generatedPublicApi,
-  publicBffApi,
   useCloseAccountMutation,
   useCreateCreditMutation,
   useCreateCreditRuleMutation,
@@ -91,17 +95,19 @@ export {
 } from "./entities/bff-error";
 export type { Notification } from "./entities/notification";
 export { isNotificationPayload } from "./entities/notification";
+export type { FcmTokenRequest } from "./lib/notification-bff-http";
 export {
   defaultNotificationsBffBaseUrl,
   fetchAllNotifications,
   fetchUnreadNotifications,
   markNotificationRead,
+  registerFcmToken,
+  unregisterFcmToken,
 } from "./lib/notification-bff-http";
-export { readNotificationSseStream } from "./lib/notification-sse-parse";
 export {
-  useNotificationsSse,
-  type UseNotificationsSseOptions,
-} from "./hooks/useNotificationsSse";
+  useWebPushRegistration,
+  type UseWebPushRegistrationOptions,
+} from "./hooks/useWebPushRegistration";
 export {
   getRejectedRequestMessage,
   shouldNavigateToForbidden,

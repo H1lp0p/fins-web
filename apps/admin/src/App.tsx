@@ -7,6 +7,8 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+
+type ServerErrorLocationState = { message?: string };
 import { NavigationBridge } from "./app/NavigationBridge";
 import { HeaderSessionTray } from "./features/header-session/HeaderSessionTray";
 import { RequireSession } from "./features/require-session/RequireSession";
@@ -92,11 +94,11 @@ function AdminForbiddenPage() {
 function AdminServerErrorPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const errorMessage = (state as { errorMessage?: string } | null)?.errorMessage;
+  const message = (state as ServerErrorLocationState | null)?.message;
   return (
     <HttpStatusScreen
       code="500"
-      detailText={errorMessage}
+      message={message}
       actionText="goto /index"
       onAction={() => navigate("/", { replace: true })}
     />

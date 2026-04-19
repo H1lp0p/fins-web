@@ -8,6 +8,10 @@ from typing import Any, TypeVar
 import httpx
 from fastapi.responses import JSONResponse, Response
 from app.bff_user import BffUser
+from app.circuit_breaker import (
+    AsyncCircuitBreaker,
+    build_async_http_transport,
+)
 from app.config import Settings
 from app.errors import bff_error_response
 from app.public_upstream_shape import normalize_public_response
@@ -17,12 +21,29 @@ from generated.upstream.types import Response as UpstreamResponse
 
 T = TypeVar("T")
 _upstream_log = logging.getLogger("fins.bff.upstream")
+IDEMPOTENCY_KEY_HEADER = "Idempotency-Key"
+
 upstream_access_token: ContextVar[str | None] = ContextVar(
     "upstream_access_token", default=None
 )
 upstream_forward_identity: ContextVar[BffUser | None] = ContextVar(
     "upstream_forward_identity", default=None
 )
+upstream_incoming_idempotency_key: ContextVar[str | None] = ContextVar(
+    "upstream_incoming_idempotency_key", default=None
+)
+
+_upstream_circuit_breaker: AsyncCircuitBreaker | None = None
+_notification_circuit_breaker: AsyncCircuitBreaker | None = None
+
+
+def set_circuit_breakers_for_process(
+    upstream: AsyncCircuitBreaker | None,
+    notification: AsyncCircuitBreaker | None,
+) -> None:
+    global _upstream_circuit_breaker, _notification_circuit_breaker
+    _upstream_circuit_breaker = upstream
+    _notification_circuit_breaker = notification
 
 
 def _upstream_path_matches_identity_markers(path: str, markers_cfg: str) -> bool:
@@ -59,6 +80,16 @@ async def _inject_gateway_user_headers(request: httpx.Request) -> None:
         request.headers[hr] = ",".join(sorted(u.roles))
 
 
+async def _inject_idempotency_key(request: httpx.Request) -> None:
+    key = upstream_incoming_idempotency_key.get()
+    if not key:
+        return
+    stripped = key.strip()
+    if not stripped:
+        return
+    request.headers[IDEMPOTENCY_KEY_HEADER] = stripped
+
+
 class _ContextBearerAuth(httpx.Auth):
     requires_request_body = False
     requires_response_body = False
@@ -88,6 +119,13 @@ class UpstreamHttpFacade:
         await self._http.aclose()
 
 
+def _upstream_client_event_hooks(settings: Settings) -> dict[str, Any]:
+    hooks = upstream_event_hooks(settings) or {}
+    req = list(hooks.get("request", []))
+    req.append(_inject_idempotency_key)
+    return {**hooks, "request": req}
+
+
 def build_upstream_http_clients(
     settings: Settings,
 ) -> tuple[UpstreamHttpFacade, UpstreamHttpFacade]:
@@ -96,19 +134,22 @@ def build_upstream_http_clients(
     base = settings.upstream_base_url.rstrip("/")
     timeout = httpx.Timeout(settings.upstream_timeout_seconds)
     verify = settings.upstream_verify_ssl
-    plain_kw: dict[str, Any] = {"base_url": base, "timeout": timeout, "verify": verify}
-    log_hooks = upstream_event_hooks(settings)
-    if log_hooks:
-        plain_kw["event_hooks"] = log_hooks
+    transport = build_async_http_transport(verify, _upstream_circuit_breaker)
+    plain_kw: dict[str, Any] = {
+        "base_url": base,
+        "timeout": timeout,
+        "transport": transport,
+        "event_hooks": _upstream_client_event_hooks(settings),
+    }
     plain = httpx.AsyncClient(**plain_kw)
+    transport_bearer = build_async_http_transport(verify, _upstream_circuit_breaker)
     bearer_kw: dict[str, Any] = {
         "base_url": base,
         "timeout": timeout,
-        "verify": verify,
+        "transport": transport_bearer,
         "auth": _ContextBearerAuth(),
+        "event_hooks": _upstream_client_event_hooks(settings),
     }
-    if log_hooks:
-        bearer_kw["event_hooks"] = log_hooks
     bearer = httpx.AsyncClient(**bearer_kw)
     return (UpstreamHttpFacade(plain), UpstreamHttpFacade(bearer))
 
@@ -127,8 +168,22 @@ def _client_httpx_args(settings: Settings) -> dict[str, Any]:
     hooks = upstream_event_hooks(settings) or {}
     req = list(hooks.get("request", []))
     req.append(_inject_gateway_user_headers)
+    req.append(_inject_idempotency_key)
     merged = {**hooks, "request": req}
-    return {"event_hooks": merged}
+    verify = settings.upstream_verify_ssl
+    merged["transport"] = build_async_http_transport(verify, _upstream_circuit_breaker)
+    return merged
+
+
+def notification_async_client(
+    settings: Settings,
+    timeout: httpx.Timeout,
+) -> httpx.AsyncClient:
+    transport = build_async_http_transport(
+        settings.upstream_verify_ssl,
+        _notification_circuit_breaker,
+    )
+    return httpx.AsyncClient(timeout=timeout, transport=transport)
 
 
 def anonymous_client(settings: Settings) -> Client:
