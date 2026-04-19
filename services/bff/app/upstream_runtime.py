@@ -21,11 +21,16 @@ from generated.upstream.types import Response as UpstreamResponse
 
 T = TypeVar("T")
 _upstream_log = logging.getLogger("fins.bff.upstream")
+IDEMPOTENCY_KEY_HEADER = "Idempotency-Key"
+
 upstream_access_token: ContextVar[str | None] = ContextVar(
     "upstream_access_token", default=None
 )
 upstream_forward_identity: ContextVar[BffUser | None] = ContextVar(
     "upstream_forward_identity", default=None
+)
+upstream_incoming_idempotency_key: ContextVar[str | None] = ContextVar(
+    "upstream_incoming_idempotency_key", default=None
 )
 
 _upstream_circuit_breaker: AsyncCircuitBreaker | None = None
@@ -75,6 +80,16 @@ async def _inject_gateway_user_headers(request: httpx.Request) -> None:
         request.headers[hr] = ",".join(sorted(u.roles))
 
 
+async def _inject_idempotency_key(request: httpx.Request) -> None:
+    key = upstream_incoming_idempotency_key.get()
+    if not key:
+        return
+    stripped = key.strip()
+    if not stripped:
+        return
+    request.headers[IDEMPOTENCY_KEY_HEADER] = stripped
+
+
 class _ContextBearerAuth(httpx.Auth):
     requires_request_body = False
     requires_response_body = False
@@ -104,6 +119,13 @@ class UpstreamHttpFacade:
         await self._http.aclose()
 
 
+def _upstream_client_event_hooks(settings: Settings) -> dict[str, Any]:
+    hooks = upstream_event_hooks(settings) or {}
+    req = list(hooks.get("request", []))
+    req.append(_inject_idempotency_key)
+    return {**hooks, "request": req}
+
+
 def build_upstream_http_clients(
     settings: Settings,
 ) -> tuple[UpstreamHttpFacade, UpstreamHttpFacade]:
@@ -117,10 +139,8 @@ def build_upstream_http_clients(
         "base_url": base,
         "timeout": timeout,
         "transport": transport,
+        "event_hooks": _upstream_client_event_hooks(settings),
     }
-    log_hooks = upstream_event_hooks(settings)
-    if log_hooks:
-        plain_kw["event_hooks"] = log_hooks
     plain = httpx.AsyncClient(**plain_kw)
     transport_bearer = build_async_http_transport(verify, _upstream_circuit_breaker)
     bearer_kw: dict[str, Any] = {
@@ -128,9 +148,8 @@ def build_upstream_http_clients(
         "timeout": timeout,
         "transport": transport_bearer,
         "auth": _ContextBearerAuth(),
+        "event_hooks": _upstream_client_event_hooks(settings),
     }
-    if log_hooks:
-        bearer_kw["event_hooks"] = log_hooks
     bearer = httpx.AsyncClient(**bearer_kw)
     return (UpstreamHttpFacade(plain), UpstreamHttpFacade(bearer))
 
@@ -149,6 +168,7 @@ def _client_httpx_args(settings: Settings) -> dict[str, Any]:
     hooks = upstream_event_hooks(settings) or {}
     req = list(hooks.get("request", []))
     req.append(_inject_gateway_user_headers)
+    req.append(_inject_idempotency_key)
     merged = {**hooks, "request": req}
     verify = settings.upstream_verify_ssl
     merged["transport"] = build_async_http_transport(verify, _upstream_circuit_breaker)

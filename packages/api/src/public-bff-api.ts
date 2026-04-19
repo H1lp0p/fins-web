@@ -22,7 +22,7 @@ import {
 } from "./entities/credit";
 import { mapUserFromDto } from "./entities/user";
 
-export const publicBffApi = rawPublicBffApi.enhanceEndpoints({
+export const generatedPublicApi = rawPublicBffApi.enhanceEndpoints({
   endpoints: {
     getAllUsers: {
       transformResponse: (rows: UserDto[]) => rows.map(mapUserFromDto),
@@ -93,8 +93,6 @@ export const publicBffApi = rawPublicBffApi.enhanceEndpoints({
   },
 });
 
-export { publicBffApi as generatedPublicApi };
-
 export const {
   useEditUserMutation,
   useEditUser1Mutation,
@@ -130,4 +128,4 @@ export const {
   useDeleteCreditMutation,
   useGetPreferencesQuery,
   useUpdatePreferencesMutation,
-} = publicBffApi;
+} = generatedPublicApi;

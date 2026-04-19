@@ -1,5 +1,6 @@
 
 export {
+  BFF_IDEMPOTENCY_KEY_HEADER,
   createBffFetchBaseQuery,
   type BffClientOptions,
 } from "./lib/bff-fetch-base-query";
@@ -12,7 +13,6 @@ export type * from "./generated/public/generatedPublicApi";
 export { addTagTypes } from "./generated/public/generatedPublicApi";
 export {
   generatedPublicApi,
-  publicBffApi,
   useCloseAccountMutation,
   useCreateCreditMutation,
   useCreateCreditRuleMutation,

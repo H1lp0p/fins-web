@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from app.api_delay_middleware import ApiDelayMiddleware
+from app.idempotency_key_middleware import IdempotencyKeyMiddleware
 from app.request_logging_middleware import RequestLoggingMiddleware
 from app.circuit_breaker import AsyncCircuitBreaker, CircuitBreakerOpenError
 from app.simulate_random_error_middleware import SimulateRandomErrorMiddleware
@@ -89,6 +90,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(IdempotencyKeyMiddleware)
 app.add_middleware(ApiDelayMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(SimulateRandomErrorMiddleware)
