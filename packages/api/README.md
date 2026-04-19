@@ -31,7 +31,7 @@ pnpm run generate:api
 
 | Import | Назначение |
 |--------|------------|
-| `@fins/api` | Публичный API, `publicBffApi`, хуки, сущности, формы |
+| `@fins/api` | Публичный API, `generatedPublicApi`, хуки, сущности, формы |
 | `@fins/api/sso` | Только SSO-эндпоинты + валидация форм логина/регистрации |
 | `@fins/api/ws` | Типы и парсер сообщений WS транзакций + `useTransactionsWebSocket` |
 
