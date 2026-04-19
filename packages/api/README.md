@@ -1,10 +1,12 @@
 # @fins/api
 
-Redux Toolkit Query-клиент к BFF + утилиты (ошибки BFF, уведомления SSE, хелперы для экранов ошибок).
+Redux Toolkit Query-клиент к BFF + утилиты (ошибки BFF, FCM-регистрация push, хелперы для экранов ошибок).
 
 ## Зависимости
 
 Из корня монорепо: `pnpm install`. Пакет собирается в `dist/` и подключается приложениями как workspace.
+
+Peer: **`firebase`** (модульные `firebase/app`, `firebase/messaging`) — ставится в приложении (`apps/user`, `apps/admin`).
 
 ## Сборка
 

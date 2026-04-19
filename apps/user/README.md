@@ -23,6 +23,7 @@ pnpm --filter @fins/user build
 ## Окружение
 
 - Переменные Vite: префикс `VITE_`. Типично `VITE_BFF_URL` — если не задан, запросы идут на относительный `/api` (прокси dev-сервера на BFF).
+- **Push (FCM):** скопируйте [`.env.example`](.env.example) в `.env` и заполните `VITE_FIREBASE_*` и `VITE_FIREBASE_VAPID_KEY`. Тот же объект `firebaseConfig` вставьте в [`public/firebase-messaging-sw.js`](public/firebase-messaging-sw.js) (фоновые уведомления). После входа приложение регистрирует токен на BFF (`POST /api/notifications/fcm/token`). Нативные уведомления нужен **HTTPS** (или localhost).
 
 ## Зависимости от пакетов
 

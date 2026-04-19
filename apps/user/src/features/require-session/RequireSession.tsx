@@ -9,6 +9,7 @@ import { useEffect, useRef } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { accountSessionErrorMessage } from "../../lib/userStackMessages";
 import { getSsoOrigin } from "../../shared/lib/sso-origin";
+import { WebPushRegistration } from "../../app/WebPushRegistration";
 
 export function RequireSession() {
   const navigate = useNavigate();
@@ -89,5 +90,10 @@ export function RequireSession() {
     );
   }
 
-  return <Outlet />;
+  return (
+    <>
+      <WebPushRegistration />
+      <Outlet />
+    </>
+  );
 }
