@@ -128,4 +128,5 @@ export const {
   useDeleteCreditMutation,
   useGetPreferencesQuery,
   useUpdatePreferencesMutation,
+  useGetCurrencyListQuery,
 } = generatedPublicApi;

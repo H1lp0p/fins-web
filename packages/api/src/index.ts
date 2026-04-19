@@ -47,6 +47,7 @@ export {
   useCheckAccountExistsQuery,
   useGetPreferencesQuery,
   useUpdatePreferencesMutation,
+  useGetCurrencyListQuery,
 } from "./public-bff-api";
 export type { CurrencyCode, Money } from "./entities/money";
 export { mapMoneyFromDto } from "./entities/money";

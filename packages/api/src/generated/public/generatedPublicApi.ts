@@ -10,6 +10,7 @@ export const addTagTypes = [
   "credit-controller",
   "credit-rating-controller",
   "preferences-controller",
+  "currency-controller",
 ] as const;
 const injectedRtkApi = api
   .enhanceEndpoints({
@@ -323,6 +324,13 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["preferences-controller"],
       }),
+      getCurrencyList: build.query<
+        GetCurrencyListApiResponse,
+        GetCurrencyListApiArg
+      >({
+        query: () => ({ url: `/core-api/currency/all` }),
+        providesTags: ["currency-controller"],
+      }),
     }),
     overrideExisting: false,
   });
@@ -468,6 +476,8 @@ export type UpdatePreferencesApiResponse =
 export type UpdatePreferencesApiArg = {
   userPreferencesDto: UserPreferencesDto;
 };
+export type GetCurrencyListApiResponse = /** status 200 OK */ CurrencyClientDto;
+export type GetCurrencyListApiArg = void;
 export type BffErrorBody = {
   message?: string;
   code?: string;
@@ -639,6 +649,24 @@ export type UserPreferencesDto = {
   theme?: "light" | "dark";
   hiddenAccounts?: string[];
 };
+export type CurrencyDto = {
+  ID?: string;
+  NumCode?: string;
+  CharCode?: string;
+  Nominal?: number;
+  Name?: string;
+  Value?: number;
+  Previous?: number;
+};
+export type CurrencyClientDto = {
+  Date?: string;
+  PreviousDate?: string;
+  PreviousURL?: string;
+  Timestamp?: string;
+  Valute?: {
+    [key: string]: CurrencyDto;
+  };
+};
 export const {
   useEditUserMutation,
   useEditUser1Mutation,
@@ -674,4 +702,5 @@ export const {
   useDeleteCreditMutation,
   useGetPreferencesQuery,
   useUpdatePreferencesMutation,
+  useGetCurrencyListQuery,
 } = injectedRtkApi;

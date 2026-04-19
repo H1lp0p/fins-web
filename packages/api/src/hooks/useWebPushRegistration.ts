@@ -14,6 +14,13 @@ import {
   unregisterFcmToken,
 } from "../lib/notification-bff-http";
 
+function isViteDev(): boolean {
+  return Boolean(
+    typeof import.meta !== "undefined" &&
+      (import.meta as { env?: { DEV?: boolean } }).env?.DEV,
+  );
+}
+
 export type UseWebPushRegistrationOptions = {
   /** After session is established */
   enabled: boolean;
@@ -31,6 +38,37 @@ function configReady(o: FirebaseOptions, vapidKey: string): boolean {
       o.appId &&
       vapidKey.trim(),
   );
+}
+
+function warnMissingPushConfig(o: FirebaseOptions, vapidKey: string): void {
+  if (!isViteDev()) {
+    return;
+  }
+  const missing: string[] = [];
+  if (!o.apiKey) {
+    missing.push("VITE_FIREBASE_API_KEY");
+  }
+  if (!o.authDomain) {
+    missing.push("VITE_FIREBASE_AUTH_DOMAIN");
+  }
+  if (!o.projectId) {
+    missing.push("VITE_FIREBASE_PROJECT_ID");
+  }
+  if (!o.messagingSenderId) {
+    missing.push("VITE_FIREBASE_MESSAGING_SENDER_ID");
+  }
+  if (!o.appId) {
+    missing.push("VITE_FIREBASE_APP_ID");
+  }
+  if (!vapidKey.trim()) {
+    missing.push("VITE_FIREBASE_VAPID_KEY");
+  }
+  if (missing.length > 0) {
+    console.warn(
+      "[fins/push] Пропуск регистрации FCM: не заданы переменные окружения:",
+      missing.join(", "),
+    );
+  }
 }
 
 /**
@@ -60,6 +98,7 @@ export function useWebPushRegistration(
     }
     const { firebaseOptions: fo, vapidKey: vk } = optsRef.current;
     if (!configReady(fo, vk)) {
+      warnMissingPushConfig(fo, vk);
       return;
     }
 
@@ -68,9 +107,17 @@ export function useWebPushRegistration(
     void (async () => {
       try {
         if (!(await isSupported())) {
+          if (isViteDev()) {
+            console.warn(
+              "[fins/push] Firebase Messaging в этом браузере не поддерживается (isSupported=false).",
+            );
+          }
           return;
         }
       } catch {
+        if (isViteDev()) {
+          console.warn("[fins/push] isSupported() завершился с ошибкой.");
+        }
         return;
       }
       if (cancelled) {
@@ -80,7 +127,10 @@ export function useWebPushRegistration(
       let app;
       try {
         app = getApps().length > 0 ? getApp() : initializeApp(fo);
-      } catch {
+      } catch (e) {
+        if (isViteDev()) {
+          console.warn("[fins/push] Firebase initializeApp:", e);
+        }
         return;
       }
 
@@ -90,7 +140,13 @@ export function useWebPushRegistration(
           "/firebase-messaging-sw.js",
         );
         await navigator.serviceWorker.ready;
-      } catch {
+      } catch (e) {
+        if (isViteDev()) {
+          console.warn(
+            "[fins/push] Не удалось зарегистрировать firebase-messaging-sw.js:",
+            e,
+          );
+        }
         return;
       }
       if (cancelled) {
@@ -100,8 +156,19 @@ export function useWebPushRegistration(
       const messaging = getMessaging(app);
       let token: string;
       try {
+        const before = Notification.permission;
         const perm = await Notification.requestPermission();
+        if (isViteDev() && before === "denied" && perm === "denied") {
+          console.warn(
+            "[fins/push] Уведомления для сайта уже запрещены. Включите в настройках браузера (значок замка → Уведомления) и обновите страницу.",
+          );
+        }
         if (perm !== "granted") {
+          if (isViteDev() && perm === "default") {
+            console.warn(
+              "[fins/push] Разрешение не выдано (осталось «спросить»). Закройте блокировку всплывающих окон или попробуйте клик по странице и перезагрузку.",
+            );
+          }
           return;
         }
         token = await getToken(messaging, {

@@ -364,6 +364,38 @@ async def get_user_card_accounts(
     return store.list_accounts_page(userId, pageIndex, pageSize)
 
 
+@router.get("/core-api/currency/all")
+async def get_currency_list(
+    user: Annotated[MockUser | None, Depends(get_current_user_optional)],
+):
+    if user is None:
+        return _unauth()
+    return {
+        "Date": "2024-01-15T00:00:00",
+        "Timestamp": "2024-01-15T12:00:00",
+        "Valute": {
+            "R01235": {
+                "ID": "R01235",
+                "NumCode": "840",
+                "CharCode": "USD",
+                "Nominal": 1,
+                "Name": "US Dollar",
+                "Value": 92.5,
+                "Previous": 92.0,
+            },
+            "R01239": {
+                "ID": "R01239",
+                "NumCode": "978",
+                "CharCode": "EUR",
+                "Nominal": 1,
+                "Name": "Euro",
+                "Value": 100.0,
+                "Previous": 99.5,
+            },
+        },
+    }
+
+
 @router.put("/credit-service/credit_rule/{creditRuleId}/edit")
 async def edit_credit_rule(creditRuleId: UUID, body: CreditRuleDTO):
     r = store.edit_credit_rule(creditRuleId, body)

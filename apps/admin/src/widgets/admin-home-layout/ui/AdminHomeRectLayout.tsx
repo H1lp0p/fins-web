@@ -1,6 +1,4 @@
 import {
-  BankTreasuryBalancesWidget,
-  BankTreasuryTransactionsPanel,
   ExchangeRateWidget,
 } from "@fins/entities";
 import { RectSpaceLayout } from "@fins/ui-kit";
@@ -16,9 +14,7 @@ export function AdminHomeRectLayout() {
       }}
     >
       <RectSpaceLayout
-        topLeftContent={<BankTreasuryBalancesWidget />}
         topRightContent={<ExchangeRateWidget />}
-        bottomLeftContent={<BankTreasuryTransactionsPanel />}
       />
     </div>
   );

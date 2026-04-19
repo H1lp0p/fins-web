@@ -128,25 +128,6 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/CardAccount'
-  /core-api/cardaccount/{accountId}/set-main:
-    post:
-      tags:
-      - card-account-controller
-      operationId: setMainAccount
-      parameters:
-      - name: accountId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/CardAccount'
   /core-api/currency/all:
     get:
       tags:
@@ -570,45 +551,6 @@ paths:
       responses:
         '200':
           description: OK
-  /user-service/admin/bank-treasury/balances:
-    get:
-      tags:
-      - Admin
-      operationId: getBankTreasuryBalances
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/BankTreasuryBalancesDto'
-  /user-service/admin/bank-treasury/transactions:
-    get:
-      tags:
-      - Admin
-      operationId: getBankTreasuryTransactions
-      parameters:
-      - name: pageIndex
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int32
-          default: 0
-      - name: pageSize
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int32
-          default: 30
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/PageTransactionOperation'
   /user-service/auth/login:
     post:
       tags:
@@ -911,39 +853,6 @@ components:
             - WORKER
         active:
           type: boolean
-    MoneyValueDto:
-      type: object
-      properties:
-        value:
-          type: number
-        currency:
-          type: string
-          enum:
-          - DOLLAR
-          - EURO
-          - RUBLE
-    BankTreasuryBalanceItem:
-      required:
-      - cardAccountId
-      - balance
-      type: object
-      properties:
-        cardAccountId:
-          type: string
-          format: uuid
-        balance:
-          $ref: '#/components/schemas/MoneyValueDto'
-    BankTreasuryBalancesDto:
-      required:
-      - accounts
-      type: object
-      properties:
-        accounts:
-          type: array
-          minItems: 3
-          maxItems: 3
-          items:
-            $ref: '#/components/schemas/BankTreasuryBalanceItem'
     TransferRequest:
       type: object
       properties:
@@ -1011,15 +920,6 @@ components:
         totalElements:
           type: integer
           format: int64
-        first:
-          type: boolean
-        last:
-          type: boolean
-        numberOfElements:
-          type: integer
-          format: int32
-        pageable:
-          $ref: '#/components/schemas/PageableObject'
         size:
           type: integer
           format: int32
@@ -1032,34 +932,43 @@ components:
           format: int32
         sort:
           $ref: '#/components/schemas/SortObject'
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
         empty:
           type: boolean
     PageableObject:
       type: object
       properties:
-        unpaged:
-          type: boolean
-        pageNumber:
-          type: integer
-          format: int32
-        paged:
-          type: boolean
-        pageSize:
-          type: integer
-          format: int32
         offset:
           type: integer
           format: int64
         sort:
           $ref: '#/components/schemas/SortObject'
+        paged:
+          type: boolean
+        pageSize:
+          type: integer
+          format: int32
+        pageNumber:
+          type: integer
+          format: int32
+        unpaged:
+          type: boolean
     SortObject:
       type: object
       properties:
-        unsorted:
+        empty:
           type: boolean
         sorted:
           type: boolean
-        empty:
+        unsorted:
           type: boolean
     TransactionOperation:
       type: object
@@ -1134,15 +1043,6 @@ components:
         totalElements:
           type: integer
           format: int64
-        first:
-          type: boolean
-        last:
-          type: boolean
-        numberOfElements:
-          type: integer
-          format: int32
-        pageable:
-          $ref: '#/components/schemas/PageableObject'
         size:
           type: integer
           format: int32
@@ -1155,6 +1055,15 @@ components:
           format: int32
         sort:
           $ref: '#/components/schemas/SortObject'
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
         empty:
           type: boolean
     WithdrawDto:
@@ -1300,6 +1209,10 @@ components:
       name: JWT
       scheme: bearer
       bearerFormat: JWT
+    idempotency-key-header:
+      type: apiKey
+      name: Idempotency-Key
+      in: header
     user-id-header:
       type: apiKey
       name: X-USER-ID

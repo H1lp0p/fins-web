@@ -1,0 +1,610 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Credit service API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8002/api/credit-service",
+      "description": "Generated server url"
+    }
+  ],
+  "security": [
+    {
+      "JWT": []
+    },
+    {
+      "user-id-header": []
+    },
+    {
+      "user-role-header": []
+    },
+    {
+      "idempotency-key-header": []
+    }
+  ],
+  "paths": {
+    "/credit_rule/{creditRuleId}/edit": {
+      "put": {
+        "tags": [
+          "credit-rule-controller"
+        ],
+        "operationId": "editCreditRule",
+        "parameters": [
+          {
+            "name": "creditRuleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreditRuleDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditRuleAnswerDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/credit_rule/create": {
+      "post": {
+        "tags": [
+          "credit-rule-controller"
+        ],
+        "operationId": "createCreditRule",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreditRuleDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditRuleAnswerDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/credit/{cardAccountId}/enrollment": {
+      "post": {
+        "tags": [
+          "credit-controller"
+        ],
+        "operationId": "makeEnrollment",
+        "parameters": [
+          {
+            "name": "cardAccountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "money",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditAnswerDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/credit/create": {
+      "post": {
+        "tags": [
+          "credit-controller"
+        ],
+        "operationId": "createCredit",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreditCreateModelDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditAnswerDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment_history_record/{userId}/find_by_user_id": {
+      "get": {
+        "tags": [
+          "payment-history-record-controller"
+        ],
+        "operationId": "findByUserId",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentHistoryRecordDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment_history_record/{cardAccountId}/find_by_card_account_id": {
+      "get": {
+        "tags": [
+          "payment-history-record-controller"
+        ],
+        "operationId": "findByCardAccountId",
+        "parameters": [
+          {
+            "name": "cardAccountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentHistoryRecordDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/credit_rule/{creditRuleId}/get_by_id": {
+      "get": {
+        "tags": [
+          "credit-rule-controller"
+        ],
+        "operationId": "getCreditRuleById",
+        "parameters": [
+          {
+            "name": "creditRuleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditRuleAnswerDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/credit_rule/get_all": {
+      "get": {
+        "tags": [
+          "credit-rule-controller"
+        ],
+        "operationId": "getAllCreditRules",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CreditRuleAnswerDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/credit_rating/{userId}/get_by_user": {
+      "get": {
+        "tags": [
+          "credit-rating-controller"
+        ],
+        "operationId": "getByUserId",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditRatingDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/credit/{userId}/get_by_user_id": {
+      "get": {
+        "tags": [
+          "credit-controller"
+        ],
+        "operationId": "getByUserId_1",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CreditAnswerDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/credit/{cardAccountId}/get_by_card_account": {
+      "get": {
+        "tags": [
+          "credit-controller"
+        ],
+        "operationId": "getByCardAccountId",
+        "parameters": [
+          {
+            "name": "cardAccountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditAnswerDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/credit_rule/{creditRuleId}/delete": {
+      "delete": {
+        "tags": [
+          "credit-rule-controller"
+        ],
+        "operationId": "deleteCreditRule",
+        "parameters": [
+          {
+            "name": "creditRuleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/credit/{creditId}/delete": {
+      "delete": {
+        "tags": [
+          "credit-controller"
+        ],
+        "operationId": "deleteCredit",
+        "parameters": [
+          {
+            "name": "creditId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreditRuleDTO": {
+        "type": "object",
+        "properties": {
+          "collectionPeriodSeconds": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "openingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ruleName": {
+            "type": "string"
+          },
+          "percentage": {
+            "type": "number"
+          }
+        }
+      },
+      "CreditRuleAnswerDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "collectionPeriodSeconds": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "openingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ruleName": {
+            "type": "string"
+          },
+          "percentage": {
+            "type": "number"
+          }
+        }
+      },
+      "CreditAnswerDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lastInterestUpdate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cardAccount": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "currentDebtSum": {
+            "type": "number"
+          },
+          "initialDebt": {
+            "type": "number"
+          },
+          "interestDebtSum": {
+            "type": "number"
+          },
+          "creditRule": {
+            "$ref": "#/components/schemas/CreditRuleAnswerDTO"
+          }
+        }
+      },
+      "CreditCreateModelDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cardAccount": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "totalDebt": {
+            "type": "number"
+          },
+          "creditRuleId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "PaymentHistoryRecordDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sum": {
+            "type": "number"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cardAccount": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "transactionStatus": {
+            "type": "string",
+            "enum": [
+              "COMPLETE",
+              "IN_PROGRESS",
+              "DECLINED"
+            ]
+          }
+        }
+      },
+      "CreditRatingDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rating": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "JWT": {
+        "type": "http",
+        "name": "JWT",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "user-id-header": {
+        "type": "apiKey",
+        "name": "X-USER-ID",
+        "in": "header"
+      },
+      "user-role-header": {
+        "type": "apiKey",
+        "name": "X-USER-ROLES",
+        "in": "header"
+      },
+      "idempotency-key-header": {
+        "type": "apiKey",
+        "name": "Idempotency-Key",
+        "in": "header"
+      }
+    }
+  }
+}
