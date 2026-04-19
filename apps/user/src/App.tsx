@@ -7,6 +7,8 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+
+type ServerErrorLocationState = { message?: string };
 import { NavigationBridge } from "./app/NavigationBridge";
 import { HeaderSessionTray } from "./features/header-session/HeaderSessionTray";
 import { RequireSession } from "./features/require-session/RequireSession";
@@ -79,9 +81,12 @@ function UserForbiddenPage() {
 
 function UserServerErrorPage() {
   const navigate = useNavigate();
+  const { state } = useLocation();
+  const message = (state as ServerErrorLocationState | null)?.message;
   return (
     <HttpStatusScreen
       code="500"
+      message={message}
       actionText="goto /index"
       onAction={() => navigate("/", { replace: true })}
     />

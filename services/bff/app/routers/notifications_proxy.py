@@ -17,6 +17,7 @@ from app.errors import bff_error_response
 from app.mock_store import MockUser
 from app.notification_sse_mock import iter_mock_notification_sse
 from app.session_store import SessionRecord, session_store
+from app.upstream_runtime import notification_async_client
 
 _log = logging.getLogger("fins.bff.notifications")
 
@@ -121,10 +122,7 @@ async def subscribe_notifications(
     )
 
     async def byte_stream() -> AsyncIterator[bytes]:
-        async with httpx.AsyncClient(
-            timeout=sse_timeout,
-            verify=settings.upstream_verify_ssl,
-        ) as client:
+        async with notification_async_client(settings, sse_timeout) as client:
             async with client.stream("GET", url, headers=headers) as resp:
                 if resp.status_code >= 400:
                     body = await resp.aread()
@@ -160,10 +158,7 @@ async def get_unread_notifications(
     url = f"{_notif_base(settings)}/notifications/unread"
     headers = _notification_headers(settings, rec)
     timeout = httpx.Timeout(settings.upstream_timeout_seconds)
-    async with httpx.AsyncClient(
-        timeout=timeout,
-        verify=settings.upstream_verify_ssl,
-    ) as client:
+    async with notification_async_client(settings, timeout) as client:
         r = await client.get(url, headers=headers)
     ct = r.headers.get("content-type", "application/json")
     return Response(content=r.content, status_code=r.status_code, media_type=ct)
@@ -184,10 +179,7 @@ async def get_all_notifications(
     url = f"{_notif_base(settings)}/notifications/all"
     headers = _notification_headers(settings, rec)
     timeout = httpx.Timeout(settings.upstream_timeout_seconds)
-    async with httpx.AsyncClient(
-        timeout=timeout,
-        verify=settings.upstream_verify_ssl,
-    ) as client:
+    async with notification_async_client(settings, timeout) as client:
         r = await client.get(url, headers=headers)
     ct = r.headers.get("content-type", "application/json")
     return Response(content=r.content, status_code=r.status_code, media_type=ct)
@@ -209,10 +201,7 @@ async def mark_notification_read(
     url = f"{_notif_base(settings)}/notifications/{notification_id}/read"
     headers = _notification_headers(settings, rec)
     timeout = httpx.Timeout(settings.upstream_timeout_seconds)
-    async with httpx.AsyncClient(
-        timeout=timeout,
-        verify=settings.upstream_verify_ssl,
-    ) as client:
+    async with notification_async_client(settings, timeout) as client:
         r = await client.put(url, headers=headers)
     ct = r.headers.get("content-type")
     if ct:
