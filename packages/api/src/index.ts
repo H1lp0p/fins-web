@@ -3,6 +3,10 @@ export {
   createBffFetchBaseQuery,
   type BffClientOptions,
 } from "./lib/bff-fetch-base-query";
+export type {
+  BffCircuitBreakerConfig,
+} from "./lib/bff-circuit-breaker";
+export { BffCircuitBreaker } from "./lib/bff-circuit-breaker";
 export { initPublicBffApi } from "./generated/public/emptyPublicApi";
 export type * from "./generated/public/generatedPublicApi";
 export { addTagTypes } from "./generated/public/generatedPublicApi";

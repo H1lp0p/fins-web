@@ -37,6 +37,14 @@ class Settings(BaseSettings):
     notification_sse_mock_interval_seconds: int = Field(default=60, ge=1)
     simulate_random_errors: bool = False
 
+    upstream_circuit_breaker_enabled: bool = True
+    upstream_circuit_failure_threshold: int = Field(default=5, ge=1)
+    upstream_circuit_open_seconds: float = Field(default=30.0, ge=0.5)
+
+    notification_circuit_breaker_enabled: bool = True
+    notification_circuit_failure_threshold: int = Field(default=5, ge=1)
+    notification_circuit_open_seconds: float = Field(default=30.0, ge=0.5)
+
     @property
     def use_upstream(self) -> bool:
         return bool(self.upstream_base_url and self.upstream_base_url.strip())

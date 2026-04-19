@@ -1,17 +1,21 @@
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from app.api_delay_middleware import ApiDelayMiddleware
 from app.request_logging_middleware import RequestLoggingMiddleware
+from app.circuit_breaker import AsyncCircuitBreaker, CircuitBreakerOpenError
 from app.simulate_random_error_middleware import SimulateRandomErrorMiddleware
 from app.config import get_settings
+from app.errors import bff_error_response
 from app.routers import notifications_proxy, public, sso, ws_transactions
 from app.upstream_runtime import (
     aclose_upstream_gateway_clients,
     build_upstream_http_clients,
+    set_circuit_breakers_for_process,
 )
 
 BFF_ROOT = Path(__file__).resolve().parents[1]
@@ -46,16 +50,37 @@ logging.getLogger("fins.bff").info(
 async def lifespan(app: FastAPI):
     settings = get_settings()
     if settings.use_upstream:
+        upstream_breaker = AsyncCircuitBreaker.for_upstream(settings)
+        notification_breaker: AsyncCircuitBreaker | None = None
+        if settings.use_notification_proxy:
+            notification_breaker = AsyncCircuitBreaker.for_notifications(settings)
+        set_circuit_breakers_for_process(upstream_breaker, notification_breaker)
         plain, bearer = build_upstream_http_clients(settings)
         app.state.upstream_plain_http = plain
         app.state.upstream_bearer_http = bearer
         app.state.upstream_anonymous_client = plain
+        app.state.upstream_circuit_breaker = upstream_breaker
+        if notification_breaker is not None:
+            app.state.notification_circuit_breaker = notification_breaker
     yield
     if settings.use_upstream:
         await aclose_upstream_gateway_clients(app.state)
 
 
 app = FastAPI(title="Fins BFF", version="0.0.0", lifespan=lifespan)
+
+
+@app.exception_handler(CircuitBreakerOpenError)
+async def _circuit_breaker_open_handler(
+    _request: Request, exc: CircuitBreakerOpenError
+) -> JSONResponse:
+    return bff_error_response(
+        503,
+        message=str(exc),
+        code=exc.code,
+    )
+
+
 _settings = get_settings()
 app.add_middleware(
     CORSMiddleware,
