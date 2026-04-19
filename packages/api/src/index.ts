@@ -95,17 +95,19 @@ export {
 } from "./entities/bff-error";
 export type { Notification } from "./entities/notification";
 export { isNotificationPayload } from "./entities/notification";
+export type { FcmTokenRequest } from "./lib/notification-bff-http";
 export {
   defaultNotificationsBffBaseUrl,
   fetchAllNotifications,
   fetchUnreadNotifications,
   markNotificationRead,
+  registerFcmToken,
+  unregisterFcmToken,
 } from "./lib/notification-bff-http";
-export { readNotificationSseStream } from "./lib/notification-sse-parse";
 export {
-  useNotificationsSse,
-  type UseNotificationsSseOptions,
-} from "./hooks/useNotificationsSse";
+  useWebPushRegistration,
+  type UseWebPushRegistrationOptions,
+} from "./hooks/useWebPushRegistration";
 export {
   getRejectedRequestMessage,
   shouldNavigateToForbidden,

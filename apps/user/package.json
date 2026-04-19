@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "firebase": "^11.6.0",
     "@fins/api": "workspace:^",
     "@fins/entities": "workspace:*",
     "@fins/ui-kit": "workspace:*",

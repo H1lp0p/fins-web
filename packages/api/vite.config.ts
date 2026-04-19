@@ -14,6 +14,8 @@ const external = [
   "@reduxjs/toolkit/query",
   "@reduxjs/toolkit/query/react",
   "react-redux",
+  "firebase/app",
+  "firebase/messaging",
 ];
 
 export default defineConfig({

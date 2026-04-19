@@ -24,6 +24,8 @@ pnpm --filter @fins/admin build
 
 `VITE_*` переменные; без `VITE_BFF_URL` используется относительный `/api` и прокси на BFF в dev.
 
+**Push (FCM):** см. [`.env.example`](.env.example) — те же `VITE_FIREBASE_*`, плюс синхронизация [`public/firebase-messaging-sw.js`](public/firebase-messaging-sw.js) с этим конфигом. Регистрация токена после входа через BFF.
+
 ## Зависимости
 
 Требуют собранные `@fins/ui-kit`, `@fins/api`, `@fins/entities` (корневой `pnpm build`).

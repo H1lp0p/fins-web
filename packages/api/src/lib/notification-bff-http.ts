@@ -81,6 +81,70 @@ export async function fetchAllNotifications(
   return (await r.json()) as Notification[];
 }
 
+export type FcmTokenRequest = {
+  token: string;
+  platform?: string;
+};
+
+export async function registerFcmToken(
+  body: FcmTokenRequest,
+  baseUrl: string = defaultNotificationsBffBaseUrl(),
+  init?: RequestInit,
+): Promise<void> {
+  const breaker = getSharedBffCircuitBreaker();
+  if (breaker?.shouldBlock()) {
+    throw new Error("BFF_CIRCUIT_OPEN");
+  }
+  let r: Response;
+  try {
+    r = await fetch(joinUrl(baseUrl, "/fcm/token"), {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: init?.signal,
+    });
+  } catch (err) {
+    breaker?.recordFromFetchBaseResult({
+      error: { status: "FETCH_ERROR", error: String(err) },
+    });
+    throw err;
+  }
+  recordNotificationResponse(breaker, r);
+  if (!r.ok) {
+    throw new Error(`notifications FCM register HTTP ${r.status}`);
+  }
+}
+
+export async function unregisterFcmToken(
+  fcmToken: string,
+  baseUrl: string = defaultNotificationsBffBaseUrl(),
+  init?: RequestInit,
+): Promise<void> {
+  const breaker = getSharedBffCircuitBreaker();
+  if (breaker?.shouldBlock()) {
+    throw new Error("BFF_CIRCUIT_OPEN");
+  }
+  const q = new URLSearchParams({ arg0: fcmToken });
+  let r: Response;
+  try {
+    r = await fetch(`${joinUrl(baseUrl, "/fcm/token")}?${q.toString()}`, {
+      method: "DELETE",
+      credentials: "include",
+      signal: init?.signal,
+    });
+  } catch (err) {
+    breaker?.recordFromFetchBaseResult({
+      error: { status: "FETCH_ERROR", error: String(err) },
+    });
+    throw err;
+  }
+  recordNotificationResponse(breaker, r);
+  if (!r.ok) {
+    throw new Error(`notifications FCM unregister HTTP ${r.status}`);
+  }
+}
+
 export async function markNotificationRead(
   notificationId: string,
   baseUrl: string = defaultNotificationsBffBaseUrl(),

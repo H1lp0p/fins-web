@@ -1,0 +1,126 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "notification API",
+        "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8007/api/notification-service",
+            "description": "Generated server url"
+        }
+    ],
+    "security": [
+        {
+            "JWT": []
+        },
+        {
+            "user-id-header": []
+        },
+        {
+            "user-role-header": []
+        }
+    ],
+    "paths": {
+        "/api/notifications/fcm/token": {
+            "post": {
+                "tags": [
+                    "fcm-controller"
+                ],
+                "operationId": "registerToken",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FcmTokenRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "fcm-controller"
+                ],
+                "operationId": "unregisterToken",
+                "parameters": [
+                    {
+                        "name": "arg0",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "FcmTokenRequest": {
+                "required": [
+                    "token"
+                ],
+                "type": "object",
+                "properties": {
+                    "token": {
+                        "type": "string"
+                    },
+                    "platform": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "JWT": {
+                "type": "http",
+                "name": "JWT",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            },
+            "user-id-header": {
+                "type": "apiKey",
+                "name": "X-USER-ID",
+                "in": "header"
+            },
+            "user-role-header": {
+                "type": "apiKey",
+                "name": "X-USER-ROLES",
+                "in": "header"
+            }
+        }
+    }
+}

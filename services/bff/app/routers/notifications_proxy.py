@@ -7,7 +7,7 @@ from typing import Annotated, Literal
 from uuid import UUID
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.bff_user import BffUser
@@ -141,6 +141,56 @@ async def subscribe_notifications(
                     yield chunk
 
     return StreamingResponse(byte_stream(), media_type="text/event-stream")
+
+
+@router.post("/fcm/token", response_model=None)
+async def register_fcm_token(
+    settings: Annotated[Settings, Depends(get_settings)],
+    cookie: Annotated[str | None, Depends(get_session_token)],
+    user: Annotated[SessionUser | None, Depends(get_current_user_optional)],
+    body: Annotated[dict[str, object], Body(...)],
+) -> Response | JSONResponse:
+    layer, rec, err = _notification_context(settings, user, cookie)
+    if err is not None:
+        return err
+    if layer == "mock":
+        return JSONResponse(content={})
+    assert layer == "upstream" and rec is not None
+    url = f"{_notif_base(settings)}/api/notifications/fcm/token"
+    headers = _notification_headers(settings, rec)
+    timeout = httpx.Timeout(settings.upstream_timeout_seconds)
+    async with notification_async_client(settings, timeout) as client:
+        r = await client.post(url, headers=headers, json=body)
+    ct = r.headers.get("content-type", "application/json")
+    return Response(content=r.content, status_code=r.status_code, media_type=ct)
+
+
+@router.delete("/fcm/token", response_model=None)
+async def unregister_fcm_token(
+    settings: Annotated[Settings, Depends(get_settings)],
+    cookie: Annotated[str | None, Depends(get_session_token)],
+    user: Annotated[SessionUser | None, Depends(get_current_user_optional)],
+    arg0: Annotated[str, Query(description="FCM registration token")],
+) -> Response | JSONResponse:
+    layer, rec, err = _notification_context(settings, user, cookie)
+    if err is not None:
+        return err
+    if layer == "mock":
+        return JSONResponse(content={})
+    assert layer == "upstream" and rec is not None
+    url = f"{_notif_base(settings)}/api/notifications/fcm/token"
+    headers = _notification_headers(settings, rec)
+    timeout = httpx.Timeout(settings.upstream_timeout_seconds)
+    async with notification_async_client(settings, timeout) as client:
+        r = await client.delete(
+            url,
+            headers=headers,
+            params={"arg0": arg0},
+        )
+    ct = r.headers.get("content-type", "application/json")
+    if ct:
+        return Response(content=r.content, status_code=r.status_code, media_type=ct)
+    return Response(content=r.content, status_code=r.status_code)
 
 
 @router.get("/unread", response_model=None)
