@@ -1011,6 +1011,29 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /core-api/currency/all:
+    get:
+      tags:
+      - currency-controller
+      operationId: getCurrencyList
+      summary: Курсы валют (источник на стороне core-api)
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CurrencyClientDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /user-service/auth/revoke:
     post:
       tags:
@@ -1118,6 +1141,42 @@ components:
       - EURO
       - RUBLE
       default: RUBLE
+    CurrencyDto:
+      type: object
+      properties:
+        ID:
+          type: string
+        NumCode:
+          type: string
+        CharCode:
+          type: string
+        Nominal:
+          type: integer
+          format: int32
+        Name:
+          type: string
+        Value:
+          type: number
+        Previous:
+          type: number
+    CurrencyClientDto:
+      type: object
+      properties:
+        Date:
+          type: string
+          format: date-time
+        PreviousDate:
+          type: string
+          format: date-time
+        PreviousURL:
+          type: string
+        Timestamp:
+          type: string
+          format: date-time
+        Valute:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/CurrencyDto'
     MoneyValueDto:
       type: object
       properties:

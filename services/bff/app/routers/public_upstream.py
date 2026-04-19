@@ -86,6 +86,9 @@ from generated.upstream.api.credit_rule_controller import (
 from generated.upstream.api.credit_rule_controller import (
     get_all_credit_rules as upstream_all_rules,
 )
+from generated.upstream.api.currency_controller.get_currency_list import (
+    asyncio_detailed as upstream_get_currency_list,
+)
 from generated.upstream.api.credit_rule_controller import (
     get_credit_rule_by_id as upstream_get_rule,
 )
@@ -725,6 +728,21 @@ async def get_user_card_accounts(
                 client=c, user_id=uid, page_index=pi, page_size=ps
             )
         )
+    )
+    if r is None:
+        return _unauth()
+    return finish_upstream_response(r)
+
+
+@router.get("/core-api/currency/all")
+async def get_currency_list(
+    user: Annotated[SessionUser | None, Depends(get_current_user_optional)],
+    ctx: Annotated[UpstreamContext, Depends(get_upstream_context)],
+):
+    if ctx.record is None or user is None:
+        return _unauth()
+    r = await ctx.call_upstream(
+        lambda c: upstream_get_currency_list.asyncio_detailed(client=c)
     )
     if r is None:
         return _unauth()

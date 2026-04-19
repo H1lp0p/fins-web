@@ -12,11 +12,11 @@ ROOT = Path(__file__).resolve().parents[1]
 FROM_BACKEND = ROOT / "from-backend"
 OUT = ROOT / "openApi.backend-gateway.yaml"
 MERGE_ORDER: list[tuple[str, str]] = [
-    ("userServiceApi.json", "/user-service"),
-    ("coreApi.json", "/core-api"),
-    ("transactionServiceApi.json", "/core-api"),
-    ("creditServiceApi.json", "/credit-service"),
-    ("preferencesServiceApi.json", "/preferences-service"),
+    ("userservicejson.json", "/user-service"),
+    ("coreapi.json", "/core-api"),
+    ("trans.json", "/core-api"),
+    ("creditservice.json", "/credit-service"),
+    ("prefs.json", "/preferences-service"),
 ]
 
 
