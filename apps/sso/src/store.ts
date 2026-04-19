@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { generatedSsoApi, initSsoBffApi } from "@fins/api/sso";
+import { apiErrorListener } from "./app/apiErrorListener";
 
 initSsoBffApi({
   
@@ -11,7 +12,10 @@ export const store = configureStore({
     [generatedSsoApi.reducerPath]: generatedSsoApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(generatedSsoApi.middleware),
+    getDefaultMiddleware().concat(
+      generatedSsoApi.middleware,
+      apiErrorListener.middleware,
+    ),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

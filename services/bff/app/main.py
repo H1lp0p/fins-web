@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api_delay_middleware import ApiDelayMiddleware
 from app.request_logging_middleware import RequestLoggingMiddleware
 from app.circuit_breaker import AsyncCircuitBreaker, CircuitBreakerOpenError
+from app.simulate_random_error_middleware import SimulateRandomErrorMiddleware
 from app.config import get_settings
 from app.errors import bff_error_response
 from app.routers import notifications_proxy, public, sso, ws_transactions
@@ -90,6 +91,7 @@ app.add_middleware(
 )
 app.add_middleware(ApiDelayMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
+app.add_middleware(SimulateRandomErrorMiddleware)
 
 
 @app.get("/health")

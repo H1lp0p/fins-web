@@ -1,3 +1,9 @@
+export {
+  getRejectedRequestMessage,
+  shouldNavigateToForbidden,
+  shouldNavigateToServerError,
+  type RtkRejectedPayload,
+} from "./lib/public-api-error";
 
 export { initSsoBffApi } from "./generated/sso/emptySsoApi";
 export * from "./generated/sso/generatedSsoApi";

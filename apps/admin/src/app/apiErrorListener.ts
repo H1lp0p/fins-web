@@ -62,7 +62,7 @@ apiErrorListener.startListening({
     return shouldRedirectToServerError(payload);
   },
   effect: (action) => {
-    const payload = action.payload as FetchBaseQueryError;
+    const payload = action.payload as RtkRejectedPayload;
     const nav = getAppNavigate();
     if (!nav) {
       return;

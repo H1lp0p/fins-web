@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     notification_service_base_url: str | None = None
     notification_sse_mock_enabled: bool = True
     notification_sse_mock_interval_seconds: int = Field(default=60, ge=1)
+    simulate_random_errors: bool = False
 
     upstream_circuit_breaker_enabled: bool = True
     upstream_circuit_failure_threshold: int = Field(default=5, ge=1)
@@ -66,6 +67,13 @@ class Settings(BaseSettings):
         return bool(
             self.notification_sse_mock_enabled and not self.use_notification_proxy
         )
+
+    @property
+    def simulate_random_errors_enabled(self) -> bool:
+        """Случайные 500 только в режиме мок-банка; при реальном upstream отключено."""
+        if self.use_upstream:
+            return False
+        return self.simulate_random_errors
 
 
 @lru_cache
