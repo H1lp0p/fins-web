@@ -79,11 +79,16 @@ export function validateCreditRuleForm(
   const openingDateRaw = trimString(input.openingDate);
   let openingDate: string | undefined;
   if (openingDateRaw.length > 0) {
-    const t = Date.parse(openingDateRaw);
+    // datetime-local даёт «YYYY-MM-DDTHH:mm» — дополняем секунды; бэкенд (Java LocalDateTime) ждёт строку без таймзоны.
+    let normalized = openingDateRaw;
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalized)) {
+      normalized = `${normalized}:00`;
+    }
+    const t = Date.parse(normalized);
     if (Number.isNaN(t)) {
       errors.push(fieldError("openingDate", "Некорректная дата"));
     } else {
-      openingDate = openingDateRaw;
+      openingDate = normalized;
     }
   }
   if (errors.length > 0) {

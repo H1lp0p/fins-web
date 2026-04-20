@@ -175,10 +175,44 @@ def _user_edit_upstream(body: UserEditModelDto) -> UpUserEdit:
     return UpUserEdit.from_dict(raw)
 
 
+def _opening_date_java_local_date_time(value: object | None, *, default: datetime) -> str:
+    """Java LocalDateTime принимает дату-время без зоны (ISO-8601), напр. 2007-12-03T10:15:30."""
+    if value is None:
+        dt = default
+        if dt.tzinfo is not None:
+            dt = dt.astimezone(UTC).replace(tzinfo=None)
+        return dt.replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%S")
+    if isinstance(value, datetime):
+        dt = value
+        if dt.tzinfo is not None:
+            dt = dt.astimezone(UTC).replace(tzinfo=None)
+        return dt.replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%S")
+    if isinstance(value, str):
+        s = value.strip()
+        if not s:
+            return _opening_date_java_local_date_time(None, default=default)
+        try:
+            if len(s) == 16 and s[10] == "T" and s.count(":") == 1:
+                s = f"{s}:00"
+            if s.endswith("Z"):
+                dt = datetime.fromisoformat(s[:-1] + "+00:00")
+            else:
+                dt = datetime.fromisoformat(s)
+        except ValueError:
+            return s[:19] if len(s) >= 19 else s
+        if dt.tzinfo is not None:
+            dt = dt.astimezone(UTC).replace(tzinfo=None)
+        return dt.replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%S")
+    return _opening_date_java_local_date_time(None, default=default)
+
+
 def _credit_rule_upstream(body: CreditRuleDTO) -> UpCreditRuleDTO:
     raw = body.model_dump(mode="json", by_alias=True, exclude_none=True)
-    if body.openingDate is None:
-        raw["openingDate"] = datetime.now(UTC).replace(microsecond=0).isoformat()
+    default_opening = datetime.now(UTC).replace(microsecond=0)
+    raw["openingDate"] = _opening_date_java_local_date_time(
+        body.openingDate,
+        default=default_opening,
+    )
     return UpCreditRuleDTO.from_dict(raw)
 
 

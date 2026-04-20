@@ -1414,6 +1414,9 @@ components:
         openingDate:
           type: string
           format: date-time
+          description: >
+            Дата-время без указания зоны (как Java LocalDateTime), например 2007-12-03T10:15:30.
+            Не используйте суффиксы Z или ±offset.
         ruleName:
           type: string
         percentage:
@@ -1435,6 +1438,8 @@ components:
         openingDate:
           type: string
           format: date-time
+          description: >
+            Дата-время без указания зоны (как Java LocalDateTime), например 2007-12-03T10:15:30.
         ruleName:
           type: string
         percentage:
