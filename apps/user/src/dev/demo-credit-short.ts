@@ -7,7 +7,7 @@ export const DEMO_CREDIT_SHORT: CreditEntity = {
   initialDebt: 1_000_000,
   currentDebtSum: 721_000,
   interestDebtSum: 279_000,
-  currency: "DOLLAR",
+  currency: "USD",
   creditRule: {
     id: "55555555-5555-5555-5555-555555555555",
     ruleName: "Rule name",

@@ -5,22 +5,22 @@ export const USD_PER_RUB = 1 / 82.37;
 
 export function tripleForBase(base: CurrencyCode): Record<CurrencyCode, number> {
   switch (base) {
-    case "DOLLAR":
-      return { DOLLAR: 1, EURO: 0.87, RUBLE: 82.37 };
-    case "EURO":
+    case "USD":
+      return { USD: 1, EUR: 0.87, RUB: 82.37 };
+    case "EUR":
       return {
-        DOLLAR: USD_PER_EUR,
-        EURO: 1,
-        RUBLE: 82.37 * USD_PER_EUR,
+        USD: USD_PER_EUR,
+        EUR: 1,
+        RUB: 82.37 * USD_PER_EUR,
       };
-    case "RUBLE":
+    case "RUB":
       return {
-        DOLLAR: USD_PER_RUB,
-        EURO: 0.87 * USD_PER_RUB,
-        RUBLE: 1,
+        USD: USD_PER_RUB,
+        EUR: 0.87 * USD_PER_RUB,
+        RUB: 1,
       };
     default:
-      return { DOLLAR: 1, EURO: 0.87, RUBLE: 82.37 };
+      return { USD: 1, EUR: 0.87, RUB: 82.37 };
   }
 }
 

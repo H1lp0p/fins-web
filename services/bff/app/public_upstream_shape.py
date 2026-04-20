@@ -11,7 +11,7 @@ def _shape_card_account(d: dict[str, Any]) -> dict[str, Any]:
     m = out.get("money")
     cur = out.pop("currency", None)
     if isinstance(m, (int, float)):
-        cc = cur if isinstance(cur, str) else "RUBLE"
+        cc = cur if isinstance(cur, str) else "RUB"
         out["money"] = {"value": m, "currency": cc}
     return {k: normalize_public_response(v) for k, v in out.items()}
 
@@ -30,7 +30,7 @@ def _shape_transaction_operation(d: dict[str, Any]) -> dict[str, Any]:
     if action is not None:
         out["transactionActoin"] = action
     if isinstance(money, (int, float)):
-        cc = cur if isinstance(cur, str) else "RUBLE"
+        cc = cur if isinstance(cur, str) else "RUB"
         out["money"] = {"value": money, "currency": cc}
     return {k: normalize_public_response(v) for k, v in out.items()}
 

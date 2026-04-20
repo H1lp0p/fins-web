@@ -503,7 +503,7 @@ export type UserDto = {
   roles?: ("CLIENT" | "WORKER" | "BLOCKED_CLIENT" | "BLOCKED_WORKER")[];
   active?: boolean;
 };
-export type Currency = "DOLLAR" | "EURO" | "RUBLE";
+export type Currency = "USD" | "EUR" | "RUB";
 export type UserDirectoryEntryDto = {
   userId: string;
   username: string;

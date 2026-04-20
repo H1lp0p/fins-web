@@ -12,7 +12,7 @@ import {
 } from "./types";
 import { trimString } from "./utils";
 
-const CURRENCIES = new Set<Currency>(["DOLLAR", "EURO", "RUBLE"]);
+const CURRENCIES = new Set<Currency>(["USD", "EUR", "RUB"]);
 
 export type OpenCardAccountFormInput = {
   name?: unknown;

@@ -1137,10 +1137,10 @@ components:
     Currency:
       type: string
       enum:
-      - DOLLAR
-      - EURO
-      - RUBLE
-      default: RUBLE
+      - USD
+      - EUR
+      - RUB
+      default: RUB
     CurrencyDto:
       type: object
       properties:
@@ -1282,7 +1282,7 @@ components:
       required:
       - accounts
       type: object
-      description: Три счёта казначейства в порядке DOLLAR, EURO, RUBLE.
+      description: Три счёта казначейства в порядке USD, EUR, RUB.
       properties:
         accounts:
           type: array

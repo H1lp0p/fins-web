@@ -34,6 +34,26 @@ for (const name of fs.readdirSync(wsDir)) {
   fs.writeFileSync(fp, out.join("\n"), "utf8");
 }
 
+// Modelina оставляет устаревший enum валют; держим в соответствии с openApi.public.yaml (Currency).
+const currencyEnumPatch = path.join(wsDir, "AnonymousSchema_20.ts");
+if (fs.existsSync(currencyEnumPatch)) {
+  const raw = fs.readFileSync(currencyEnumPatch, "utf8");
+  if (raw.includes("DOLLAR =") || raw.includes('"DOLLAR"')) {
+    fs.writeFileSync(
+      currencyEnumPatch,
+      `
+enum AnonymousSchema_20 {
+  USD = "USD",
+  EUR = "EUR",
+  RUB = "RUB",
+}
+export { AnonymousSchema_20 };
+`.trimStart(),
+      "utf8",
+    );
+  }
+}
+
 const indexTs = `export type { ClientSubscribePayload } from "./ClientSubscribePayload";
 export type { ClientUnsubscribePayload } from "./ClientUnsubscribePayload";
 export type { ServerSnapshotPayload } from "./ServerSnapshotPayload";

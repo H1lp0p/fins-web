@@ -28,7 +28,7 @@ pip install -e ".[dev]"
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8009
 ```
 
-Проверка: `GET http://127.0.0.1:8000/health` → `{"status":"ok"}`. Публичное API под префиксом `/api`.
+Проверка: `GET http://127.0.0.1:8009/health` → `{"status":"ok"}`. Публичное API под префиксом `/api`.
 
 Фронты в dev проксируют на BFF через `BFF_ORIGIN` (см. корневой `.env.example` в монорепо).
 
@@ -83,7 +83,7 @@ pnpm run generate:contracts
 
 1. Установить зависимости: `pip install -e .` в образе/на сервере.
 2. Задать `.env`: `UPSTREAM_BASE_URL`, `SESSION_SECRET`, `CORS_ORIGINS` под реальные origin фронтов, при HTTPS — `COOKIE_SECURE=true`, согласовать `COOKIE_SAMESITE`.
-3. Запуск: `uvicorn app.main:app --host 0.0.0.0 --port 8000` (в проде за reverse proxy + gunicorn/uvicorn workers по политике команды).
+3. Запуск: `uvicorn app.main:app --host 0.0.0.0 --port 8009` (в проде порт за reverse proxy; gunicorn/uvicorn workers — по политике команды).
 4. Убедиться, что фронты стучатся на тот же origin, что в `CORS_ORIGINS`, и cookie-сессия не блокируется браузером.
 
 Docker-сборка всего стенда: см. `deploy/README.md`.

@@ -40,7 +40,7 @@ def _hash_password(password: str, salt: bytes) -> bytes:
 
 
 def _money(
-    value: float, code: Literal["DOLLAR", "EURO", "RUBLE"] = "RUBLE"
+    value: float, code: Literal["USD", "EUR", "RUB"] = "RUB"
 ) -> MoneyValueDto:
     return MoneyValueDto(value=value, currency=Currency(root=code))
 
@@ -83,7 +83,7 @@ def _demo_account_names(rng: random.Random, n: int) -> list[str]:
     return out
 
 
-_CCY: tuple[Literal["DOLLAR", "EURO", "RUBLE"], ...] = ("DOLLAR", "EURO", "RUBLE")
+_CCY: tuple[Literal["USD", "EUR", "RUB"], ...] = ("USD", "EUR", "RUB")
 _BANK_TREASURY_USER_ID = uuid_stdlib.uuid5(
     uuid_stdlib.NAMESPACE_DNS, "fins.bank.treasury.user.v1"
 )
@@ -108,7 +108,7 @@ class MockAccount:
     id: UUID
     user_id: UUID
     balance: float
-    currency_code: Literal["DOLLAR", "EURO", "RUBLE"] = "RUBLE"
+    currency_code: Literal["USD", "EUR", "RUB"] = "RUB"
     deleted: bool = False
     display_name: str | None = None
     main: bool = False
@@ -242,7 +242,7 @@ class MockStore:
         self, user_id: UUID, body: CardAccountCreateModelDto
     ) -> CardAccount:
         aid = uuid4()
-        cur: Literal["DOLLAR", "EURO", "RUBLE"] = "RUBLE"
+        cur: Literal["USD", "EUR", "RUB"] = "RUB"
         if body.currency is not None:
             cur = body.currency.root
         acc = MockAccount(
@@ -388,7 +388,7 @@ class MockStore:
             if i >= len(rules):
                 break
             debt = debt_seeds[i] if i < len(debt_seeds) else 1000.0
-            ccy: Literal["DOLLAR", "EURO", "RUBLE"] = acc.currency_code
+            ccy: Literal["USD", "EUR", "RUB"] = acc.currency_code
             cid = uuid4()
             rule_copy = rules[i].model_copy(deep=True)
             self._credits[cid] = Credit(
@@ -408,7 +408,7 @@ class MockStore:
             return
         rng = _demo_rng(user_id)
         names = _demo_account_names(rng, 8)
-        ccys: list[Literal["DOLLAR", "EURO", "RUBLE"]] = [
+        ccys: list[Literal["USD", "EUR", "RUB"]] = [
             rng.choice(_CCY) for _ in range(8)
         ]
         ni = 0
@@ -552,10 +552,10 @@ class MockStore:
                 active=True,
             )
             self._users_by_email[u.email] = u
-            specs: list[tuple[UUID, Literal["DOLLAR", "EURO", "RUBLE"], float]] = [
-                (BANK_ACC_USD, "DOLLAR", 1000000000000.0),
-                (BANK_ACC_EUR, "EURO", 12142000120986.01),
-                (BANK_ACC_RUB, "RUBLE", 1804.52),
+            specs: list[tuple[UUID, Literal["USD", "EUR", "RUB"], float]] = [
+                (BANK_ACC_USD, "USD", 1000000000000.0),
+                (BANK_ACC_EUR, "EUR", 12142000120986.01),
+                (BANK_ACC_RUB, "RUB", 1804.52),
             ]
             for i, (aid, ccy, bal) in enumerate(specs):
                 self._accounts[aid] = MockAccount(
@@ -574,7 +574,7 @@ class MockStore:
                 at: datetime,
                 tx_type: Literal["ENROLLMENT", "WITHDRAWAL"],
                 amount: float,
-                ccy: Literal["DOLLAR", "EURO", "RUBLE"],
+                ccy: Literal["USD", "EUR", "RUB"],
             ) -> TransactionOperation:
                 action = (
                     "credit payback" if tx_type == "ENROLLMENT" else "credit issued"
@@ -619,11 +619,11 @@ class MockStore:
             ):
                 t0 = base_usd + timedelta(minutes=i * 18)
                 self._tx[BANK_ACC_USD].append(
-                    _treasury_tx(BANK_ACC_USD, t0, "ENROLLMENT", e_amt, "DOLLAR")
+                    _treasury_tx(BANK_ACC_USD, t0, "ENROLLMENT", e_amt, "USD")
                 )
                 t1 = t0 + timedelta(minutes=7)
                 self._tx[BANK_ACC_USD].append(
-                    _treasury_tx(BANK_ACC_USD, t1, "WITHDRAWAL", w_amt, "DOLLAR")
+                    _treasury_tx(BANK_ACC_USD, t1, "WITHDRAWAL", w_amt, "USD")
                 )
             base_eur = datetime(2025, 1, 2, 9, 0, 0, tzinfo=UTC)
             for i, (e_amt, w_amt) in enumerate(
@@ -631,11 +631,11 @@ class MockStore:
             ):
                 t0 = base_eur + timedelta(minutes=i * 20)
                 self._tx[BANK_ACC_EUR].append(
-                    _treasury_tx(BANK_ACC_EUR, t0, "ENROLLMENT", e_amt, "EURO")
+                    _treasury_tx(BANK_ACC_EUR, t0, "ENROLLMENT", e_amt, "EUR")
                 )
                 t1 = t0 + timedelta(minutes=5)
                 self._tx[BANK_ACC_EUR].append(
-                    _treasury_tx(BANK_ACC_EUR, t1, "WITHDRAWAL", w_amt, "EURO")
+                    _treasury_tx(BANK_ACC_EUR, t1, "WITHDRAWAL", w_amt, "EUR")
                 )
             base_rub = datetime(2025, 1, 3, 10, 0, 0, tzinfo=UTC)
             for i, (e_amt, w_amt) in enumerate(
@@ -643,11 +643,11 @@ class MockStore:
             ):
                 t0 = base_rub + timedelta(minutes=i * 25)
                 self._tx[BANK_ACC_RUB].append(
-                    _treasury_tx(BANK_ACC_RUB, t0, "ENROLLMENT", e_amt, "RUBLE")
+                    _treasury_tx(BANK_ACC_RUB, t0, "ENROLLMENT", e_amt, "RUB")
                 )
                 t1 = t0 + timedelta(minutes=8)
                 self._tx[BANK_ACC_RUB].append(
-                    _treasury_tx(BANK_ACC_RUB, t1, "WITHDRAWAL", w_amt, "RUBLE")
+                    _treasury_tx(BANK_ACC_RUB, t1, "WITHDRAWAL", w_amt, "RUB")
                 )
 
     def bank_treasury_balances(self) -> BankTreasuryBalancesDto:
@@ -771,7 +771,7 @@ class MockStore:
         raw_amt = body.amount
         if raw_amt is None or raw_amt <= 0:
             return ("bad", [])
-        amt_cur: Literal["DOLLAR", "EURO", "RUBLE"] = body.amountCurrency.root
+        amt_cur: Literal["USD", "EUR", "RUB"] = body.amountCurrency.root
         with self._lock:
             if body.targetKind == "ACCOUNT":
                 if body.targetCardAccountId is None:
@@ -835,8 +835,8 @@ class MockStore:
             else:
                 assert body.targetCreditId is not None
                 cr = self._credits[body.targetCreditId]
-                pay_ccy: Literal["DOLLAR", "EURO", "RUBLE"] = (
-                    cr.currency.root if cr.currency is not None else "RUBLE"
+                pay_ccy: Literal["USD", "EUR", "RUB"] = (
+                    cr.currency.root if cr.currency is not None else "RUB"
                 )
                 pay_amt = convert_amount(raw_amt, amt_cur, pay_ccy)
                 cd = cr.currentDebtSum or 0.0
@@ -912,7 +912,7 @@ class MockStore:
         if rule is None:
             return None
         initial = dto.money.value if dto.money and dto.money.value is not None else 0.0
-        cur: Literal["DOLLAR", "EURO", "RUBLE"] = "RUBLE"
+        cur: Literal["USD", "EUR", "RUB"] = "RUB"
         if dto.money and dto.money.currency is not None:
             cur = dto.money.currency.root
         cid = uuid4()

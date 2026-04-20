@@ -18,7 +18,7 @@ export function CreditSummaryHeader({ credit }: CreditSummaryHeaderProps) {
   const total = creditTotalDebtDisplay(credit);
   const symbol = credit.currency
     ? currencyCodeToAmountSymbol(credit.currency)
-    : DEFAULT_CHARS.DOLLAR;
+    : DEFAULT_CHARS.USD;
 
   return (
     <div

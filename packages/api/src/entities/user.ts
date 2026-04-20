@@ -50,6 +50,6 @@ export function mapUserToTransferDestinationUser(u: User): TransferDestinationUs
     id: u.id,
     name: u.name,
     email: u.email,
-    mainAccountCurrency: "DOLLAR",
+    mainAccountCurrency: "USD",
   };
 }

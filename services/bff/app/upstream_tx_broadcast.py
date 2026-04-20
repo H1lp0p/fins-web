@@ -61,9 +61,9 @@ def _bff_transaction_from_upstream(
     if not isinstance(up.money, Unset):
         cur_s = None if isinstance(up.currency, Unset) else up.currency
         try:
-            cur = Currency(cur_s) if cur_s else Currency("RUBLE")
+            cur = Currency(cur_s) if cur_s else Currency("RUB")
         except Exception:
-            cur = Currency("RUBLE")
+            cur = Currency("RUB")
         money = MoneyValueDto(value=up.money, currency=cur)
     action = None if isinstance(up.action, Unset) else up.action
     return BffTransactionOperation(

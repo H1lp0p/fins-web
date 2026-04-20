@@ -1,7 +1,6 @@
-
 enum AnonymousSchema_20 {
-  DOLLAR = "DOLLAR",
-  EURO = "EURO",
-  RUBLE = "RUBLE",
+  USD = "USD",
+  EUR = "EUR",
+  RUB = "RUB",
 }
 export { AnonymousSchema_20 };

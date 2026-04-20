@@ -25,7 +25,7 @@ const STRATEGIES = new Set<CreditRuleDto["percentageStrategy"]>([
   "FROM_TOTAL_DEBT",
 ]);
 
-const CURRENCIES = new Set<Currency>(["DOLLAR", "EURO", "RUBLE"]);
+const CURRENCIES = new Set<Currency>(["USD", "EUR", "RUB"]);
 
 export type CreditRuleFormInput = {
   ruleName?: unknown;

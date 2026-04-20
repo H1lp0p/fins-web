@@ -57,6 +57,7 @@ export function useTransactionsWebSocket(
       return;
     }
 
+    let cancelled = false;
     const wsUrl = url ?? defaultWsUrl();
     const ws = new WebSocket(wsUrl);
     const id = accountId;
@@ -64,6 +65,10 @@ export function useTransactionsWebSocket(
     const pSize = pageSize;
 
     ws.onopen = () => {
+      if (cancelled) {
+        ws.close();
+        return;
+      }
       callbacksRef.current.onOpen?.();
       ws.send(
         JSON.stringify({
@@ -94,14 +99,22 @@ export function useTransactionsWebSocket(
     };
 
     return () => {
+      cancelled = true;
+      // Strict Mode: не вызывать close() на CONNECTING — иначе шум в консоли и обрыв до subscribe.
+      if (ws.readyState === WebSocket.CONNECTING) {
+        ws.onopen = () => {
+          ws.close();
+        };
+        return;
+      }
       if (ws.readyState === WebSocket.OPEN) {
         try {
           ws.send(JSON.stringify({ type: "unsubscribe", accountId: id }));
         } catch {
-          
+          // ignore
         }
+        ws.close();
       }
-      ws.close();
     };
   }, [enabled, accountId, pageIndex, pageSize, url]);
 }

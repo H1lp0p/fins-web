@@ -7,7 +7,7 @@ export const DEMO_TRANSACTION_WITHDRAWAL: TransactionOperationEntity = {
   transactionAction: "Simple withdrawal",
   transactionStatus: "COMPLETE",
   dateTime: "2025-01-01T12:00:00.000Z",
-  money: { value: 10_001.12, currency: "EURO" },
+  money: { value: 10_001.12, currency: "EUR" },
 };
 
 export const DEMO_TRANSACTION_ENROLLMENT: TransactionOperationEntity = {
@@ -17,5 +17,5 @@ export const DEMO_TRANSACTION_ENROLLMENT: TransactionOperationEntity = {
   transactionAction: "Simple Enrollment",
   transactionStatus: "COMPLETE",
   dateTime: "2025-01-01T12:00:00.000Z",
-  money: { value: 10_001.12, currency: "EURO" },
+  money: { value: 10_001.12, currency: "EUR" },
 };

@@ -12,9 +12,9 @@ import { currencyCodeToAmountSymbol } from "../../lib/currency-symbol";
 import styles from "./ExchangeRateWidget.module.css";
 
 const CHAR_TO_APP: Partial<Record<string, CurrencyCode>> = {
-  USD: "DOLLAR",
-  EUR: "EURO",
-  RUB: "RUBLE",
+  USD: "USD",
+  EUR: "EUR",
+  RUB: "RUB",
 };
 
 function rubPerUnit(row: { Value?: number; Nominal?: number }): number {

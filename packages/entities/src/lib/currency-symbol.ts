@@ -5,12 +5,12 @@ export function currencyCodeToAmountSymbol(
   code: CurrencyCode | undefined,
 ): DEFAULT_CHARS {
   switch (code) {
-    case "DOLLAR":
-      return DEFAULT_CHARS.DOLLAR;
-    case "EURO":
-      return DEFAULT_CHARS.EURO;
-    case "RUBLE":
+    case "USD":
+      return DEFAULT_CHARS.USD;
+    case "EUR":
+      return DEFAULT_CHARS.EUR;
+    case "RUB":
     default:
-      return DEFAULT_CHARS.RUBLE;
+      return DEFAULT_CHARS.RUB;
   }
 }

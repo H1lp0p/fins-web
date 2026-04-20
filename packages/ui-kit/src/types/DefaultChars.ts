@@ -1,7 +1,7 @@
 export enum DEFAULT_CHARS {
-    DOLLAR = "$",
-    EURO = "€",
-    RUBLE = "₽",
+    USD = "$",
+    EUR = "€",
+    RUB = "₽",
     SECOND = "s",
     MINUTE = "m",
     HOUR = "h",

@@ -20,15 +20,15 @@ import {
 } from "../../lib/userStackMessages";
 import styles from "./AccountCreateForm.module.css";
 
-const CURRENCIES: CurrencyCode[] = ["DOLLAR", "EURO", "RUBLE"];
+const CURRENCIES: CurrencyCode[] = ["USD", "EUR", "RUB"];
 
 const CURRENCY_CHAR: Record<
   CurrencyCode,
   (typeof DEFAULT_CHARS)[keyof typeof DEFAULT_CHARS]
 > = {
-  DOLLAR: DEFAULT_CHARS.DOLLAR,
-  EURO: DEFAULT_CHARS.EURO,
-  RUBLE: DEFAULT_CHARS.RUBLE,
+  USD: DEFAULT_CHARS.USD,
+  EUR: DEFAULT_CHARS.EUR,
+  RUB: DEFAULT_CHARS.RUB,
 };
 
 type AccountCreateFormProps = {
@@ -59,7 +59,7 @@ export function AccountCreateForm({
 }: AccountCreateFormProps) {
   const [openAccount, { isLoading }] = useOpenAccountMutation();
   const [name, setName] = useState("");
-  const [currency, setCurrency] = useState<CurrencyCode>("RUBLE");
+  const [currency, setCurrency] = useState<CurrencyCode>("RUB");
   const [fieldValid, setFieldValid] = useState<Record<FieldKey, boolean>>(
     allFieldsValid,
   );
@@ -68,7 +68,7 @@ export function AccountCreateForm({
 
   const cancel = useCallback(() => {
     setName("");
-    setCurrency("RUBLE");
+    setCurrency("RUB");
     setFieldValid(allFieldsValid());
     onCancel();
   }, [onCancel]);
@@ -93,7 +93,7 @@ export function AccountCreateForm({
         cardAccountCreateModelDto: validated.value,
       }).unwrap();
       setName("");
-      setCurrency("RUBLE");
+      setCurrency("RUB");
       onCreated(created.id);
     } catch (err) {
       const fe = asFetchBaseQueryError(err);
