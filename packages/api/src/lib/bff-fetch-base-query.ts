@@ -11,7 +11,6 @@ import {
 
 type FetchBaseQueryOptions = NonNullable<Parameters<typeof fetchBaseQuery>[0]>;
 
-/** Имя заголовка совпадает с BFF и API Gateway (Stripe / распространённая практика). */
 export const BFF_IDEMPOTENCY_KEY_HEADER = "Idempotency-Key";
 
 export type BffClientOptions = {
@@ -20,7 +19,7 @@ export type BffClientOptions = {
   credentials?: RequestCredentials;
   prepareHeaders?: FetchBaseQueryOptions["prepareHeaders"];
   fetchFn?: FetchBaseQueryOptions["fetchFn"];
-  /** По умолчанию включён; `false` отключает circuit breaker для BFF. */
+  
   circuitBreaker?: BffClientCircuitBreakerOption;
 };
 
