@@ -39,7 +39,7 @@ _HDR_BEARER = {"Authorization": "Bearer ***"}
 
 
 def _session_cookie_args(settings: Settings) -> dict:
-    return {
+    args: dict = {
         "key": settings.session_cookie_name,
         "httponly": True,
         "secure": settings.cookie_secure,
@@ -47,6 +47,9 @@ def _session_cookie_args(settings: Settings) -> dict:
         "max_age": settings.session_max_age_seconds,
         "path": "/",
     }
+    if settings.session_cookie_domain:
+        args["domain"] = settings.session_cookie_domain
+    return args
 
 
 def _json_with_session(
@@ -59,13 +62,16 @@ def _json_with_session(
 
 def _json_clear_session(settings: Settings) -> JSONResponse:
     r = JSONResponse(content={})
-    r.delete_cookie(
-        key=settings.session_cookie_name,
-        path="/",
-        httponly=True,
-        secure=settings.cookie_secure,
-        samesite=settings.cookie_samesite,
-    )
+    del_kw: dict = {
+        "key": settings.session_cookie_name,
+        "path": "/",
+        "httponly": True,
+        "secure": settings.cookie_secure,
+        "samesite": settings.cookie_samesite,
+    }
+    if settings.session_cookie_domain:
+        del_kw["domain"] = settings.session_cookie_domain
+    r.delete_cookie(**del_kw)
     return r
 
 
