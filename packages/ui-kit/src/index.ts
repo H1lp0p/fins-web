@@ -8,6 +8,10 @@ export { OnBlurContainer } from "./components/on-blur-container/OnBlurContainer"
 
 export { LinkButton, type LinkButtonVariant } from "./components/link-button/LinkButton";
 export {
+  ConfirmationModal,
+  type ConfirmationModalProps,
+} from "./components/confirmation-modal/ConfirmationModal";
+export {
   LoadingFrameIndicator,
   type LoadingFrameIndicatorProps,
 } from "./components/loading-frame-indicator/LoadingFrameIndicator";

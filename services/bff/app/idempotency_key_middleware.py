@@ -8,8 +8,6 @@ from app.upstream_runtime import IDEMPOTENCY_KEY_HEADER, upstream_incoming_idemp
 
 
 class IdempotencyKeyMiddleware(BaseHTTPMiddleware):
-    """Сохраняет Idempotency-Key из входящего запроса в ContextVar для upstream httpx."""
-
     async def dispatch(self, request: Request, call_next) -> Response:
         raw = request.headers.get(IDEMPOTENCY_KEY_HEADER)
         value = (raw or "").strip() or None

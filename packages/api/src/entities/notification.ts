@@ -1,6 +1,3 @@
-/**
- * Соответствует схеме Notification в openapi/notif_api.json (notification-service).
- */
 export type Notification = {
   id: string;
   eventId?: string;

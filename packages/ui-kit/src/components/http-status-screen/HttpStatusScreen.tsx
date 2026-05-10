@@ -6,7 +6,6 @@ export type HttpStatusScreenProps = {
   code: string;
   actionText: string;
   onAction: () => void;
-  /** Доп. текст (например при редиректе с состоянием ошибки API). */
   message?: string;
 };
 

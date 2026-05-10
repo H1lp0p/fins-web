@@ -11,8 +11,6 @@ SIMULATED_RANDOM_ERROR_PROBABILITY = 0.5
 
 
 class SimulateRandomErrorMiddleware(BaseHTTPMiddleware):
-    """С вероятностью из константы возвращает 500 до обработчика (только в режиме моков)."""
-
     async def dispatch(self, request: Request, call_next) -> Response:
         settings = get_settings()
         if not settings.simulate_random_errors_enabled:

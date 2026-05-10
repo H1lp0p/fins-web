@@ -8,10 +8,11 @@ import {
   resolveSharedBffCircuitBreaker,
   type BffClientCircuitBreakerOption,
 } from "./bff-circuit-breaker";
+import { BFF_IDEMPOTENCY_KEY_HEADER } from "./bff-idempotency-header";
 
 type FetchBaseQueryOptions = NonNullable<Parameters<typeof fetchBaseQuery>[0]>;
 
-export const BFF_IDEMPOTENCY_KEY_HEADER = "Idempotency-Key";
+export { BFF_IDEMPOTENCY_KEY_HEADER };
 
 export type BffClientOptions = {
   baseUrl: string;

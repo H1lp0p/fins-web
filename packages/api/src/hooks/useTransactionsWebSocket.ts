@@ -111,7 +111,6 @@ export function useTransactionsWebSocket(
         try {
           ws.send(JSON.stringify({ type: "unsubscribe", accountId: id }));
         } catch {
-          // ignore
         }
         ws.close();
       }

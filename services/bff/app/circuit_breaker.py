@@ -11,16 +11,12 @@ if TYPE_CHECKING:
 
 
 class CircuitBreakerOpenError(Exception):
-    """Выбрасывается до сетевого запроса, если цепь разомкнута."""
-
     def __init__(self, code: str, message: str = "Сервис временно недоступен") -> None:
         self.code = code
         super().__init__(message)
 
 
 class AsyncCircuitBreaker:
-    """Простой async circuit breaker: closed → open → half-open → closed."""
-
     __slots__ = (
         "_code",
         "_enabled",
@@ -127,8 +123,6 @@ class AsyncCircuitBreaker:
 
 
 class CircuitBreakerAsyncTransport(httpx.AsyncBaseTransport):
-    """Оборачивает httpx.AsyncHTTPTransport, учитывая состояние breaker."""
-
     __slots__ = ("_breaker", "_inner")
 
     def __init__(

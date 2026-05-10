@@ -11,7 +11,6 @@ import {
 
 let bffOptions: BffClientOptions = { baseUrl: "/" };
 
-/** Вызвать в SSO-приложении до первого запроса. */
 export function initSsoBffApi(options: BffClientOptions): void {
   bffOptions = options;
 }

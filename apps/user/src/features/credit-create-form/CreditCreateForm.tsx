@@ -1,10 +1,15 @@
-import type { CardAccountEntity, CreditRuleEntity } from "@fins/api";
+import type {
+  CardAccountEntity,
+  CreditCreateModelDto,
+  CreditRuleEntity,
+} from "@fins/api";
 import {
   extractBffError,
   useCreateCreditMutation,
   validateCreditCreateForm,
 } from "@fins/api";
 import {
+  ConfirmationModal,
   Input,
   LinkButton,
   LoadingFrameIndicator,
@@ -12,7 +17,7 @@ import {
   useMessageStack,
 } from "@fins/ui-kit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CardAccountInfo,
   CreditRuleInfo,
@@ -22,6 +27,7 @@ import {
   creditCreateFieldErrorsToMessages,
   serverReturnedLine,
 } from "../../lib/userStackMessages";
+import styles from "./CreditCreateForm.module.css";
 
 type CreditCreateFormProps = {
   userId: string;
@@ -70,40 +76,50 @@ export function CreditCreateForm({
   const [fieldValid, setFieldValid] = useState<Record<FieldKey, boolean>>(
     allFieldsValid,
   );
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmBusy, setConfirmBusy] = useState(false);
+  const validatedDraftRef = useRef<CreditCreateModelDto | null>(null);
 
   const { pushMessage } = useMessageStack();
+
+  useEffect(() => {
+    setFieldValid((prev) => ({ ...prev, creditRuleId: true }));
+  }, [rule?.id]);
+
+  useEffect(() => {
+    setFieldValid((prev) => ({
+      ...prev,
+      cardAccount: true,
+      "money.currency": true,
+    }));
+  }, [account?.id]);
 
   const currency = account?.money?.currency;
   const trailing =
     currency != null ? currencyCodeToAmountSymbol(currency) : undefined;
 
-  const submit = useCallback(async () => {
-    const validated = validateCreditCreateForm({
-      userId,
-      cardAccount: account?.id,
-      creditRuleId: rule?.id,
-      moneyValue: amount,
-      moneyCurrency: currency,
-    });
-    if (!validated.ok) {
-      const keys = Object.keys(validated.fieldErrors) as FieldKey[];
-      setFieldValid({
-        userId: !keys.includes("userId"),
-        cardAccount: !keys.includes("cardAccount"),
-        creditRuleId: !keys.includes("creditRuleId"),
-        "money.value": !keys.includes("money.value"),
-        "money.currency": !keys.includes("money.currency"),
-      });
-      for (const m of creditCreateFieldErrorsToMessages(
-        validated.fieldErrors,
-      )) {
-        pushMessage(m);
-      }
+  const confirmContent = useMemo(() => {
+    const ruleLabel =
+      rule?.ruleName?.trim() ||
+      (rule?.id ? `rule#${rule.id.slice(0, 8)}` : "<no_rule>");
+    const cur = currency ?? "?";
+    return `POST /credit/create: rule="${ruleLabel}" principal=${amount} ${cur}\nProceed?`;
+  }, [rule?.ruleName, rule?.id, amount, currency]);
+
+  const handleCreateConfirmed = useCallback(async () => {
+    const body = validatedDraftRef.current;
+    if (!body) {
+      setConfirmOpen(false);
       return;
     }
-    setFieldValid(allFieldsValid());
+    setConfirmBusy(true);
     try {
-      await createCredit({ creditCreateModelDto: validated.value }).unwrap();
+      await createCredit({
+        creditCreateModelDto: body,
+        idempotencyKey: crypto.randomUUID(),
+      }).unwrap();
+      validatedDraftRef.current = null;
+      setConfirmOpen(false);
       onCreated();
     } catch (err) {
       const fe = asFetchBaseQueryError(err);
@@ -141,89 +157,157 @@ export function CreditCreateForm({
           text: "Property {Network} doesn't fit requirements",
         });
       }
+    } finally {
+      setConfirmBusy(false);
     }
+  }, [createCredit, onCreated, pushMessage]);
+
+  const submit = useCallback(async () => {
+    const validated = validateCreditCreateForm({
+      userId,
+      cardAccount: account?.id,
+      creditRuleId: rule?.id,
+      moneyValue: amount,
+      moneyCurrency: currency,
+    });
+    if (!validated.ok) {
+      const keys = Object.keys(validated.fieldErrors) as FieldKey[];
+      setFieldValid({
+        userId: !keys.includes("userId"),
+        cardAccount: !keys.includes("cardAccount"),
+        creditRuleId: !keys.includes("creditRuleId"),
+        "money.value": !keys.includes("money.value"),
+        "money.currency": !keys.includes("money.currency"),
+      });
+      for (const m of creditCreateFieldErrorsToMessages(
+        validated.fieldErrors,
+      )) {
+        pushMessage(m);
+      }
+      return;
+    }
+    setFieldValid(allFieldsValid());
+    validatedDraftRef.current = validated.value;
+    setConfirmOpen(true);
   }, [
     account?.id,
     amount,
-    createCredit,
     currency,
-    onCreated,
     pushMessage,
     rule?.id,
     userId,
   ]);
 
-  const amountValid = fieldValid["money.value"] && fieldValid["money.currency"];
+  const ruleSlotInvalid = !fieldValid.creditRuleId;
+  const accountSlotInvalid = !fieldValid.cardAccount;
+  const amountInvalid =
+    !fieldValid["money.value"] || !fieldValid["money.currency"];
 
   return (
-    <div
-      className="ph-mid pv-mid gap-mid"
-      style={{
-        height: "100%",
-        boxSizing: "border-box",
-        overflow: "auto",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-      }}
-    >
-      <div
-        className="gap-min"
-        style={{ display: "flex", flexDirection: "column" }}
-      >
-        {rule ? (
-          <CreditRuleInfo
-            rule={rule}
-            selected={true}
-            style={{ width: "100%" }}
-          />
-        ) : null}
-        {account ? (
-          <CardAccountInfo
-            account={account}
-            selected={true}
-            style={{ width: "100%" }}
-          />
-        ) : (
-          <p className="text-info color-input-placeholder">
-            Выберите счёт справа
-          </p>
-        )}
+    <div className={`${styles.root} gap-min`}>
+      <ConfirmationModal
+        open={confirmOpen}
+        content={confirmContent}
+        confirmLoading={confirmBusy || isLoading}
+        onCancel={() => {
+          if (confirmBusy || isLoading) return;
+          validatedDraftRef.current = null;
+          setConfirmOpen(false);
+        }}
+        onConfirm={() => void handleCreateConfirmed()}
+      />
+      <div className={`${styles.scroll} ph-mid pv-mid gap-min`}>
+        <p className="text-info color-input-placeholder">
+          Pick a rule and account in the grid on the right.
+        </p>
 
-        <Input
-          title="Amount"
-          value={amount}
-          onChange={(v) => {
-            onAmountChange(v);
-            setFieldValid((prev) => ({
-              ...prev,
-              "money.value": true,
-              "money.currency": true,
-            }));
-          }}
-          trailingChar={trailing}
-          isValid={amountValid}
-        />
+        <div
+          className={`${styles.fieldLine} ${ruleSlotInvalid ? styles.fieldLineInvalid : ""}`}
+        >
+          <div className={styles.fieldRow}>
+            <span className={`text-info color-info ${styles.fieldKey}`}>
+              credit_rule
+            </span>
+            <span className={`text-info color-info ${styles.fieldKey}`}>/</span>
+          </div>
+          {rule?.id ? (
+            <CreditRuleInfo
+              rule={rule}
+              selected={true}
+              style={{ width: "100%" }}
+            />
+          ) : (
+            <span
+              className={`text-info color-input-placeholder ${styles.fieldValue}`}
+            >
+              selected: null
+            </span>
+          )}
+        </div>
+
+        <div
+          className={`${styles.fieldLine} ${accountSlotInvalid ? styles.fieldLineInvalid : ""}`}
+        >
+          <div className={styles.fieldRow}>
+            <span className={`text-info color-info ${styles.fieldKey}`}>
+              debit_account
+            </span>
+            <span className={`text-info color-info ${styles.fieldKey}`}>/</span>
+          </div>
+          {account?.id ? (
+            <CardAccountInfo
+              account={account}
+              selected={true}
+              style={{ width: "100%" }}
+            />
+          ) : (
+            <span
+              className={`text-info color-input-placeholder ${styles.fieldValue}`}
+            >
+              selected: null
+            </span>
+          )}
+        </div>
+
+        <div className={`${styles.amountWrap} ${amountInvalid ? styles.amountWrapInvalid : ""}`}>
+          <Input
+            title="Principal"
+            placeholder="e.g. 5000"
+            value={amount}
+            onChange={(v) => {
+              onAmountChange(v);
+              setFieldValid((prev) => ({
+                ...prev,
+                "money.value": true,
+                "money.currency": true,
+              }));
+            }}
+            trailingChar={trailing}
+            isValid={!amountInvalid}
+          />
+        </div>
       </div>
 
-      <OnBlurContainer
-        className="pv-mid ph-max"
-        style={{
-          display: "flex",
-          justifyContent: "center",
-        }}
-      >
-        <LinkButton
-          text="Create"
-          variant="success"
-          onClick={() => void submit()}
-        />
-        {isLoading ? (
-          <div className="ph-mid" style={{ display: "flex", justifyContent: "center" }}>
-            <LoadingFrameIndicator />
-          </div>
-        ) : null}
-      </OnBlurContainer>
+      <div className={`${styles.footer}`}>
+        <OnBlurContainer
+          className="pv-mid ph-max"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <LinkButton
+            text="Create credit"
+            variant="success"
+            onClick={() => void submit()}
+          />
+          {isLoading ? (
+            <div className="ph-mid" style={{ display: "flex", justifyContent: "center" }}>
+              <LoadingFrameIndicator />
+            </div>
+          ) : null}
+        </OnBlurContainer>
+      </div>
     </div>
   );
 }

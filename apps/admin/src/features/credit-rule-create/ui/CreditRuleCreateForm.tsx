@@ -1,3 +1,4 @@
+import type { CreditRuleDto } from "@fins/api";
 import {
   extractBffError,
   useCreateCreditRuleMutation,
@@ -5,6 +6,7 @@ import {
 } from "@fins/api";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
+  ConfirmationModal,
   DEFAULT_CHARS,
   Input,
   LinkButton,
@@ -12,7 +14,7 @@ import {
   useMessageStack,
   type Message,
 } from "@fins/ui-kit";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { messageFromFetchError } from "../../../lib/adminStackMessages";
 import { creditRuleFieldErrorsToMessages } from "../../../lib/creditRuleFormMessages";
 import {
@@ -65,6 +67,9 @@ export function CreditRuleCreateForm({ onCreated }: CreditRuleCreateFormProps) {
 
   const { pushMessage } = useMessageStack();
   const [createRule, { isLoading }] = useCreateCreditRuleMutation();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmBusy, setConfirmBusy] = useState(false);
+  const pendingDtoRef = useRef<CreditRuleDto | null>(null);
 
   const pushMessages = (messages: Message[]) => {
     for (const m of messages) {
@@ -129,13 +134,29 @@ export function CreditRuleCreateForm({ onCreated }: CreditRuleCreateFormProps) {
       percentageStrategy: "FROM_REMAINING_DEBT" as const,
     };
 
+    pendingDtoRef.current = creditRuleDto;
+    setConfirmOpen(true);
+  };
+
+  const handleCreateConfirmed = useCallback(async () => {
+    const creditRuleDto = pendingDtoRef.current;
+    if (!creditRuleDto) {
+      setConfirmOpen(false);
+      return;
+    }
+    setConfirmBusy(true);
     try {
-      await createRule({ creditRuleDto }).unwrap();
+      await createRule({
+        creditRuleDto,
+        idempotencyKey: crypto.randomUUID(),
+      }).unwrap();
       setRuleName("");
       setPercentage("");
       setPeriod("");
       setDurationUnit("seconds");
       setFieldValid(allFieldsValid());
+      pendingDtoRef.current = null;
+      setConfirmOpen(false);
       onCreated?.();
     } catch (err) {
       const fe = asFetchBaseQueryError(err);
@@ -158,8 +179,10 @@ export function CreditRuleCreateForm({ onCreated }: CreditRuleCreateFormProps) {
           text: "Property {Network} doesn't fit requirements",
         });
       }
+    } finally {
+      setConfirmBusy(false);
     }
-  };
+  }, [createRule, onCreated, pushMessage, pushMessages]);
 
   return (
     <form
@@ -175,6 +198,17 @@ export function CreditRuleCreateForm({ onCreated }: CreditRuleCreateFormProps) {
         overflow: "auto",
       }}
     >
+      <ConfirmationModal
+        open={confirmOpen}
+        content={`POST /credit_rule/create: idempotency guarded write\npayload.name="${ruleName.trim() || "unnamed"}"\nProceed?`}
+        confirmLoading={confirmBusy || isLoading}
+        onCancel={() => {
+          if (confirmBusy || isLoading) return;
+          pendingDtoRef.current = null;
+          setConfirmOpen(false);
+        }}
+        onConfirm={() => void handleCreateConfirmed()}
+      />
       <div 
         className="gap-mid" 
         style={{ 

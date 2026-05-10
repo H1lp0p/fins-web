@@ -6,6 +6,7 @@ import {
   useUpdatePreferencesMutation,
 } from "@fins/api";
 import {
+  ConfirmationModal,
   InlineCheckBox,
   LinkButton,
   LoadingFrameIndicator,
@@ -13,6 +14,7 @@ import {
   useMessageStack,
   type statusType,
 } from "@fins/ui-kit";
+import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   TRANSACTIONS_OUT_SENTINEL_ID,
@@ -34,6 +36,42 @@ export function AccountActionsBar({
   const [updatePrefs, { isLoading: prefMutating }] =
     useUpdatePreferencesMutation();
   const [closeAcc, { isLoading: closeLoading }] = useCloseAccountMutation();
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [confirmBusy, setConfirmBusy] = useState(false);
+  const pendingWithKeyRef = useRef<((key: string) => Promise<void>) | null>(
+    null,
+  );
+
+  const requestConfirm = useCallback(
+    (text: string, runWithKey: (key: string) => Promise<void>) => {
+      pendingWithKeyRef.current = runWithKey;
+      setConfirmText(text);
+      setConfirmOpen(true);
+    },
+    [],
+  );
+
+  const handleConfirmDismiss = useCallback(() => {
+    if (confirmBusy) return;
+    pendingWithKeyRef.current = null;
+    setConfirmOpen(false);
+  }, [confirmBusy]);
+
+  const handleConfirmAccept = useCallback(async () => {
+    const fn = pendingWithKeyRef.current;
+    if (!fn) return;
+    const key = crypto.randomUUID();
+    setConfirmBusy(true);
+    try {
+      await fn(key);
+      pendingWithKeyRef.current = null;
+      setConfirmOpen(false);
+    } finally {
+      setConfirmBusy(false);
+    }
+  }, []);
 
   const id = account.id;
   const {
@@ -70,6 +108,14 @@ export function AccountActionsBar({
   });
 
   return (
+    <>
+      <ConfirmationModal
+        open={confirmOpen}
+        content={confirmText}
+        confirmLoading={confirmBusy}
+        onCancel={handleConfirmDismiss}
+        onConfirm={() => void handleConfirmAccept()}
+      />
     <div
       className="ph-mid pv-mid text-info gap-mid"
       style={{
@@ -117,20 +163,29 @@ export function AccountActionsBar({
             const hidden = new Set(prefs?.hiddenAccounts ?? []);
             if (nextVisible) hidden.delete(id);
             else hidden.add(id);
-            void updatePrefs({
-              userPreferencesDto: {
-                theme: prefs?.theme ?? "light",
-                hiddenAccounts: [...hidden],
+            const dto = {
+              theme: prefs?.theme ?? "light",
+              hiddenAccounts: [...hidden],
+            };
+            requestConfirm(
+              nextVisible
+                ? "PUT /preferences: hidden_accounts.remove(id) → show in UI list\nProceed?"
+                : "PUT /preferences: hidden_accounts.add(id) → hide from UI list\nProceed?",
+              async (key) => {
+                try {
+                  await updatePrefs({
+                    userPreferencesDto: dto,
+                    idempotencyKey: key,
+                  }).unwrap();
+                } catch {
+                  pushMessage({
+                    type: "error",
+                    title: "Visibility",
+                    text: "Не удалось изменить видимость.",
+                  });
+                }
               },
-            })
-              .unwrap()
-              .catch(() => {
-                pushMessage({
-                  type: "error",
-                  title: "Visibility",
-                  text: "Не удалось изменить видимость.",
-                });
-              });
+            );
           }}
         />
         <div
@@ -147,15 +202,23 @@ export function AccountActionsBar({
             textClassName="text-info-accent"
             disabled={cannotSetMain || mainLoading}
             onClick={() => {
-              void setMain({ accountId: id })
-                .unwrap()
-                .catch(() => {
-                  pushMessage({
-                    type: "error",
-                    title: "Main account",
-                    text: "Не удалось назначить главный счёт.",
-                  });
-                });
+              requestConfirm(
+                "POST /cardaccount/{id}/set-main: elevate to PRIMARY wallet\nProceed?",
+                async (key) => {
+                  try {
+                    await setMain({
+                      accountId: id,
+                      idempotencyKey: key,
+                    }).unwrap();
+                  } catch {
+                    pushMessage({
+                      type: "error",
+                      title: "Main account",
+                      text: "Не удалось назначить главный счёт.",
+                    });
+                  }
+                },
+              );
             }}
           />
           {mainLoading ? <LoadingFrameIndicator /> : null}
@@ -175,22 +238,26 @@ export function AccountActionsBar({
           textClassName="text-info-accent"
           disabled={cannotClose || closeLoading}
           onClick={() => {
-            void closeAcc({ accountId: id })
-              .unwrap()
-              .then(() => {
-                onClosed?.();
-              })
-              .catch(() => {
-                pushMessage({
-                  type: "error",
-                  title: "Close",
-                  text: "Не удалось закрыть счёт.",
-                });
-              });
+            requestConfirm(
+              "POST /cardaccount/close/{id}: WARN—not reversible via this UI\nProceed?",
+              async (key) => {
+                try {
+                  await closeAcc({ accountId: id, idempotencyKey: key }).unwrap();
+                  onClosed?.();
+                } catch {
+                  pushMessage({
+                    type: "error",
+                    title: "Close",
+                    text: "Не удалось закрыть счёт.",
+                  });
+                }
+              },
+            );
           }}
         />
         {closeLoading ? <LoadingFrameIndicator /> : null}
       </div>
     </div>
+    </>
   );
 }

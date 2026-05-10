@@ -11,7 +11,6 @@ import {
 
 let bffOptions: BffClientOptions = { baseUrl: "/" };
 
-/** Вызвать в приложении до первого запроса (например из main с import.meta.env). */
 export function initPublicBffApi(options: BffClientOptions): void {
   bffOptions = options;
 }

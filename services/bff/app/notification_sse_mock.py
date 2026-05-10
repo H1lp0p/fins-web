@@ -18,7 +18,6 @@ async def iter_mock_notification_sse(
     user_id: UUID,
     interval_seconds: float,
 ) -> AsyncIterator[bytes]:
-    """SSE: одно событие сразу, далее с интервалом (по умолчанию раз в минуту)."""
     n = 0
     first = True
     while True:

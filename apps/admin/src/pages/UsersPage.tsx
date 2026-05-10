@@ -10,6 +10,7 @@ import {
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   BgText,
+  ConfirmationModal,
   RectSpaceLayout,
   useMessageStack,
   type statusType,
@@ -106,6 +107,98 @@ export function UsersPage() {
     null,
   );
   const [activePending, setActivePending] = useState(false);
+
+  type UserEditConfirm =
+    | {
+        kind: "roles";
+        which: "client" | "worker";
+        nextClient: boolean;
+        nextWorker: boolean;
+      }
+    | {
+        kind: "active";
+        nextActive: boolean;
+        newRoles: ("CLIENT" | "WORKER")[];
+      };
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState("");
+  const [confirmBusy, setConfirmBusy] = useState(false);
+  const pendingEditRef = useRef<UserEditConfirm | null>(null);
+
+  const openUserEditConfirm = useCallback(
+    (payload: UserEditConfirm, message: string) => {
+      pendingEditRef.current = payload;
+      setConfirmMessage(message);
+      setConfirmOpen(true);
+    },
+    [],
+  );
+
+  const dismissUserEditConfirm = useCallback(() => {
+    if (confirmBusy) return;
+    pendingEditRef.current = null;
+    setConfirmOpen(false);
+  }, [confirmBusy]);
+
+  const flushEditUserError = useCallback(
+    (e: unknown) => {
+      const fe = e as FetchBaseQueryError | undefined;
+      if (fe && typeof fe === "object" && "status" in fe) {
+        const err = fe as FetchBaseQueryError;
+        if (err.status === 401) redirectToSsoWithReturn();
+        else pushMessage(messageFromFetchError(err));
+      } else {
+        pushMessage(editUserFailedMessage());
+      }
+    },
+    [pushMessage],
+  );
+
+  const onConfirmUserEdit = useCallback(async () => {
+    const pending = pendingEditRef.current;
+    if (!pending || !detailUser?.id) return;
+    const key = crypto.randomUUID();
+    setConfirmBusy(true);
+    try {
+      if (pending.kind === "roles") {
+        setRolePending(pending.which);
+        try {
+          await editUser({
+            id: detailUser.id,
+            userEditModelDto: {
+              name: detailUser.name,
+              newRoles: rolesPayload(pending.nextClient, pending.nextWorker),
+            },
+            idempotencyKey: key,
+          }).unwrap();
+        } finally {
+          setRolePending(null);
+        }
+      } else {
+        setActivePending(true);
+        try {
+          await editUser({
+            id: detailUser.id,
+            userEditModelDto: {
+              name: detailUser.name,
+              newRoles: pending.newRoles,
+              active: pending.nextActive,
+            },
+            idempotencyKey: key,
+          }).unwrap();
+        } finally {
+          setActivePending(false);
+        }
+      }
+      pendingEditRef.current = null;
+      setConfirmOpen(false);
+    } catch (e) {
+      flushEditUserError(e);
+    } finally {
+      setConfirmBusy(false);
+    }
+  }, [detailUser, editUser, flushEditUserError]);
 
   useEffect(() => {
     const raw = searchParams.get("userId")?.trim() ?? "";
@@ -209,70 +302,59 @@ export function UsersPage() {
   const hasWorker = detailUser?.roles?.includes("WORKER") ?? false;
   const userActive = detailUser?.active !== false;
 
-  const saveRoles = async (
-    which: "client" | "worker",
-    nextClient: boolean,
-    nextWorker: boolean,
-  ) => {
-    if (!detailUser?.id) return;
-    setRolePending(which);
-    try {
-      await editUser({
-        id: detailUser.id,
-        userEditModelDto: {
-          name: detailUser.name,
-          newRoles: rolesPayload(nextClient, nextWorker),
-        },
-      }).unwrap();
-    } catch (e) {
-      const fe = e as FetchBaseQueryError | undefined;
-      if (fe && typeof fe === "object" && "status" in fe) {
-        const err = fe as FetchBaseQueryError;
-        if (err.status === 401) redirectToSsoWithReturn();
-        else pushMessage(messageFromFetchError(err));
-      } else {
-        pushMessage(editUserFailedMessage());
-      }
-    } finally {
-      setRolePending(null);
-    }
-  };
+  const saveRoles = useCallback(
+    (
+      which: "client" | "worker",
+      nextClient: boolean,
+      nextWorker: boolean,
+    ) => {
+      if (!detailUser?.id) return;
+      if (confirmOpen || confirmBusy) return;
+      const line =
+        which === "client"
+          ? nextClient
+            ? "PUT /users/{id}: roles+=CLIENT"
+            : "PUT /users/{id}: roles-=CLIENT"
+          : nextWorker
+            ? "PUT /users/{id}: roles+=WORKER"
+            : "PUT /users/{id}: roles-=WORKER";
+      openUserEditConfirm(
+        { kind: "roles", which, nextClient, nextWorker },
+        `${line}\noperand: ${detailUser.email}\nProceed?`,
+      );
+    },
+    [confirmBusy, confirmOpen, detailUser, openUserEditConfirm],
+  );
 
-  const saveActive = useCallback(async () => {
+  const saveActive = useCallback(() => {
     if (!detailUser?.id) return;
+    if (confirmOpen || confirmBusy) return;
     const nextActive = !userActive;
-    setActivePending(true);
-    try {
-      await editUser({
-        id: detailUser.id,
-        userEditModelDto: {
-          name: detailUser.name,
-          newRoles: rolesPayload(hasClient, hasWorker),
-          active: nextActive,
-        },
-      }).unwrap();
-    } catch (e) {
-      const fe = e as FetchBaseQueryError | undefined;
-      if (fe && typeof fe === "object" && "status" in fe) {
-        const err = fe as FetchBaseQueryError;
-        if (err.status === 401) redirectToSsoWithReturn();
-        else pushMessage(messageFromFetchError(err));
-      } else {
-        pushMessage(editUserFailedMessage());
-      }
-    } finally {
-      setActivePending(false);
-    }
+    openUserEditConfirm(
+      {
+        kind: "active",
+        nextActive,
+        newRoles: rolesPayload(hasClient, hasWorker),
+      },
+      nextActive
+        ? `PUT /users/{id}: active=true (login ENABLED)\noperand: ${detailUser.email}\nProceed?`
+        : `PUT /users/{id}: active=false (login BLOCKED)\noperand: ${detailUser.email}\nProceed?`,
+    );
   }, [
+    confirmBusy,
+    confirmOpen,
     detailUser,
-    editUser,
     hasClient,
     hasWorker,
-    pushMessage,
+    openUserEditConfirm,
     userActive,
   ]);
 
-  const controlsDisabled = rolePending !== null || activePending;
+  const controlsDisabled =
+    rolePending !== null ||
+    activePending ||
+    confirmOpen ||
+    confirmBusy;
   const clientCheckboxStatus: statusType =
     rolePending === "client"
       ? "loading"
@@ -372,6 +454,13 @@ export function UsersPage() {
 
   return (
     <>
+      <ConfirmationModal
+        open={confirmOpen}
+        content={confirmMessage}
+        confirmLoading={confirmBusy}
+        onCancel={dismissUserEditConfirm}
+        onConfirm={() => void onConfirmUserEdit()}
+      />
       <BgText text={bgLabel} />
       <div
         className="bg-background"

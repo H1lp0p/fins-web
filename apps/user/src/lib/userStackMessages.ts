@@ -105,7 +105,7 @@ function creditCreateStyledLine(field: string): string {
     case "creditRuleId":
       return "Property {creditRuleId} doesn't fit requirements";
     case "money.value":
-      return "Property {Amount} doesn't fit requirements";
+      return "Property {Principal} doesn't fit requirements";
     case "money.currency":
       return "Property {Currency} doesn't fit requirements";
     default:

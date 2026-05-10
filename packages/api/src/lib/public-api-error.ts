@@ -3,14 +3,8 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
 import { extractBffError } from "../entities/bff-error";
 
-/**
- * Payload отклонённого thunk RTK Query (query/mutation).
- */
 export type RtkRejectedPayload = FetchBaseQueryError | SerializedError | undefined;
 
-/**
- * Редирект на /403 (доступ запрещён).
- */
 export function shouldNavigateToForbidden(
   error: RtkRejectedPayload,
 ): boolean {
@@ -23,9 +17,6 @@ export function shouldNavigateToForbidden(
   return error.status === 403;
 }
 
-/**
- * Редирект на /500: HTTP 5xx и транспортные ошибки fetch.
- */
 export function shouldNavigateToServerError(
   error: RtkRejectedPayload,
 ): boolean {
@@ -49,9 +40,6 @@ export function shouldNavigateToServerError(
   return false;
 }
 
-/**
- * Текст для экрана /500: тело BFF или запасной вариант по коду ошибки.
- */
 export function getRejectedRequestMessage(
   error: RtkRejectedPayload,
 ): string | undefined {

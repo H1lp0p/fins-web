@@ -1,0 +1,64 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.scroll {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.footer {
+  flex-shrink: 0;
+}
+
+.fieldLine {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fins-min-gap);
+  padding: var(--fins-min-gap) 0;
+  border-radius: var(--fins-corner-radius);
+  transition: box-shadow var(--fins-theme-transition-duration, 0.15s)
+    var(--fins-theme-transition-easing, ease);
+}
+
+.fieldRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--fins-min-gap);
+  min-width: 0;
+}
+
+.fieldLineInvalid {
+  box-shadow: 0 0 0 2px var(--fins-error);
+  padding-left: var(--fins-min-gap);
+  padding-right: var(--fins-min-gap);
+}
+
+.fieldKey {
+  flex-shrink: 0;
+}
+
+.fieldValue {
+  min-width: 0;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.amountWrap {
+  border-radius: var(--fins-corner-radius);
+  transition: box-shadow var(--fins-theme-transition-duration, 0.15s)
+    var(--fins-theme-transition-easing, ease);
+}
+
+.amountWrapInvalid {
+  box-shadow: 0 0 0 2px var(--fins-error);
+}

@@ -1,0 +1,33 @@
+.fins-confirm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--fins-mid-gap);
+  box-sizing: border-box;
+  background-color: color-mix(in srgb, var(--fins-background) 45%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.fins-confirm-modal-dialog {
+  max-width: min(28rem, 100%);
+  width: 100%;
+  border-radius: var(--fins-corner-radius);
+}
+
+.fins-confirm-modal-body {
+  max-height: min(70vh, 22rem);
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.fins-confirm-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--fins-min-gap);
+  justify-content: flex-end;
+}

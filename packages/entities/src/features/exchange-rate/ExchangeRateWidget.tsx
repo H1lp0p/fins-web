@@ -30,9 +30,6 @@ function labelForCharCode(charCode: string | undefined): string {
   return app ? currencyCodeToAmountSymbol(app) : charCode;
 }
 
-/**
- * Курсы валют с BFF → `GET /api/core-api/currency/all` (прокси на gateway).
- */
 export function ExchangeRateWidget() {
   const { data, isLoading, isError, refetch, isFetching } =
     useGetCurrencyListQuery();

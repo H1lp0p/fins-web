@@ -14,7 +14,6 @@ import {
   unregisterFcmToken,
 } from "../lib/notification-bff-http";
 
-/** Отдельное имя приложения, чтобы не смешивать с другим Firebase на странице и не брать «чужой» getApp(). */
 const FCM_APP_NAME = "fins-fcm-web";
 
 function isViteDev(): boolean {
@@ -25,7 +24,6 @@ function isViteDev(): boolean {
 }
 
 export type UseWebPushRegistrationOptions = {
-  /** After session is established */
   enabled: boolean;
   firebaseOptions: FirebaseOptions;
   vapidKey: string;
@@ -40,7 +38,6 @@ function trimOpt(s: string | undefined): string | undefined {
   return t.length > 0 ? t : undefined;
 }
 
-/** Убираем пробелы/переносы из .env — иначе Installations / getToken дают invalid-argument. */
 function normalizeFirebaseOptions(o: FirebaseOptions): FirebaseOptions {
   return {
     ...o,
@@ -135,10 +132,6 @@ function logFirebaseError(context: string, e: unknown): void {
   console.warn(`[fins/push] ${context}${code ? ` [${code}]` : ""}:`, msg);
 }
 
-/**
- * Registers FCM web token with BFF (notification-service) for native push.
- * Unregisters on unmount. No in-page messaging (background SW only).
- */
 export function useWebPushRegistration(
   options: UseWebPushRegistrationOptions,
 ): void {
@@ -257,7 +250,6 @@ export function useWebPushRegistration(
           baseUrlRef.current,
         );
       } catch {
-        /* BFF / notification-service optional in dev */
       }
     })();
 
@@ -284,7 +276,6 @@ export function useWebPushRegistration(
         try {
           await unregisterFcmToken(t, baseUrlRef.current);
         } catch {
-          /* ignore */
         }
       })();
     };

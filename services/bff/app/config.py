@@ -63,14 +63,12 @@ class Settings(BaseSettings):
 
     @property
     def use_notification_sse_mock(self) -> bool:
-        """Тестовый SSE без notification-service (если не включён реальный прокси)."""
         return bool(
             self.notification_sse_mock_enabled and not self.use_notification_proxy
         )
 
     @property
     def simulate_random_errors_enabled(self) -> bool:
-        """Случайные 500 только в режиме мок-банка; при реальном upstream отключено."""
         if self.use_upstream:
             return False
         return self.simulate_random_errors

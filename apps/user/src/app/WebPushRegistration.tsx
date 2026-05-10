@@ -19,9 +19,6 @@ function firebaseWebOptionsFromEnv() {
   };
 }
 
-/**
- * Registers FCM after login (inside {@link RequireSession}). Native push only.
- */
 export function WebPushRegistration() {
   const firebaseOptions = useMemo(
     () => firebaseWebOptionsFromEnv() as FirebaseOptions,

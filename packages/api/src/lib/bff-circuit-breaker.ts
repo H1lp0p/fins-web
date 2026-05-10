@@ -1,9 +1,7 @@
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
 export type BffCircuitBreakerConfig = {
-  /** Подряд «плохих» ответов до размыкания (по умолчанию 5). */
   failureThreshold?: number;
-  /** Мс до попытки half-open (по умолчанию 30_000). */
   recoveryMs?: number;
   enabled?: boolean;
 };
@@ -25,7 +23,6 @@ export class BffCircuitBreaker {
     this.recoveryMs = Math.max(100, config.recoveryMs ?? DEFAULT_RECOVERY_MS);
   }
 
-  /** true — не вызывать fetch, вернуть синтетическую ошибку. */
   shouldBlock(): boolean {
     if (!this.enabled) {
       return false;
@@ -123,7 +120,6 @@ export function resetSharedBffCircuitBreakerForTests(): void {
   explicitlyDisabled = false;
 }
 
-/** Экземпляр после первого RTK-запроса (или null, если отключено / ещё не создавали). */
 export function getSharedBffCircuitBreaker(): BffCircuitBreaker | null {
   return sharedBreaker;
 }

@@ -8,7 +8,11 @@ import {
   useTransferMoneyMutation,
   useWithdrawMoneyMutation,
 } from "@fins/api";
-import { TriColSpaceLayout, useMessageStack } from "@fins/ui-kit";
+import {
+  ConfirmationModal,
+  TriColSpaceLayout,
+  useMessageStack,
+} from "@fins/ui-kit";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { AccountGrid, currencyCodeToAmountSymbol, mockRateFromTo } from "@fins/entities";
@@ -91,6 +95,9 @@ export function TransactionsPage() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const [transferAmount, setTransferAmount] = useState("");
+
+  const [transferConfirmOpen, setTransferConfirmOpen] = useState(false);
+  const [transferConfirmBusy, setTransferConfirmBusy] = useState(false);
 
   const appliedSearchKey = useRef<string | null>(null);
 
@@ -284,89 +291,128 @@ export function TransactionsPage() {
   const fromSymbol = currencyCodeToAmountSymbol(fromCurrencyCode);
   const toSymbol = currencyCodeToAmountSymbol(toCurrencyCode);
 
-  const executeTransfer = useCallback(async () => {
-    if (!canSubmitTransfer || !fromCurrencyCode || !toCurrencyCode) return;
+  const transferConfirmMessage = useMemo(() => {
+    if (
+      !canSubmitTransfer ||
+      parsedTransferAmount == null ||
+      !fromCurrencyCode ||
+      !toCurrencyCode
+    ) {
+      return "";
+    }
+    const amt = `${parsedTransferAmount} ${fromCurrencyCode}`;
+    if (destinationTabId === "accounts") {
+      return `POST /transactions/transfer: debit ${amt} → target account (rcv_ccy=${toCurrencyCode})\nProceed?`;
+    }
+    if (destinationTabId === "credits") {
+      return `POST /transactions/transfer: debit ${amt} → target CREDIT leg\nProceed?`;
+    }
+    return `POST /transactions/withdraw: debit ${amt} → selected destination blob\nProceed?`;
+  }, [
+    canSubmitTransfer,
+    parsedTransferAmount,
+    fromCurrencyCode,
+    toCurrencyCode,
+    destinationTabId,
+  ]);
 
-    const destination = buildTransactionDestinationToken(destinationTabId, {
+  const executeTransferWithIdempotencyKey = useCallback(
+    async (idempotencyKey: string) => {
+      if (!canSubmitTransfer || !fromCurrencyCode || !toCurrencyCode) return;
+
+      const destination = buildTransactionDestinationToken(destinationTabId, {
+        selectedAccountId,
+        selectedCreditId,
+        selectedUserId,
+        rightCurrencyIndex,
+        users,
+      });
+
+      try {
+        if (
+          destinationTabId === "accounts" ||
+          destinationTabId === "credits"
+        ) {
+          await transferMoney({
+            transferMoneyDto: {
+              fromCardAccountId:
+                fromTopMode === "account" ? fromSelectedAccountId : null,
+              amount: parsedTransferAmount!,
+              amountCurrency: fromCurrencyCode,
+              targetKind:
+                destinationTabId === "credits" ? "CREDIT" : "ACCOUNT",
+              targetCardAccountId:
+                destinationTabId === "accounts" ? selectedAccountId : null,
+              targetCreditId:
+                destinationTabId === "credits" ? selectedCreditId : null,
+            },
+            idempotencyKey,
+          }).unwrap();
+        } else if (fromTopMode === "account" && fromSelectedAccountId) {
+          await withdrawMoney({
+            withdrawDto: {
+              cardAccountId: fromSelectedAccountId,
+              sum: parsedTransferAmount!,
+              destination,
+            },
+            idempotencyKey,
+          }).unwrap();
+        } else {
+          pushMessage({
+            type: "error",
+            title: "Transfer",
+            text:
+              "Для выбранной пары источник/получатель используйте счёт или обратитесь к поддержке.",
+          });
+          return;
+        }
+
+        pushMessage({
+          type: "success",
+          title: "Transfer",
+          text: "Операция отправлена.",
+        });
+        setTransferAmount("");
+        void refetchAccounts();
+        void refetchCredits();
+      } catch {
+        pushMessage({
+          type: "error",
+          title: "Transfer",
+          text: "Не удалось выполнить операцию.",
+        });
+      }
+    },
+    [
+      canSubmitTransfer,
+      fromCurrencyCode,
+      toCurrencyCode,
+      destinationTabId,
       selectedAccountId,
       selectedCreditId,
       selectedUserId,
       rightCurrencyIndex,
       users,
-    });
+      fromTopMode,
+      fromSelectedAccountId,
+      parsedTransferAmount,
+      transferMoney,
+      withdrawMoney,
+      pushMessage,
+      refetchAccounts,
+      refetchCredits,
+    ],
+  );
 
+  const onTransferConfirm = useCallback(async () => {
+    setTransferConfirmBusy(true);
     try {
-      if (
-        destinationTabId === "accounts" ||
-        destinationTabId === "credits"
-      ) {
-        await transferMoney({
-          transferMoneyDto: {
-            fromCardAccountId:
-              fromTopMode === "account" ? fromSelectedAccountId : null,
-            amount: parsedTransferAmount!,
-            amountCurrency: fromCurrencyCode,
-            targetKind:
-              destinationTabId === "credits" ? "CREDIT" : "ACCOUNT",
-            targetCardAccountId:
-              destinationTabId === "accounts" ? selectedAccountId : null,
-            targetCreditId:
-              destinationTabId === "credits" ? selectedCreditId : null,
-          },
-        }).unwrap();
-      } else if (fromTopMode === "account" && fromSelectedAccountId) {
-        await withdrawMoney({
-          withdrawDto: {
-            cardAccountId: fromSelectedAccountId,
-            sum: parsedTransferAmount!,
-            destination,
-          },
-        }).unwrap();
-      } else {
-        pushMessage({
-          type: "error",
-          title: "Transfer",
-          text:
-            "Для выбранной пары источник/получатель используйте счёт или обратитесь к поддержке.",
-        });
-        return;
-      }
-
-      pushMessage({
-        type: "success",
-        title: "Transfer",
-        text: "Операция отправлена.",
-      });
-      setTransferAmount("");
-      void refetchAccounts();
-      void refetchCredits();
-    } catch {
-      pushMessage({
-        type: "error",
-        title: "Transfer",
-        text: "Не удалось выполнить операцию.",
-      });
+      await executeTransferWithIdempotencyKey(crypto.randomUUID());
+      setTransferConfirmOpen(false);
+    } finally {
+      setTransferConfirmBusy(false);
     }
-  }, [
-    canSubmitTransfer,
-    fromCurrencyCode,
-    toCurrencyCode,
-    destinationTabId,
-    selectedAccountId,
-    selectedCreditId,
-    selectedUserId,
-    rightCurrencyIndex,
-    users,
-    fromTopMode,
-    fromSelectedAccountId,
-    parsedTransferAmount,
-    transferMoney,
-    withdrawMoney,
-    credits,
-    pushMessage,
-    refetchAccounts,
-    refetchCredits,
-  ]);
+  }, [executeTransferWithIdempotencyKey]);
 
   const cycleLeft = useCallback(() => {
     setLeftCurrencyIndex((i) => i + 1);
@@ -400,11 +446,18 @@ export function TransactionsPage() {
     setAppliedQuery("");
   }, []);
 
+  const openTransferConfirmation = useCallback(() => {
+    if (!canSubmitTransfer || !transferConfirmMessage) return;
+    setTransferConfirmOpen(true);
+  }, [canSubmitTransfer, transferConfirmMessage]);
+
   const topCenterContent = (
     <TransactionTransferTopBar
       disabled={!canSubmitTransfer}
-      loading={transferLoading || withdrawLoading}
-      onTransfer={() => void executeTransfer()}
+      loading={
+        transferLoading || withdrawLoading || transferConfirmBusy
+      }
+      onTransfer={() => openTransferConfirmation()}
     />
   );
 
@@ -429,6 +482,16 @@ export function TransactionsPage() {
         minHeight: "calc(100vh - 5rem)",
       }}
     >
+      <ConfirmationModal
+        open={transferConfirmOpen}
+        content={transferConfirmMessage}
+        confirmLoading={transferConfirmBusy}
+        onCancel={() => {
+          if (transferConfirmBusy) return;
+          setTransferConfirmOpen(false);
+        }}
+        onConfirm={() => void onTransferConfirm()}
+      />
       <TriColSpaceLayout
         topLeftContent={
           <TransactionFromTopSlot

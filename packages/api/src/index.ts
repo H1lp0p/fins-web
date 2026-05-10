@@ -4,6 +4,7 @@ export {
   createBffFetchBaseQuery,
   type BffClientOptions,
 } from "./lib/bff-fetch-base-query";
+export type { WithIdempotencyKey } from "./lib/idempotency-args";
 export type {
   BffCircuitBreakerConfig,
 } from "./lib/bff-circuit-breaker";
