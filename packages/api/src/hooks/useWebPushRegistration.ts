@@ -253,7 +253,7 @@ export function useWebPushRegistration(
       registeredTokenRef.current = token;
       try {
         await registerFcmToken(
-          { token, platform: "web" },
+          { token, platform: "WEB_CLIENT" },
           baseUrlRef.current,
         );
       } catch {

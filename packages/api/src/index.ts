@@ -96,7 +96,7 @@ export {
 } from "./entities/bff-error";
 export type { Notification } from "./entities/notification";
 export { isNotificationPayload } from "./entities/notification";
-export type { FcmTokenRequest } from "./lib/notification-bff-http";
+export type { FcmPlatform, FcmTokenRequest } from "./lib/notification-bff-http";
 export {
   defaultNotificationsBffBaseUrl,
   fetchAllNotifications,

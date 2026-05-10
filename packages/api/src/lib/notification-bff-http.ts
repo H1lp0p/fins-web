@@ -81,9 +81,11 @@ export async function fetchAllNotifications(
   return (await r.json()) as Notification[];
 }
 
+export type FcmPlatform = "WEB_CLIENT" | "WEB_WORKER";
+
 export type FcmTokenRequest = {
   token: string;
-  platform?: string;
+  platform?: FcmPlatform;
 };
 
 export async function registerFcmToken(
